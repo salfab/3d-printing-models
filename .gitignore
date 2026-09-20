@@ -1,0 +1,19 @@
+# Bibliothèques OpenSCAD tierces — réinstallables par scripts/setup_libs.py
+vendor/
+
+# Sorties régénérables de scripts/scad.py
+models/*/out/
+
+# Fichiers 3D et tranchage
+*.stl
+*.3mf
+*.amf
+*.gcode
+
+# OpenSCAD
+*.scad.bak
+.openscad/
+
+# Python
+__pycache__/
+*.pyc

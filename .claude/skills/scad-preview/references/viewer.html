@@ -1,0 +1,460 @@
+<title>Aperçu de pièce</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f2f1ed;
+    --surface: #ffffff;
+    --surface-2: #e9e7e1;
+    --ink: #191c1e;
+    --muted: #6a7075;
+    --line: #d9d7d1;
+    --accent: #0e6f7d;
+    --accent-soft: #daedf0;
+    --rule: #b4763a;
+    --shadow: 0 1px 2px rgba(25, 28, 30, .06), 0 8px 24px rgba(25, 28, 30, .05);
+    --scene-top: #e7e6e1;
+    --scene-bot: #cfcdc6;
+    --mesh: #b9bcc0;
+    --grid: #a8a59d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15181a;
+      --surface: #1e2224;
+      --surface-2: #262b2e;
+      --ink: #e9e7e2;
+      --muted: #969ca1;
+      --line: #2e3336;
+      --accent: #3fc2d2;
+      --accent-soft: #0e2f35;
+      --rule: #d9a05b;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+      --scene-top: #23282b;
+      --scene-bot: #14171a;
+      --mesh: #8f969c;
+      --grid: #3a4145;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15181a;
+    --surface: #1e2224;
+    --surface-2: #262b2e;
+    --ink: #e9e7e2;
+    --muted: #969ca1;
+    --line: #2e3336;
+    --accent: #3fc2d2;
+    --accent-soft: #0e2f35;
+    --rule: #d9a05b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    --scene-top: #23282b;
+    --scene-bot: #14171a;
+    --mesh: #8f969c;
+    --grid: #3a4145;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 15px/1.55 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding-block: 14px;
+    padding-inline: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 18px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .dims { display: flex; flex-wrap: wrap; gap: 6px; margin-inline-start: auto; }
+  .chip {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--surface-2);
+    border-radius: 3px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .chip b { color: var(--muted); font-weight: 500; margin-inline-end: 5px; }
+
+  nav { display: flex; gap: 2px; padding-inline: 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  nav button {
+    appearance: none;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    padding: 9px 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  nav button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  main { flex: 1; min-height: 0; }
+  .pane { height: 100%; }
+
+  #scene { position: relative; height: 100%; min-height: 340px; background: var(--bg); }
+  #scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hud {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    /* wrap-reverse garde les boutons sous l'aide quand la largeur manque */
+    flex-wrap: wrap-reverse;
+    pointer-events: none;   /* on doit pouvoir tourner la piece entre les deux */
+  }
+  .hud > * { pointer-events: auto; }
+  .boutons { display: flex; gap: 6px; flex-wrap: wrap; }
+  .hud button {
+    font: 500 12px/1 "IBM Plex Sans", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .hud button:hover { border-color: var(--accent); color: var(--accent); }
+  .hud button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .hint {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--muted);
+    text-align: right;
+    flex: 1 1 150px;
+    min-width: 0;
+  }
+  .notice {
+    padding: 24px 16px;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 60ch;
+  }
+
+  .sheet { padding-block: 20px 40px; padding-inline: 16px; overflow-y: auto; height: 100%; box-sizing: border-box; }
+  .sheet section { margin-bottom: 28px; }
+  .sheet h2 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  figure img { display: block; width: 100%; max-width: 100%; height: auto; background: #fff; }
+  figcaption {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 7px 9px;
+    border-top: 1px solid var(--line);
+  }
+</style>
+
+<header>
+  <div>
+    <div class="eyebrow">Aperçu de modèle</div>
+    <h1 id="titre">Modèle</h1>
+  </div>
+  <div class="dims" id="dims"></div>
+</header>
+
+<nav role="tablist">
+  <button id="tab-3d" role="tab" aria-selected="true" aria-controls="pane-3d">Vue 3D</button>
+  <button id="tab-sheet" role="tab" aria-selected="false" aria-controls="pane-sheet">Rendus</button>
+</nav>
+
+<main>
+  <div class="pane" id="pane-3d" role="tabpanel" aria-labelledby="tab-3d">
+    <div id="scene">
+      <div class="hud">
+        <div class="boutons">
+          <button type="button" data-vue="iso">Isométrique</button>
+          <button type="button" data-vue="face">Face</button>
+          <button type="button" data-vue="droite">Droite</button>
+          <button type="button" data-vue="dessus">Dessus</button>
+        </div>
+        <p class="hint" id="hint">Glisser pour tourner · molette pour zoomer · grille au pas de 10 mm</p>
+      </div>
+    </div>
+  </div>
+  <div class="pane sheet" id="pane-sheet" role="tabpanel" aria-labelledby="tab-sheet" hidden></div>
+</main>
+
+<script src="model-data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.SCAD_MODEL;
+  var scene3d = document.getElementById("scene");
+
+  function echec(msg) {
+    scene3d.innerHTML = '<p class="notice">' + msg + "</p>";
+  }
+
+  // --- En-tête ------------------------------------------------------------
+  if (M) {
+    document.getElementById("titre").textContent = M.titre || M.slug;
+    if (M.bbox) {
+      var axes = ["X", "Y", "Z"];
+      document.getElementById("dims").innerHTML = M.bbox.size.map(function (v, i) {
+        return '<span class="chip"><b>' + axes[i] + "</b>" + v.toFixed(1) + " mm</span>";
+      }).join("");
+    }
+  }
+
+  // --- Planche de rendus --------------------------------------------------
+  var pane = document.getElementById("pane-sheet");
+  if (M && M.views && M.views.length) {
+    var groupes = [];
+    M.views.forEach(function (v) {
+      var g = groupes.filter(function (x) { return x.nom === v.group; })[0];
+      if (!g) { g = { nom: v.group, items: [] }; groupes.push(g); }
+      g.items.push(v);
+    });
+    pane.innerHTML = groupes.map(function (g) {
+      return "<section><h2>" + g.nom + '</h2><div class="grid">' + g.items.map(function (v) {
+        return "<figure><img loading=\"lazy\" alt=\"" + v.label + "\" src=\"" + v.file +
+               "\"><figcaption>" + v.label + "</figcaption></figure>";
+      }).join("") + "</div></section>";
+    }).join("");
+  } else {
+    pane.innerHTML = '<p class="notice">Aucun rendu joint. Lance <code>python scripts/scad.py all &lt;slug&gt;</code> puis relance la préparation.</p>';
+  }
+
+  // --- Onglets ------------------------------------------------------------
+  var onglets = [
+    { bouton: document.getElementById("tab-3d"), pane: document.getElementById("pane-3d") },
+    { bouton: document.getElementById("tab-sheet"), pane: pane }
+  ];
+  function activer(i) {
+    onglets.forEach(function (o, k) {
+      o.bouton.setAttribute("aria-selected", String(k === i));
+      o.pane.hidden = k !== i;
+    });
+    if (i === 0 && window.__scadResize) window.__scadResize();
+  }
+  onglets.forEach(function (o, i) { o.bouton.addEventListener("click", function () { activer(i); }); });
+
+  // --- Décodage du STL binaire -------------------------------------------
+  function base64ArrayBuffer(b64) {
+    var bin = atob(b64), n = bin.length, buf = new ArrayBuffer(n), u8 = new Uint8Array(buf);
+    for (var i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+    return buf;
+  }
+
+  function parserSTL(buf) {
+    var dv = new DataView(buf);
+    var nb = dv.getUint32(80, true);
+    if (84 + nb * 50 !== buf.byteLength) throw new Error("STL non binaire ou tronqué");
+    var pos = new Float32Array(nb * 9), nor = new Float32Array(nb * 9);
+    for (var t = 0; t < nb; t++) {
+      var o = 84 + t * 50;
+      var nx = dv.getFloat32(o, true), ny = dv.getFloat32(o + 4, true), nz = dv.getFloat32(o + 8, true);
+      for (var v = 0; v < 3; v++) {
+        var s = (t * 3 + v) * 3, p = o + 12 + v * 12;
+        pos[s] = dv.getFloat32(p, true);
+        pos[s + 1] = dv.getFloat32(p + 4, true);
+        pos[s + 2] = dv.getFloat32(p + 8, true);
+        nor[s] = nx; nor[s + 1] = ny; nor[s + 2] = nz;
+      }
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+    return g;
+  }
+
+  // --- Scène --------------------------------------------------------------
+  if (!M || !M.stl) { echec("Aucune géométrie jointe (model-data.js manquant)."); return; }
+  if (typeof THREE === "undefined") { echec("La bibliothèque 3D n'a pas pu être chargée. L'onglet Rendus reste disponible."); return; }
+
+  var lire = function (nom) { return getComputedStyle(document.documentElement).getPropertyValue(nom).trim(); };
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  } catch (e) {
+    echec("Ce navigateur n'expose pas WebGL. L'onglet Rendus reste disponible."); return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  scene3d.insertBefore(renderer.domElement, scene3d.firstChild);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(38, 1, 1, 20000);
+
+  var geo;
+  try { geo = parserSTL(base64ArrayBuffer(M.stl)); }
+  catch (e) { echec("STL illisible : " + e.message); return; }
+  geo.computeBoundingBox();
+
+  var bb = geo.boundingBox;
+  var centre = new THREE.Vector3(); bb.getCenter(centre);
+  var taille = new THREE.Vector3(); bb.getSize(taille);
+  var rayon = Math.max(taille.x, taille.y, taille.z) * 0.5 || 1;
+
+  var maille = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color: new THREE.Color(lire("--mesh") || "#b9bcc0"),
+    metalness: 0.05, roughness: 0.62, flatShading: false
+  }));
+  // OpenSCAD travaille en Z vers le haut, three.js en Y vers le haut.
+  var socle = new THREE.Group();
+  maille.position.sub(centre);
+  socle.add(maille);
+  socle.rotation.x = -Math.PI / 2;
+  scene.add(socle);
+
+  var pas = 10, etendue = Math.ceil(rayon * 3 / pas) * pas;
+  var grille = new THREE.GridHelper(etendue * 2, (etendue * 2) / pas,
+    new THREE.Color(lire("--grid") || "#a8a59d"), new THREE.Color(lire("--grid") || "#a8a59d"));
+  grille.material.opacity = 0.5; grille.material.transparent = true;
+  grille.position.y = -taille.z / 2;
+  scene.add(grille);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404448, 0.85));
+  var sol = new THREE.DirectionalLight(0xffffff, 0.75);
+  sol.position.set(1, 1.4, 0.8); scene.add(sol);
+  var appoint = new THREE.DirectionalLight(0xffffff, 0.3);
+  appoint.position.set(-1, 0.4, -0.9); scene.add(appoint);
+
+  // --- Cadrage ------------------------------------------------------------
+  // La distance doit tenir compte du champ HORIZONTAL autant que du vertical :
+  // sur un écran de téléphone, étroit et haut, c'est lui le plus contraignant.
+  var rayonSphere = taille.length() / 2;
+  var distBase = 0, distMin = rayonSphere * 1.05, distMax = rayonSphere * 12;
+
+  function cadrer() {
+    var vfov = camera.fov * Math.PI / 180;
+    var hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+    var voulu = rayonSphere / Math.sin(Math.min(vfov, hfov) / 2) * 1.03;
+    // On conserve le zoom relatif choisi par le lecteur au redimensionnement.
+    dist = distBase ? dist * voulu / distBase : voulu;
+    distBase = voulu;
+    distMax = voulu * 4;
+  }
+
+  // --- Contrôles d'orbite (sans dépendance) -------------------------------
+  var theta = Math.PI * 0.28, phi = Math.PI * 0.36, dist = 0;
+
+  function placer() {
+    phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi));
+    dist = Math.max(distMin, Math.min(distMax, dist));
+    camera.position.set(
+      dist * Math.sin(phi) * Math.sin(theta),
+      dist * Math.cos(phi),
+      dist * Math.sin(phi) * Math.cos(theta)
+    );
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  }
+
+  var actif = null, dernier = null, ecartTactile = 0;
+  function pointeurs(e) { return e.touches ? Array.prototype.slice.call(e.touches) : [e]; }
+
+  renderer.domElement.addEventListener("pointerdown", function (e) {
+    actif = e.pointerId; dernier = { x: e.clientX, y: e.clientY };
+    renderer.domElement.setPointerCapture(e.pointerId);
+  });
+  renderer.domElement.addEventListener("pointermove", function (e) {
+    if (actif !== e.pointerId || !dernier) return;
+    theta -= (e.clientX - dernier.x) * 0.008;
+    phi -= (e.clientY - dernier.y) * 0.008;
+    dernier = { x: e.clientX, y: e.clientY };
+    placer();
+  });
+  ["pointerup", "pointercancel"].forEach(function (t) {
+    renderer.domElement.addEventListener(t, function () { actif = null; dernier = null; });
+  });
+  renderer.domElement.addEventListener("wheel", function (e) {
+    e.preventDefault(); dist *= e.deltaY > 0 ? 1.1 : 0.9; placer();
+  }, { passive: false });
+  renderer.domElement.addEventListener("touchmove", function (e) {
+    var p = pointeurs(e);
+    if (p.length !== 2) return;
+    var d = Math.hypot(p[0].clientX - p[1].clientX, p[0].clientY - p[1].clientY);
+    if (ecartTactile) { dist *= ecartTactile / d; placer(); }
+    ecartTactile = d;
+  }, { passive: true });
+  renderer.domElement.addEventListener("touchend", function () { ecartTactile = 0; });
+
+  var ANGLES = {
+    iso:    [Math.PI * 0.28, Math.PI * 0.36],
+    face:   [0, Math.PI / 2],
+    droite: [Math.PI / 2, Math.PI / 2],
+    dessus: [0, 0.06]
+  };
+  document.querySelectorAll(".boutons button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var a = ANGLES[b.dataset.vue];
+      theta = a[0]; phi = a[1]; dist = distBase; placer();
+    });
+  });
+
+  // Sur un écran tactile, la molette n'existe pas.
+  try {
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches)
+      document.getElementById("hint").textContent =
+        "Glisser pour tourner · pincer pour zoomer · grille au pas de 10 mm";
+  } catch (e) { /* sans importance */ }
+
+  // --- Dimensionnement ----------------------------------------------------
+  function ajuster() {
+    var r = scene3d.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    renderer.setSize(r.width, r.height, false);
+    camera.aspect = r.width / r.height;
+    camera.updateProjectionMatrix();
+    cadrer();
+    placer();
+  }
+  window.__scadResize = ajuster;
+  window.addEventListener("resize", ajuster);
+  ajuster();
+})();
+</script>
