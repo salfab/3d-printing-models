@@ -46,7 +46,7 @@ python scripts/scad.py stl rack-sodastream -D PIECE=guide
 | Encombrement d'une plaque | 167 × 40 mm |
 | Hauteur sous la planche | 72,5 mm |
 | Écart entre les deux plaques | 200 mm (`ecart_plaques`) |
-| Rail de guidage | 236 mm, 20 mm en fond, 15 mm au débouché — rien ne dépasse du rack |
+| Rail de guidage | 236 mm, 20 mm en fond, 15 mm au débouché, 4,77 mm d'épaisseur |
 
 Bride et colliers ont la même profondeur : la plaque est **une seule extrusion
 prismatique**, ce qui donne du volume aux colliers et raidit l'ensemble.
@@ -114,11 +114,16 @@ lui-même les deux plaques *avant* qu'elles ne soient vissées.
 exactement les 237 mm disponibles entre le fond de butée et la face avant, et les seules
 tolérances d'impression suffiraient à l'empêcher d'entrer.
 
-**Le talon d'arrêt** est la patte qui descend sous le rail, **reculée de 40 mm** depuis
-le bout avant — soit exactement la profondeur d'une plaque. Elle vient donc porter contre
-la face *arrière* de la plaque avant, et c'est l'**avancée** du rail qu'elle arrête : la
-seule direction par laquelle il pourrait sortir. Le recul, lui, est déjà pris par la
-butée du fond.
+**Le talon d'arrêt** est une collerette large de 26 mm, **reculée de 40 mm** depuis le
+bout avant — soit exactement la profondeur d'une plaque. Plus large que l'encoche, qui
+n'en fait que 20, elle ne peut pas la traverser : elle porte contre la face *arrière* de
+la plaque avant, sur environ 4 mm de chaque côté. C'est l'**avancée** du rail qu'elle
+arrête, la seule direction par laquelle il pourrait sortir ; le recul est déjà pris par
+la butée du fond.
+
+Elle s'évase **latéralement**, à partir du même fond plat que le rail, et ne descend pas
+en dessous. Un talon qui descendrait aurait obligé à imprimer les 236 mm du rail sur
+support.
 
 Un talon placé au bout du rail, en appui sur la face *avant*, n'aurait rien bloqué
 d'utile : il n'aurait arrêté que le recul, déjà limité à 1 mm par la butée, en laissant
@@ -158,7 +163,8 @@ coincerait. Marqués à travers le rack monté, ils sont justes par construction
 - **Plaques** : posées à plat, alésages verticaux. Aucun support. Les couches sont alors
   perpendiculaires à l'axe des cylindres, donc la charge ne travaille pas en pelage.
 - **Plaque arrière** : butée côté plateau, pour éviter un pontage sur Ø 63.
-- **Rails** : à plat, creux vers le haut. Aucun support.
+- **Rails** : posés sur leur fond plat, creux vers le haut. Aucun support : toute la
+  face inférieure touche le plateau, talon compris, et rien ne dépasse par en dessous.
 - PLA ou PETG, 3 périmètres, 25 % de remplissage. La paroi de 3 mm est entièrement
   remplie par les périmètres.
 

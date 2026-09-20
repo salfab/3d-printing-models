@@ -57,9 +57,12 @@ guide_jeu     = 0.3;  // mm — jeu perpendiculaire du rail dans son encoche. Le
 guide_entree  = 1.5;  // mm — chanfrein d'engagement au bout du rail (0 pour aucun)
 guide_jeu_axe = 1.0;  // mm — raccourcissement du rail. Sans lui il ferait exactement
                       //      la longueur disponible et ne rentrerait pas
-guide_talon   = 5;    // mm — hauteur du talon d'arrêt (0 pour aucun). Reculé d'une
+guide_talon   = 3;    // mm — hauteur du talon d'arrêt (0 pour aucun). Reculé d'une
                       //      profondeur de plaque, il porte contre la face ARRIÈRE de
-                      //      la plaque avant et empêche le rail d'avancer et de sortir
+                      //      la plaque avant et empêche le rail d'avancer et de sortir.
+                      //      C'est une collerette LATÉRALE, posée au niveau du fond du
+                      //      rail : plus large que l'encoche, elle ne peut pas la
+                      //      traverser, et elle s'imprime sans le moindre porte-à-faux
 
 // --- Bride de fixation ------------------------------------------------------
 
@@ -228,6 +231,9 @@ module plaque(butee = false) {
 // qu'il faut arrêter, le recul étant déjà pris par la butée du fond. Le talon reste
 // donc entre les deux plaques, rien ne dépasse de l'encombrement du rack — mais le
 // rail ne peut plus s'introduire que par l'arrière, avant la pose de la plaque du fond.
+//
+// Le talon ne descend pas sous le rail : il s'évase sur les côtés, à partir du même
+// fond plat. Le rail s'imprime donc posé sur ce fond, sans aucun support.
 // Extrusion dont l'extremite z = h s'amincit, pour que le rail s'engage seul dans
 // la seconde queue d'aronde meme si les deux plaques ne sont pas parfaitement alignees.
 module extrude_entree(h, c, n) {
@@ -248,8 +254,8 @@ module rail() {
         if (guide_talon > 0)
             translate([0, 0, plaque_prof])
                 linear_extrude(height = paroi)
-                    translate([0, z_encoche - guide_talon / 2])
-                        square([guide_larg - 2 * guide_jeu, guide_talon], center = true);
+                    translate([0, z_encoche + guide_jeu + guide_talon / 2])
+                        square([guide_larg + 2 * paroi, guide_talon], center = true);
     }
 }
 
