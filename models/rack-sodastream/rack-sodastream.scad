@@ -76,6 +76,7 @@ vis_tete     = 8;     // mm — Ø du fraisage. Tête fraisée M4 : 7,5 mm maxi 
 
 ecart_plaques = 200;  // mm — entraxe recommandé entre les deux plaques
 planche       = true; // false pour dégager la vue sur le rack
+cylindres     = true; // false pour ne montrer que les pièces imprimées
 
 // --- Grandeurs dérivées -----------------------------------------------------
 
@@ -189,7 +190,7 @@ module chanfreins(butee = false) {
         translate([axe_x(i), s * (plaque_prof / 2 + EPS), z_axe])
             rotate([s * 90, 0, 0])
                 cylinder(h = chanfrein + EPS,
-                         r1 = alesage / 2 + chanfrein, r2 = alesage / 2);
+                         r1 = alesage / 2 + chanfrein, r2 = alesage / 2 - EPS);
 }
 
 // Encoches du rail. Sur la plaque arrière elles s'arrêtent à la butée, qui
@@ -201,7 +202,7 @@ module encoches(butee = false) {
         translate([axe_x(i), fin, 0])
             rotate([90, 0, 0])
                 linear_extrude(height = fin - debut)
-                    profil_encoche();
+                    profil_encoche(EPS);
 }
 
 module percages_vis() {
@@ -259,13 +260,26 @@ module rail() {
     }
 }
 
-// Cylindre de gaz simplifié, pour la visualisation du montage.
+// Cylindre de gaz simplifié, pour la visualisation du montage. Le robinet est
+// dessiné parce qu'il rend la bouteille reconnaissable à sa seule silhouette :
+// le rendu CGAL ignore color(), donc la forme est le seul indice disponible.
 module cylindre_gaz() {
-    col = 22;
+    fond   = 6;    // fond légèrement bombé
+    epaule = 30;   // épaulement conique vers le col
+    col    = 14;   // col fileté TR21x4
+    ecrou  = 7;    // collerette hexagonale du robinet
+    tige   = 9;    // tige de sortie
+    corps  = cyl_longueur - epaule - col - ecrou - tige;
+
     rotate([-90, 0, 0]) {
-        cylinder(h = cyl_longueur - col, d = cyl_diametre);
-        translate([0, 0, cyl_longueur - col]) cylinder(h = col / 2, d1 = cyl_diametre, d2 = 25);
-        translate([0, 0, cyl_longueur - col / 2]) cylinder(h = col / 2, d = 25);
+        cylinder(h = fond, d1 = cyl_diametre - 10, d2 = cyl_diametre);
+        translate([0, 0, fond]) cylinder(h = corps - fond, d = cyl_diametre);
+        translate([0, 0, corps]) cylinder(h = epaule, d1 = cyl_diametre, d2 = 21);
+        translate([0, 0, corps + epaule]) cylinder(h = col, d = 21);
+        translate([0, 0, corps + epaule + col])
+            cylinder(h = ecrou, d = 26, $fn = 6);
+        translate([0, 0, corps + epaule + col + ecrou])
+            cylinder(h = tige, d = 9);
     }
 }
 
@@ -273,13 +287,14 @@ module montage() {
     translate([0, ecart_plaques / 2, 0])  plaque(false);
     translate([0, -ecart_plaques / 2, 0]) plaque(true);
     if (guide)
-        color("#4f7d8c")
+        color("#d2691e")
             for (i = [0 : nb_cylindres - 1])
                 translate([axe_x(i), guide_y, 0]) rail();
-    color("#9aa3ab")
-        for (i = [0 : nb_cylindres - 1])
-            translate([axe_x(i), -ecart_plaques / 2 - plaque_prof / 2 + butee_ep, z_axe])
-                cylindre_gaz();
+    if (cylindres)
+        color("#8d949b")
+            for (i = [0 : nb_cylindres - 1])
+                translate([axe_x(i), -ecart_plaques / 2 - plaque_prof / 2 + butee_ep, z_axe])
+                    cylindre_gaz();
     if (planche)
         color("#c9a227")
             translate([0, 0, 9]) cube([largeur + 60, cyl_longueur + 40, 18], center = true);

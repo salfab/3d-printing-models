@@ -1,19 +1,27 @@
 # rack-sodastream
 
-Rack à visser sous une planche en bois pour ranger deux cylindres de CO2 SodaStream
+Rack à visser sous une planche en bois pour ranger deux cylindres de CO2
 à l'horizontale, invisibles depuis le dessus.
 
 Les cylindres traversent deux plaques percées d'**alésages fermés à 360°** : tenue sur
 tout le pourtour, aucun roulement possible. Un rail de guidage relie les deux plaques
 pour que le nez du cylindre trouve tout seul le second alésage.
 
-| L'ensemble monté | La plaque avant |
-|---|---|
-| ![Rack monté, planche masquée](doc/montage.png) | ![Plaque avant](doc/plaque-avant.png) |
+![Rack monté, planche masquée](doc/montage.png)
 
-| Le rail de guidage | Coupe longitudinale |
-|---|---|
-| ![Rail de guidage](doc/rail.png) | ![Coupe dans l'axe du cylindre](doc/coupe-longitudinale.png) |
+*L'ensemble en place, planche masquée. Les deux bouteilles ne sont pas imprimées — elles
+sont dessinées avec leur robinet pour situer l'encombrement réel.*
+
+![Le montage vu de dessous](doc/dessous.png)
+
+*Le même montage vu de dessous. En **orange**, les deux rails de guidage qui relient les
+plaques et courent sous les bouteilles ; en **bleu**, les plaques ; en **gris**, les
+bouteilles, avec leur robinet. Seuls le bleu et l'orange sortent de l'imprimante.*
+
+| Plaque avant | Plaque arrière | Rail de guidage |
+|---|---|---|
+| ![Plaque avant](doc/plaque-avant.png) | ![Plaque arrière](doc/plaque-arriere.png) | ![Rail de guidage](doc/rail.png) |
+| alésages traversants | alésages borgnes, fond de butée | 2 exemplaires |
 
 ### Voir le modèle en 3D
 
@@ -37,8 +45,16 @@ python scripts/scad.py check rack-sodastream
 
 ## Cylindre visé
 
-Recharge universelle 425 g / 60 L, filetage TR21×4 : **Ø 60 mm × 356 mm**, 0,72 kg à
-vide, ~1,15 kg plein.
+**Cylindres universels** 425 g / 60 L, filetage TR21×4 : **Ø 60 mm × 356 mm**, 0,72 kg à
+vide, ~1,15 kg plein. Pas les cylindres de marque — les universels se rechargent chez
+n'importe quel distributeur de gaz.
+
+L'appareil, ici, est une gazéifieuse **Aarke**, qui accepte ce filetage. Le choix de ne
+pas passer par du matériel SodaStream est celui de l'auteur, pour des raisons
+géopolitiques.
+
+> Le répertoire s'appelle `rack-sodastream` parce que c'est sous ce nom qu'on cherche ce
+> genre de pièce. Le modèle, lui, ne dépend que du Ø 60 et du filetage TR21×4.
 
 **Le Ø 60 est mesuré au pied à coulisse**, pas relevé sur une fiche produit — les fiches
 se contredisent d'un vendeur à l'autre. La longueur de 356 mm, elle, vient encore d'une
@@ -58,15 +74,15 @@ plaques et rail suivent.
 | Rail de guidage | `guide` | 2 |
 
 ```bash
-python scripts/scad.py stl rack-sodastream -D PIECE=avant
+python scripts/scad.py stl rack-sodastream -D PIECE=avant --binaire
 ```
 
 ```bash
-python scripts/scad.py stl rack-sodastream -D PIECE=arriere
+python scripts/scad.py stl rack-sodastream -D PIECE=arriere --binaire
 ```
 
 ```bash
-python scripts/scad.py stl rack-sodastream -D PIECE=guide
+python scripts/scad.py stl rack-sodastream -D PIECE=guide --binaire
 ```
 
 ## Cotes principales
@@ -78,7 +94,7 @@ python scripts/scad.py stl rack-sodastream -D PIECE=guide
 | Profondeur de la plaque | 40 mm, bride et colliers confondus |
 | Entraxe des cylindres | 66 mm — les cercles extérieurs se recoupent, âme partagée de 3 mm |
 | Encombrement d'une plaque | 167 × 40 mm |
-| Hauteur sous la planche | 72,5 mm |
+| Hauteur sous la planche | 73,5 mm |
 | Écart entre les deux plaques | 200 mm (`ecart_plaques`) |
 | Rail de guidage | 236 mm, 20 mm en fond, 15 mm au débouché, 4,77 mm d'épaisseur |
 
@@ -124,10 +140,10 @@ et la charge totale reste de 2,3 kg pour huit vis.
 ## Le rail de guidage est en queue d'aronde
 
 L'encoche s'évase vers le bas : **20 mm en fond, 15 mm au débouché dans l'alésage**. Le
-rail, copie du profil réduite de 0,25 mm, y est donc captif en hauteur comme
+rail, copie du profil réduite de 0,3 mm, y est donc captif en hauteur comme
 latéralement — pour s'échapper vers l'alésage il devrait franchir une ouverture de 15 mm
-en étant large de 19. Il ne peut que coulisser axialement, ce que la butée arrière et le
-crochet avant bloquent.
+en étant large de 19. Il ne peut que coulisser axialement, ce que la butée du fond et le
+talon d'arrêt bloquent.
 
 Un simple logement ouvert ne tiendrait pas : rien n'empêcherait le rail de se soulever et
 de taper contre le cylindre. Un tunnel entièrement fermé aurait tenu le rail, mais
@@ -158,6 +174,12 @@ la butée du fond.
 Elle s'évase **latéralement**, à partir du même fond plat que le rail, et ne descend pas
 en dessous. Un talon qui descendrait aurait obligé à imprimer les 236 mm du rail sur
 support.
+
+![Coupe dans l'axe du cylindre](doc/coupe-longitudinale.png)
+
+*Coupe longitudinale du montage, dans l'axe d'un cylindre. Le rail court sous la
+bouteille d'une plaque à l'autre ; le talon est la petite patte qui remonte juste
+derrière la plaque d'accès.*
 
 Un talon placé au bout du rail, en appui sur la face *avant*, n'aurait rien bloqué
 d'utile : il n'aurait arrêté que le recul, déjà limité à 1 mm par la butée, en laissant
@@ -204,6 +226,11 @@ coincerait. Marqués à travers le rack monté, ils sont justes par construction
 
 ## Contraintes à connaître avant de modifier
 
+- **La bride ne fait que 1,5 mm d'épaisseur au-dessus de chaque alésage.** Le chanfrein
+  d'entrée, de rayon 33 mm, y remonte jusqu'à −1,5 mm alors que la bride s'étend de 0 à
+  −6. C'est la section la plus fine de la plaque. Elle ne reprend aucun effort — la
+  charge descend par les colliers — mais toute augmentation de `chanfrein` la réduit
+  encore.
 - **`ecart_plaques` ne peut pas dépasser ~213 mm** sur un plateau de 256 mm : la longueur
   du rail vaut `ecart_plaques + 40 − 3`, et au-delà il faudrait l'imprimer en diagonale
   ou le couper en deux.

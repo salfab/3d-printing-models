@@ -6,8 +6,15 @@ Une journée passée à concevoir une pièce imprimable en 3D avec un assistant,
 qu'elle apprend sur la répartition du travail entre une machine qui calcule vite et un
 humain qui a déjà manipulé des objets.
 
-L'objet : un rack à visser sous une planche en bois, pour ranger deux cylindres de CO2
-SodaStream à l'horizontale, invisibles depuis le dessus.
+L'objet : un rack à visser sous une planche en bois, pour ranger deux cylindres de CO2 à
+l'horizontale, invisibles depuis le dessus.
+
+Précision qui a son importance pour les cotes : il s'agit de **cylindres universels**
+425 g au filetage TR21×4, pas de cylindres de marque — ils se rechargent chez n'importe
+quel distributeur de gaz. L'appareil est une gazéifieuse **Aarke**, qui accepte ce
+filetage ; ne pas passer par du matériel SodaStream est un choix assumé, pour des raisons
+géopolitiques. Les deux familles de cylindres n'ont d'ailleurs pas les mêmes dimensions,
+et c'est la première chose qu'il a fallu trancher.
 
 ---
 
