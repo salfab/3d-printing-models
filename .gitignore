@@ -6,6 +6,8 @@ models/*/out/
 
 # Fichiers 3D et tranchage
 *.stl
+# ... sauf les STL livrables, versionnés pour le viewer 3D natif de GitHub
+!models/*/stl/*.stl
 *.3mf
 *.amf
 *.gcode

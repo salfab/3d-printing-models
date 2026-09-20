@@ -7,6 +7,34 @@ Les cylindres traversent deux plaques percées d'**alésages fermés à 360°** 
 tout le pourtour, aucun roulement possible. Un rail de guidage relie les deux plaques
 pour que le nez du cylindre trouve tout seul le second alésage.
 
+| L'ensemble monté | La plaque avant |
+|---|---|
+| ![Rack monté, planche masquée](doc/montage.png) | ![Plaque avant](doc/plaque-avant.png) |
+
+| Le rail de guidage | Coupe longitudinale |
+|---|---|
+| ![Rail de guidage](doc/rail.png) | ![Coupe dans l'axe du cylindre](doc/coupe-longitudinale.png) |
+
+### Voir le modèle en 3D
+
+GitHub affiche les fichiers `.stl` dans un **viewer 3D interactif** — clic-glisser pour
+tourner, molette pour zoomer. Il suffit d'ouvrir l'un de ces fichiers :
+
+- **[Plaque avant](stl/rack-sodastream-avant.stl)** — 167 × 40 × 73,5 mm
+- **[Plaque arrière](stl/rack-sodastream-arriere.stl)** — même encombrement, fond de butée plein
+- **[Rail de guidage](stl/rack-sodastream-guide.stl)** — 26 × 236 × 4,77 mm
+
+Ces trois fichiers sont des **instantanés versionnés**, exportés du source d'empreinte
+`2fdc2b34`. Les copies de travail vivent dans `out/`, hors dépôt. Pour les régénérer :
+
+```bash
+python scripts/scad.py stl rack-sodastream -D PIECE=avant --binaire
+```
+
+```bash
+python scripts/scad.py check rack-sodastream
+```
+
 ## Cylindre visé
 
 Recharge universelle 425 g / 60 L, filetage TR21×4 : **Ø 60 mm × 356 mm**, 0,72 kg à
