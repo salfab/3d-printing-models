@@ -12,8 +12,14 @@ pour que le nez du cylindre trouve tout seul le second alésage.
 Recharge universelle 425 g / 60 L, filetage TR21×4 : **Ø 60 mm × 356 mm**, 0,72 kg à
 vide, ~1,15 kg plein.
 
+**Le Ø 60 est mesuré au pied à coulisse**, pas relevé sur une fiche produit — les fiches
+se contredisent d'un vendeur à l'autre. La longueur de 356 mm, elle, vient encore d'une
+fiche, mais elle ne conditionne aucune cote des pièces imprimées : seulement la
+visualisation du montage et le débord du cylindre devant la plaque avant.
+
 Pour un cylindre SodaStream d'origine (plus court et plus gros), changer
-`cyl_diametre` et `cyl_longueur` en tête du `.scad` — tout le reste suit.
+`cyl_diametre` et `cyl_longueur` en tête du `.scad` — alésage, entraxe, largeur des
+plaques et rail suivent.
 
 ## Pièces à imprimer
 
@@ -185,8 +191,9 @@ coincerait. Marqués à travers le rack monté, ils sont justes par construction
 
 ## Points de vérification
 
-- Le jeu de 1,5 mm au rayon donne ~3 mm de battement diamétral : franc à glisser.
-  Pour un maintien plus serré, passer `jeu_radial` à 0,75.
+- Le Ø du cylindre est **confirmé à 60 mm au pied à coulisse**. Le jeu de 1,5 mm au rayon
+  donne donc 2,978 mm de battement diamétral réel — mesuré sur le maillage, polygonisation
+  comprise. Franc à glisser ; pour un maintien plus serré, passer `jeu_radial` à 0,75.
 - Le rail affleure 0,3 mm sous la surface de l'alésage : il ne serre jamais le cylindre,
   il ne fait que rattraper le nez quand il pique.
 - Si le rail coulisse trop dur une fois les plaques vissées, c'est le perçage qui est en
