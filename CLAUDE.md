@@ -34,6 +34,31 @@ models/<slug>/
 - Ne pas fixer `$fn` globalement : `std.scad` règle `$fs`/`$fa` (grossier en preview,
   fin au rendu final). `$fn` local uniquement pour les polygones voulus (hexagones, etc.).
 
+## Chaque modèle a un README — obligatoire
+
+`models/<slug>/README.md` fait partie du modèle, au même titre que son `.scad`. Un
+modèle sans README est incomplet. Il se rédige **au fur et à mesure**, pas à la fin :
+c'est là qu'on consigne ce que les cotes ne disent pas.
+
+Sections attendues, dans cet ordre :
+
+1. **À quoi sert la pièce** — un paragraphe, et ce qu'elle vise comme objet réel
+   (référence, dimensions constatées, source de ces dimensions).
+2. **Pièces à imprimer** — un tableau *pièce / valeur de `PIECE=` / quantité*, avec la
+   commande d'export.
+3. **Cotes principales** — tableau. Privilégier les valeurs **mesurées sur le maillage
+   exporté** aux valeurs du source : ce sont elles qui iront dans l'imprimante.
+4. **Montage ou usage** — l'ordre des opérations quand il compte, et pourquoi.
+5. **Impression** — orientation, supports, matière, remplissage.
+6. **Contraintes à connaître avant de modifier** — les bornes des paramètres et ce qui
+   casse si on les dépasse. C'est la section la plus utile et la plus vite oubliée.
+7. **Points de vérification** — ce qui reste incertain, et quoi mesurer pour trancher.
+
+Copier `models/_template/README.md` en même temps que le `.scad`.
+
+Expliquer **pourquoi** une cote vaut ce qu'elle vaut, pas seulement sa valeur : un
+lecteur qui connaît la raison d'un jeu de 0,3 mm saura le changer à bon escient.
+
 ## Outillage — `scripts/scad.py`
 
 Tout passe par ce script ; il gère les caméras, les fichiers d'enrobage et les sorties.
