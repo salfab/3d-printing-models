@@ -16,12 +16,15 @@ Exemples :
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shutil
 import struct
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -199,6 +202,56 @@ def stl_bbox(path: Path) -> tuple[tuple[float, ...], tuple[float, ...]]:
     return tuple(lo), tuple(hi)
 
 
+def empreinte(slug: str) -> str:
+    """Empreinte des sources qui determinent la geometrie d'un modele.
+
+    Couvre le repertoire du modele et lib/ : une sortie devient perimee aussi bien
+    quand on touche au .scad du modele qu'a un module partage.
+    """
+    h = hashlib.sha256()
+    fichiers = sorted((ROOT / "models" / slug).rglob("*.scad"))
+    fichiers += sorted((ROOT / "lib").glob("*.scad"))
+    for f in fichiers:
+        h.update(f.name.encode("utf-8"))
+        h.update(f.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def consigner(slug: str, dst: Path, a) -> None:
+    """Note dans out/.manifest.json de quelle version du source vient cette sortie."""
+    man = dst.parent / ".manifest.json"
+    try:
+        data = json.loads(man.read_text(encoding="utf-8")) if man.exists() else {}
+    except json.JSONDecodeError:
+        data = {}
+    data[dst.name] = {
+        "source": empreinte(slug),
+        "defines": sorted(getattr(a, "define", None) or []),
+        "date": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    man.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def perimes(slug: str, out: Path) -> list[tuple[str, str]]:
+    """Liste les sorties qui ne viennent pas du source actuel : (fichier, raison)."""
+    man = out / ".manifest.json"
+    try:
+        data = json.loads(man.read_text(encoding="utf-8")) if man.exists() else {}
+    except json.JSONDecodeError:
+        data = {}
+    courant = empreinte(slug)
+    mauvais = []
+    for f in sorted(out.glob("*")):
+        if f.is_dir() or f.name.startswith("."):
+            continue
+        note = data.get(f.name)
+        if note is None:
+            mauvais.append((f.name, "produite hors outillage, origine inconnue"))
+        elif note["source"] != courant:
+            mauvais.append((f.name, f"source modifie depuis (rendue le {note['date']})"))
+    return mauvais
+
+
 def stl_binary(path: Path) -> bytes:
     """Rend le STL en binaire, quelle que soit sa forme d'origine (~6x plus compact)."""
     nor, tri = stl_load(path)
@@ -229,6 +282,7 @@ def cmd_stl(a) -> Path:
         brut = stl_binary(dst)
         dst.write_bytes(brut)
         print(f"      converti en binaire : {avant/1e6:.2f} Mo -> {len(brut)/1e6:.2f} Mo")
+    consigner(a.slug, dst, a)
     return dst
 
 
@@ -246,6 +300,7 @@ def cmd_views(a) -> None:
         dst = out / f"view{tag(a)}-{v}.png"
         print(f"[vue 3D] {dst}")
         render_png(scad, dst, v, a.fast, defines(a))
+        consigner(a.slug, dst, a)
 
 
 def cmd_section(a) -> None:
@@ -260,6 +315,7 @@ def cmd_section(a) -> None:
             dst = out / f"section{tag(a)}-{a.axis}{a.at:g}-{v}.png"
             print(f"[coupe] {dst}")
             render_png(w, dst, v, a.fast, defines(a))
+            consigner(a.slug, dst, a)
     finally:
         w.unlink(missing_ok=True)
 
@@ -282,6 +338,8 @@ def cmd_slices(a) -> None:
             print(f"[tranche] {out / (base + '.svg')}")
             export(w, out / f"{base}.svg", defines(a))
             render_png(w, out / f"{base}.png", "top", a.fast, defines(a))
+            for e in ("svg", "png"):
+                consigner(a.slug, out / f"{base}.{e}", a)
         finally:
             w.unlink(missing_ok=True)
 
@@ -295,8 +353,25 @@ def cmd_drawing(a) -> None:
             print(f"[dessin] {out / (base + '.svg')}")
             export(w, out / f"{base}.svg", defines(a))
             render_png(w, out / f"{base}.png", "top", a.fast, defines(a))
+            for e in ("svg", "png"):
+                consigner(a.slug, out / f"{base}.{e}", a)
         finally:
             w.unlink(missing_ok=True)
+
+
+def cmd_check(a) -> None:
+    _, out = model_paths(a.slug)
+    mauvais = perimes(a.slug, out)
+    if not mauvais:
+        n = len([f for f in out.glob("*") if f.is_file() and not f.name.startswith(".")])
+        print(f"{n} sorties, toutes issues du source actuel ({empreinte(a.slug)}).")
+        return
+    print(f"Source actuel : {empreinte(a.slug)}")
+    print(f"\n{len(mauvais)} sortie(s) perimee(s) :")
+    for nom, raison in mauvais:
+        print(f"   {nom:44s} {raison}")
+    print("\nRegenere-les avant toute publication.")
+    sys.exit(1)
 
 
 def cmd_all(a) -> None:
@@ -342,6 +417,7 @@ def main() -> None:
                    help="convertit le STL en binaire (~6x plus compact)")
     s.set_defaults(fn=cmd_stl)
     common(sub.add_parser("info", help="encombrement (bounding box)")).set_defaults(fn=cmd_info)
+    common(sub.add_parser("check", help="verifie que les sorties viennent du source actuel")).set_defaults(fn=cmd_check)
     common(sub.add_parser("all", help="vues 3D + dessins + encombrement")).set_defaults(fn=cmd_all)
 
     a = p.parse_args()

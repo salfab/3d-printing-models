@@ -78,6 +78,25 @@ python scripts/scad.py all     <slug>                          # vues + dessins 
 - Les commandes 2D produisent **SVG + PNG** : le SVG pour la CAO/l'impression papier,
   le PNG pour pouvoir le regarder.
 
+## Péremption des sorties — à vérifier avant toute publication
+
+Chaque sortie produite est inscrite dans `models/<slug>/out/.manifest.json` avec
+l'empreinte SHA-256 des sources dont elle vient : le `.scad` du modèle **et** `lib/`,
+puisqu'un module partagé périme aussi les rendus.
+
+```bash
+python scripts/scad.py check <slug>
+```
+
+sort en code 1 et nomme les fichiers qui ne viennent pas du source actuel.
+`preview_pack.py` refuse de publier tant qu'il en reste ; `--ignorer-peremption` force
+le passage en connaissance de cause.
+
+Ce garde-fou existe parce que le cas se produit vraiment : une génération lancée en
+tâche de fond continue de tourner pendant qu'on modifie le `.scad`, et les sorties se
+retrouvent issues de versions différentes sans que rien ne le signale. L'utilisateur,
+lui, peut aussi avoir exporté ses STL avant une modification.
+
 ## Boucle de travail attendue
 
 1. Modifier le `.scad`.

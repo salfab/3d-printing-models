@@ -44,10 +44,34 @@ def etiquette(nom: str) -> tuple[str, str]:
 
 
 def outils(root: Path):
-    """Importe les lecteurs de STL de scripts/scad.py."""
+    """Importe les fonctions partagees de scripts/scad.py."""
     sys.path.insert(0, str(root / "scripts"))
-    from scad import stl_bbox, stl_binary  # type: ignore
-    return stl_bbox, stl_binary
+    from scad import stl_bbox, stl_binary, perimes  # type: ignore
+    return stl_bbox, stl_binary, perimes
+
+
+def controle_peremption(perimes, slug: str, out: Path, ignorer: bool) -> None:
+    """Refuse de publier une sortie qui ne vient pas du source actuel.
+
+    Une generation lancee en tache de fond pendant qu'on modifie le .scad laisse des
+    rendus issus de versions differentes, sans que rien ne le signale. C'est ainsi
+    qu'une vue perimee finit publiee.
+    """
+    mauvais = perimes(slug, out)
+    if not mauvais:
+        return
+    lignes = "\n".join(f"   {n:44s} {r}" for n, r in mauvais)
+    if ignorer:
+        print(f"AVERTISSEMENT — {len(mauvais)} sortie(s) perimee(s), publiees quand meme :\n{lignes}\n")
+        return
+    sys.exit(
+        f"{len(mauvais)} sortie(s) ne viennent pas du source actuel :\n{lignes}\n\n"
+        f"Regenere-les, par exemple :\n"
+        f"  python scripts/scad.py all {slug}\n"
+        f"Puis verifie :\n"
+        f"  python scripts/scad.py check {slug}\n"
+        f"Pour passer outre en connaissance de cause : --ignorer-peremption"
+    )
 
 
 def bbox(stl_bbox, stl: Path):
@@ -66,6 +90,8 @@ def main() -> None:
     p.add_argument("--root", default=".", help="racine du depot (defaut : repertoire courant)")
     p.add_argument("--stl", help="STL a embarquer (defaut : le premier de out/)")
     p.add_argument("--titre", help="nom affiche du modele")
+    p.add_argument("--ignorer-peremption", action="store_true",
+                   help="publie meme si des sorties ne viennent pas du source actuel")
     a = p.parse_args()
 
     root = Path(a.root).resolve()
@@ -77,7 +103,8 @@ def main() -> None:
     if stl is None or not stl.exists():
         sys.exit(f"Aucun STL dans {out}. Lance : python scripts/scad.py stl {a.slug}")
 
-    stl_bbox, stl_binary = outils(root)
+    stl_bbox, stl_binary, perimes = outils(root)
+    controle_peremption(perimes, a.slug, out, a.ignorer_peremption)
 
     # OpenSCAD 2021.01 n'exporte qu'en ASCII : on convertit, c'est ~6x plus compact.
     # Le seuil porte donc sur la taille binaire, la seule qui parte dans la page.
