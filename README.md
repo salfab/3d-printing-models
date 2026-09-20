@@ -9,6 +9,9 @@ Unités : millimètres. Documentation en français.
 **[Méthode de conception](WORKFLOW.md)** — le cycle de travail, la discipline de
 vérification et les pièges rencontrés, avec leurs chiffres.
 
+**[Journal de conception](work-log/)** — les sessions racontées, ce qu'on y a appris et
+ce qu'on y a raté.
+
 ## Modèles
 
 | Modèle | Description |
