@@ -190,7 +190,7 @@ module chanfreins(butee = false) {
         translate([axe_x(i), s * (plaque_prof / 2 + EPS), z_axe])
             rotate([s * 90, 0, 0])
                 cylinder(h = chanfrein + EPS,
-                         r1 = alesage / 2 + chanfrein, r2 = alesage / 2 - EPS);
+                         r1 = alesage / 2 + chanfrein, r2 = alesage / 2);
 }
 
 // Encoches du rail. Sur la plaque arrière elles s'arrêtent à la butée, qui
@@ -202,7 +202,7 @@ module encoches(butee = false) {
         translate([axe_x(i), fin, 0])
             rotate([90, 0, 0])
                 linear_extrude(height = fin - debut)
-                    profil_encoche(EPS);
+                    profil_encoche();
 }
 
 module percages_vis() {
@@ -264,7 +264,7 @@ module rail() {
 // dessiné parce qu'il rend la bouteille reconnaissable à sa seule silhouette :
 // le rendu CGAL ignore color(), donc la forme est le seul indice disponible.
 module cylindre_gaz() {
-    fond   = 6;    // fond légèrement bombé
+    fond   = 2;    // léger chanfrein de culot ; un vrai cylindre a le fond plat
     epaule = 30;   // épaulement conique vers le col
     col    = 14;   // col fileté TR21x4
     ecrou  = 7;    // collerette hexagonale du robinet
@@ -272,7 +272,7 @@ module cylindre_gaz() {
     corps  = cyl_longueur - epaule - col - ecrou - tige;
 
     rotate([-90, 0, 0]) {
-        cylinder(h = fond, d1 = cyl_diametre - 10, d2 = cyl_diametre);
+        cylinder(h = fond, d1 = cyl_diametre - 4, d2 = cyl_diametre);
         translate([0, 0, fond]) cylinder(h = corps - fond, d = cyl_diametre);
         translate([0, 0, corps]) cylinder(h = epaule, d1 = cyl_diametre, d2 = 21);
         translate([0, 0, corps + epaule]) cylinder(h = col, d = 21);

@@ -34,7 +34,7 @@ VIEWS = {
     "iso":     (55, 0, 25),
     "iso_bas": (125, 0, 25),   # vue de trois quarts par en dessous
     "iso_dos": (55, 0, 205),   # trois quarts depuis l'autre azimut
-    "sous":    (158, 0, 20),   # presque à la verticale, par en dessous
+    "sous":    (170, 0, 20),   # presque à la verticale, par en dessous
     "front":   (90, 0, 0),
     "back":    (90, 0, 180),
     "left":    (90, 0, 270),

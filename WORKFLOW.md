@@ -124,6 +124,14 @@ centaines de sommets — ne conviennent. Deux sorties : empiler des tranches de 
 décalé à raison d'une marche par couche d'impression, ou passer par BOSL2 et
 `offset_sweep()`.
 
+**Le rendu couleur d'OpenSCAD 2021.01 n'est pas fiable.** `color()` est ignoré par le
+rendu CGAL ; il ne s'affiche qu'en aperçu OpenCSG, qui produit des traînées blanches
+ressemblant à des trous là où deux surfaces sont proches ou minces. Une illustration
+montrant plusieurs pièces doit donc les distinguer **par la forme ou par la séparation**,
+jamais par la couleur : dessiner un détail reconnaissable, ou simplement retirer de la
+scène ce qui n'est pas le sujet. Le corollaire vaut aussi pour le diagnostic : un trou vu
+sur un aperçu se vérifie sur le maillage avant d'être cru.
+
 **Les têtes fraisées annulent le jeu des trous de passage.** Un cône à 90° se centre
 dans son fraisage en se serrant. Ce sont donc les avant-trous qui imposent la position
 d'une pièce vissée, pas l'ajustement des trous — d'où l'obligation de marquer les

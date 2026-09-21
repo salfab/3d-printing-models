@@ -12,11 +12,12 @@ pour que le nez du cylindre trouve tout seul le second alésage.
 *L'ensemble en place, planche masquée. Les deux bouteilles ne sont pas imprimées — elles
 sont dessinées avec leur robinet pour situer l'encombrement réel.*
 
-![Le montage vu de dessous](doc/dessous.png)
+![Le rack seul, vu de dessous](doc/dessous.png)
 
-*Le même montage vu de dessous. En **orange**, les deux rails de guidage qui relient les
-plaques et courent sous les bouteilles ; en **bleu**, les plaques ; en **gris**, les
-bouteilles, avec leur robinet. Seuls le bleu et l'orange sortent de l'imprimante.*
+*Le rack seul, vu de dessous, bouteilles retirées : les deux plaques et les deux rails de
+guidage qui les relient. La plaque du fond, en haut, est fermée par sa butée ; celle
+d'accès, en bas, laisse voir ses alésages traversants. Ce sont les quatre pièces à
+imprimer, et rien d'autre.*
 
 | Plaque avant | Plaque arrière | Rail de guidage |
 |---|---|---|
@@ -33,7 +34,7 @@ tourner, molette pour zoomer. Il suffit d'ouvrir l'un de ces fichiers :
 - **[Rail de guidage](stl/rack-sodastream-guide.stl)** — 26 × 236 × 4,77 mm
 
 Ces trois fichiers sont des **instantanés versionnés**, exportés du source d'empreinte
-`2fdc2b34`. Les copies de travail vivent dans `out/`, hors dépôt. Pour les régénérer :
+`39df96bc`. Les copies de travail vivent dans `out/`, hors dépôt. Pour les régénérer :
 
 ```bash
 python scripts/scad.py stl rack-sodastream -D PIECE=avant --binaire
