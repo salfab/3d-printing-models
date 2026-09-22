@@ -66,7 +66,7 @@ tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIR
                   //      son logement ne guide rien, il ne fait que dégager.
                   //      L'élargir ne coûte rien, le sous-estimer coincerait.
 
-entraxe  = 95;    // mm — écartement des deux chevilles. La seconde est à poser,
+entraxe  = 140;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
                   //      le vrillage, tout en laissant de la matière entre la
                   //      colonne de fixation et le bord de la pièce.
@@ -91,12 +91,13 @@ course   = 20;    // mm — descente nécessaire pour verrouiller. Courte parce 
                   //      tête entre par un TROU, au lieu de remonter depuis le bas
                   //      de la pièce. C'est ce trou qui permet de ne pas épaissir
                   //      tout le dos.
-boss_larg = 26;   // mm — diamètre du noyau plein autour de chaque vis. Le
-                  //      renflement, lui, s'étale bien au-delà.
+boss_larg = 22;   // mm — diamètre du noyau plein autour de chaque vis. Le
+                  //      renflement s'étale au-delà, mais pas trop : c'est son
+                  //      emprise qui décide du couloir à tailler dans l'insert.
 boss_bas  = 8;    // mm — de combien il descend sous le trou d'entrée
 boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
-boss_etale = 18;  // mm — sur quelle distance le renflement de fixation s'éteint
+boss_etale = 14;  // mm — sur quelle distance le renflement de fixation s'éteint
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
@@ -164,16 +165,20 @@ r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaire
                   //      de la face avant. Le bord du bac n'est plus une ligne
                   //      droite mais une courbe.
 
-// Le dessus du dos : une arche, pas un bandeau. Elle ne doit rester haute que là
-// où les vis portent ; au-delà elle peut redescendre, et c'est ce qui casse la
-// silhouette rectangulaire.
-z_som    = 145;   // mm — sommet de l'arche
-x_som    = -10;   // mm — son abscisse, décalée du centre pour éviter la symétrie
-z_bord_g = 120;   // mm — hauteur du dos au bord gauche
-z_bord_d = 114;   // mm — et au bord droit, plus bas : la pièce s'effile vers le
-                  //      crochet, dans le même sens que le fond qui remonte.
-                  //      Borné par l'assertion : sous 114, l'arche passe sous le
-                  //      siège de la vis droite et le canal débouche par le haut.
+// Le dessus du dos : DEUX ÉPAULES au droit des vis, et un creux entre elles.
+//
+// L'arche culminait d'abord au milieu, alors que les vis sont sur les côtés : la
+// matière était là où il n'y a pas d'effort, et les bouts ne servaient à rien.
+// En portant les points hauts sur les vis, le dessin devient structurellement
+// honnête — et il autorise un entraxe bien plus large, donc une bien meilleure
+// tenue au vrillage.
+x_bosse  = entraxe / 2;   // les épaules sont à l'aplomb des vis, par construction
+z_creux  = 102;   // mm — le creux entre les deux épaules
+z_epaul_g = 142;  // mm — épaule gauche
+z_epaul_d = 136;  // mm — épaule droite, plus basse : la pièce s'effile vers le
+                  //      crochet, dans le même sens que le fond qui remonte
+z_fin_g  = 124;   // mm — et la retombée aux deux extrémités
+z_fin_d  = 112;   // mm
 
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
@@ -218,10 +223,13 @@ croc_r_z   = 12;   // mm — remontée de la rampe.
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-garde_vis = 20;                  // mm — de l'arase du bac à l'axe des vis
+garde_vis = 28;                  // mm — de l'arase du bac à l'axe des vis.
+                                 //      Calé pour que boss_z0 tombe exactement
+                                 //      sur l'arase : au-dessous, le renflement
+                                 //      mordrait dans le rangement.
 z_haut    = bac_h;               //  95 — arase du bac
 z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
-z_top     = z_som;               // 145 — point le plus haut de l'arche
+z_top     = max(z_epaul_g, z_epaul_d);   // 138 — le plus haut des deux épaules
 
 fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
 fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
@@ -350,19 +358,22 @@ function dessous(x) =
     x >= x_tab + galbe   ? marche
                          : marche * liss((x - x_tab) / galbe);
 
-// Le dessus du dos : une arche. Elle ne doit rester haute que là où les vis
-// portent ; ailleurs elle redescend, et c'est ce qui casse le rectangle.
+// Le dessus du dos : deux épaules à l'aplomb des vis, un creux entre elles, et
+// une retombée aux extrémités. Quatre raccords, tous à tangente nulle : le profil
+// n'a pas une seule arête.
 function dessus(x) =
-    x <= x_som ? z_bord_g + (z_som - z_bord_g) * liss((x + larg / 2) / (x_som + larg / 2))
-               : z_bord_d + (z_som - z_bord_d) * liss((larg / 2 - x) / (larg / 2 - x_som));
+    x <= -x_bosse ? z_fin_g   + (z_epaul_g - z_fin_g) * liss((x + larg / 2) / (larg / 2 - x_bosse)) :
+    x <=  0       ? z_creux   + (z_epaul_g - z_creux) * liss(-x / x_bosse) :
+    x <=  x_bosse ? z_creux   + (z_epaul_d - z_creux) * liss( x / x_bosse)
+                  : z_fin_d   + (z_epaul_d - z_fin_d) * liss((larg / 2 - x) / (larg / 2 - x_bosse));
 
 // L'arche est libre de sa forme SAUF au droit des vis : il faut de la matière
 // au-dessus du siège, sinon le canal débouche par le haut et la vis ne porte
 // plus. Rien dans la géométrie ne le signalerait — d'où l'assertion.
 assert(dessus( entraxe / 2) >= z_vis + 10,
-       "l'arche passe trop bas au droit de la vis droite : remonter z_bord_d ou z_som");
+       "l'arche passe trop bas au droit de la vis droite : remonter z_epaul_d");
 assert(dessus(-entraxe / 2) >= z_vis + 10,
-       "l'arche passe trop bas au droit de la vis gauche : remonter z_bord_g ou z_som");
+       "l'arche passe trop bas au droit de la vis gauche : remonter z_epaul_g");
 
 // Le galbe ne doit pas passer sous un compartiment profond : il en crèverait le
 // fond, et la cavité déboucherait à l'air libre.
@@ -586,6 +597,24 @@ module insert_zone(z) {
     }
 }
 
+// Le couloir que l'insert doit laisser libre à l'aplomb des renflements.
+//
+// L'insert descend VERTICALEMENT : il ne suffit pas de le creuser à la hauteur
+// des renflements, il faut dégager toute la colonne au-dessous, sinon il bute
+// en cours de descente. Chaque tranche du renflement impose sa propre largeur,
+// et le couloir est leur empilement.
+module couloir_insert(marge) {
+    n = 20;
+    for (i = [0 : n - 1]) {
+        y0 = dos_ep + (dos_e - dos_ep) * i / n;
+        y1 = dos_ep + (dos_e - dos_ep) * (i + 1) / n;
+        d  = boss_etale * cos(90 * i / n) + boss_larg / 2 + marge;
+        for (s = [-1, 1])
+            translate([s * entraxe / 2 - d, y0 - marge, -20])
+                cube([2 * d, y1 - y0 + 2 * marge, z_haut + 40]);
+    }
+}
+
 module insert() {
     difference() {
         // borné à l'enveloppe intérieure comme les cavités de la coque, sinon
@@ -596,9 +625,7 @@ module insert() {
                 enveloppe_int_2d(insert_jeu);
             union() for (z = zones) insert_zone(z);
         }
-        // Les bossages de fixation descendent de quelques millimètres sous
-        // l'arase : l'insert doit leur laisser la place.
-        bossages(insert_jeu);
+        couloir_insert(insert_jeu);
     }
 }
 
