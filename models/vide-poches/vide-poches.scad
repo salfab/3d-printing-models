@@ -98,9 +98,11 @@ dos_plein = 12;   // mm — demi-largeur de matière pleine autour de chaque che
 
 // --- Bac ----------------------------------------------------------------------
 
-larg     = 135;   // mm — largeur hors tout. Commandée par la poche à tabac rangée
-                  //      DEBOUT, 85 mm. À plat elle en aurait pris 105, et les
-                  //      lunettes 150.
+larg     = 175;   // mm — largeur hors tout. La zone profonde vaut 85, imposée par
+                  //      la poche à tabac debout ; le reste va à la zone peu
+                  //      profonde. À 135 elle ne faisait que 47 mm, le crochet en
+                  //      prenait 30 et frôlait le galbe. À 175 elle en fait 83 :
+                  //      le galbe court sur 45 et le crochet se pose sur le plat.
 bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Commandée par une
                   //      contrainte de hauteur, pas de volume : le haut des
                   //      lunettes doit rester à moins de 35 mm au-dessus de l'axe
@@ -116,18 +118,30 @@ r_coin   = 4;     // mm — congé vertical des compartiments
 // Le galbe : de combien le dessous remonte côté peu profond, et sur quelle
 // emprise horizontale il le fait.
 marche   = 46;    // mm — 45 mm de profondeur utile à droite au lieu de 91
-galbe    = 35;    // mm — emprise du raccord. Plus il est long, plus le profil
+galbe    = 45;    // mm — emprise du raccord. Plus il est long, plus le profil
                   //      coule ; trop long, il passe sous la zone profonde et
-                  //      crève son fond. Voir la contrainte dans le README.
-r_galbe  = 8;     // mm — arrondi de l'angle rentrant, en haut du galbe.
-                  //      À BORNER : l'arrondi rentrant se fait par un offset(+r)
-                  //      suivi d'un offset(-r), donc la forme est DILATÉE de r
-                  //      avant d'être contractée. Le creux du galbe se rétrécit
-                  //      vers le haut ; à r = 25 la dilatation le rebouchait, et
-                  //      le galbe ne montait plus qu'à 23 mm au lieu de 46 — sans
-                  //      la moindre erreur. Même piège que l'offset qui vide une
-                  //      bride en silence, pris par l'autre bout.
-r_ext    = 12;    // mm — arrondi des angles saillants de la silhouette
+                  //      crève son fond — d'où l'assertion plus bas.
+r_galbe  = 4;     // mm — arrondi des angles rentrants.
+                  //      À BORNER SÉVÈREMENT : l'arrondi rentrant se fait par un
+                  //      offset(+r) suivi d'un offset(-r), donc la forme est
+                  //      DILATÉE de r avant d'être contractée. Le creux du galbe
+                  //      se rétrécit vers le haut ; à r = 25 la dilatation le
+                  //      rebouchait et le galbe ne montait plus qu'à 23 mm au lieu
+                  //      de 46 — sans la moindre erreur. Depuis que les raccords
+                  //      sont des courbes à tangente nulle, il n'y a presque plus
+                  //      d'angle rentrant à traiter : 4 suffit.
+r_ext    = 14;    // mm — arrondi des angles saillants de la silhouette
+
+// Le dessus du dos : une arche, pas un bandeau. Elle ne doit rester haute que là
+// où les vis portent ; au-delà elle peut redescendre, et c'est ce qui casse la
+// silhouette rectangulaire.
+z_som    = 145;   // mm — sommet de l'arche
+x_som    = -10;   // mm — son abscisse, décalée du centre pour éviter la symétrie
+z_bord_g = 120;   // mm — hauteur du dos au bord gauche
+z_bord_d = 114;   // mm — et au bord droit, plus bas : la pièce s'effile vers le
+                  //      crochet, dans le même sens que le fond qui remonte.
+                  //      Borné par l'assertion : sous 114, l'arche passe sous le
+                  //      siège de la vis droite et le canal débouche par le haut.
 
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
@@ -174,7 +188,7 @@ croc_r_z   = 12;   // mm — remontée de la rampe.
 garde_vis = 20;                  // mm — de l'arase du bac à l'axe des vis
 z_haut    = bac_h;               //  95 — arase du bac
 z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
-z_top     = z_vis + 18;          // 133 — sommet du dos
+z_top     = z_som;               // 145 — point le plus haut de l'arche
 
 fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
 fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
@@ -189,8 +203,9 @@ yi1 = prof - paroi;
 
 x_tab = xi0 + 85;     // largeur de la fente à tabac — le plus large des objets
 x_lun = xi0 + 50;     // largeur de la fente à lunettes
+x_cab = x_tab + cloison + 42.7;   // frontière câbles / briquets
 y_tab = yi0 + 30;     // épaisseur d'une poche à tabac debout
-y_cab = yi0 + 42;     // le puits à câbles est carré
+y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 
 // [x0, x1, y0, y1, z du fond]
 //
@@ -206,8 +221,9 @@ cuves = [
     [xi0,             x_tab, yi0,             y_tab, fond_bas ],  // tabac, DEBOUT
     [xi0,             x_lun, y_tab + cloison, yi1,   fond_bas ],  // lunettes, DEBOUT
     [x_lun + cloison, x_tab, y_tab + cloison, yi1,   fond_bas ],  // stylos, grands objets
-    [x_tab + cloison, xi1,   yi0,             y_cab, fond_haut],  // câbles USB
-    [x_tab + cloison, xi1,   y_cab + cloison, yi1,   fond_haut],  // briquets
+    [x_tab + cloison, x_cab, yi0,             y_cab, fond_haut],  // câbles USB
+    [x_cab + cloison, xi1,   yi0,             y_cab, fond_haut],  // briquets
+    [x_tab + cloison, xi1,   y_cab + cloison, yi1,   fond_haut],  // petites bricoles
 ];
 
 // Les deux niveaux du bac. La cloison qui les sépare appartient à la COQUE et
@@ -251,24 +267,69 @@ module rect_2d(x0, x1, y0, y1, r = r_coin) {
 }
 
 // --- La silhouette ------------------------------------------------------------
-
-// L'élévation de la pièce, arase à `ztop`. Le dessous plonge à gauche et remonte
-// à droite par un galbe.
 //
-// Le galbe DOIT démarrer à l'aplomb de x_tab, la frontière entre la zone
-// profonde et la zone peu profonde : plus à gauche il passerait sous un
-// compartiment profond et en crèverait le fond.
-module silhouette_2d(ztop) {
-    offset(r =  r_ext)   offset(r = -r_ext)      // angles saillants
-        offset(r = -r_galbe) offset(r = r_galbe) // angle rentrant, en haut du galbe
-            polygon([
-                [-larg / 2,       0],
-                [ x_tab,          0],
-                [ x_tab + galbe,  marche],
-                [ larg / 2,       marche],
-                [ larg / 2,       ztop],
-                [-larg / 2,       ztop],
-            ]);
+// Tout le modèle est bâti sur ce profil en élévation, extrudé en profondeur.
+// C'est le seul plan où dessiner ne coûte rien : la pièce s'imprimant couchée sur
+// son dos, le plan de la façade EST le plan du plateau. En revanche la profondeur
+// reste constante — faire varier celle-là ferait des porte-à-faux partout. D'où
+// un bas-relief galbé plutôt qu'une surface doublement courbe.
+
+sil_n = 72;   // points d'échantillonnage sur la largeur
+
+// Interpolation à tangente NULLE aux deux extrémités : deux courbes qui se
+// rejoignent en un point de raccord y arrivent à plat, donc sans arête.
+function liss(t) = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+
+// Le dessous : plat côté profond, puis un S qui remonte vers la zone peu profonde.
+function dessous(x) =
+    x <= x_tab           ? 0 :
+    x >= x_tab + galbe   ? marche
+                         : marche * liss((x - x_tab) / galbe);
+
+// Le dessus du dos : une arche. Elle ne doit rester haute que là où les vis
+// portent ; ailleurs elle redescend, et c'est ce qui casse le rectangle.
+function dessus(x) =
+    x <= x_som ? z_bord_g + (z_som - z_bord_g) * liss((x + larg / 2) / (x_som + larg / 2))
+               : z_bord_d + (z_som - z_bord_d) * liss((larg / 2 - x) / (larg / 2 - x_som));
+
+// L'arche est libre de sa forme SAUF au droit des vis : il faut de la matière
+// au-dessus du siège, sinon le canal débouche par le haut et la vis ne porte
+// plus. Rien dans la géométrie ne le signalerait — d'où l'assertion.
+assert(dessus( entraxe / 2) >= z_vis + 10,
+       "l'arche passe trop bas au droit de la vis droite : remonter z_bord_d ou z_som");
+assert(dessus(-entraxe / 2) >= z_vis + 10,
+       "l'arche passe trop bas au droit de la vis gauche : remonter z_bord_g ou z_som");
+
+// Le galbe ne doit pas passer sous un compartiment profond : il en crèverait le
+// fond, et la cavité déboucherait à l'air libre.
+assert(x_tab >= xi0, "le galbe démarre à gauche de la zone profonde");
+assert(dessous(x_tab + cloison) + paroi <= fond_haut,
+       "le galbe remonte trop vite : il perce le socle du côté peu profond");
+
+function sil_bas() = [for (i = [0 : sil_n])
+                      let (x = -larg / 2 + i * larg / sil_n) [x, dessous(x)]];
+
+module arrondi() {
+    offset(r =  r_ext)   offset(r = -r_ext)       // angles saillants
+        offset(r = -r_galbe) offset(r = r_galbe)  // angles rentrants
+            children();
+}
+
+// Le dos : dessous galbé, dessus en arche.
+module silhouette_dos_2d() {
+    arrondi() polygon(concat(
+        sil_bas(),
+        [for (i = [sil_n : -1 : 0])
+         let (x = -larg / 2 + i * larg / sil_n) [x, dessus(x)]]
+    ));
+}
+
+// Le bac : même dessous, arase plate — c'est le bord où l'on pose la main.
+module silhouette_bac_2d() {
+    arrondi() polygon(concat(
+        sil_bas(),
+        [[larg / 2, z_haut], [-larg / 2, z_haut]]
+    ));
 }
 
 // --- Géométrie ----------------------------------------------------------------
@@ -297,7 +358,7 @@ module dos() {
             // couches : seule la première ponte. Mais ce n'est pas gratuit,
             // contrairement à ce qu'on croirait si on les imaginait ouvertes.
             difference() {
-                en_travers(0, dos_e) silhouette_2d(z_top);
+                en_travers(0, dos_e) silhouette_dos_2d();
 
                 nx = ceil(larg / dos_pas);
                 nz = ceil(z_top / dos_pas);
@@ -308,7 +369,7 @@ module dos() {
                                   dos_e - dos_peau - dos_av,
                                   dos_pas - dos_nerv]);
                     en_travers(dos_peau, dos_e - dos_peau - dos_av)
-                        offset(r = -dos_bord) silhouette_2d(z_top);
+                        offset(r = -dos_bord) silhouette_dos_2d();
                 }
             }
 
@@ -316,9 +377,14 @@ module dos() {
             // Uniquement dans le bandeau — c'est la seule hauteur où la vis porte.
             // Plus bas, le canal n'est qu'un couloir libre entre les nervures, et
             // le dos peut rester un caisson creux.
+            // Taillées DANS la silhouette : sans l'intersection, elles restent
+            // rectangulaires et dépassent de l'arche en deux oreilles carrées.
             for (s = [-1, 1])
-                translate([s * entraxe / 2 - dos_plein, 0, z_haut - 12])
-                    cube([2 * dos_plein, dos_e, z_top - z_haut + 12]);
+                intersection() {
+                    translate([s * entraxe / 2 - dos_plein, 0, z_haut - 12])
+                        cube([2 * dos_plein, dos_e, z_top - z_haut + 12]);
+                    en_travers(0, dos_e) silhouette_dos_2d();
+                }
         }
 
         for (s = [-1, 1]) canaux(s * entraxe / 2);
@@ -329,7 +395,7 @@ module dos() {
 // sépare les deux niveaux — celle-là est structurelle.
 module bac() {
     difference() {
-        en_travers(dos_e, prof - dos_e) silhouette_2d(z_haut);
+        en_travers(dos_e, prof - dos_e) silhouette_bac_2d();
 
         // une seule cavité par zone, depuis son propre fond
         for (z = zones)
@@ -342,7 +408,7 @@ module bac() {
         // matière qui ne servent à rien.
         en_travers(dos_e, prof - dos_e - paroi)
             intersection() {
-                offset(r = -paroi) silhouette_2d(z_haut);
+                offset(r = -paroi) silhouette_bac_2d();
                 polygon([
                     [-larg,            -20],
                     [ larg,            -20],
@@ -438,14 +504,22 @@ module crochet() {
             // retirée — il épouse donc le galbe au lieu de le couper au carré.
             en_travers(0, croc_ame)
                 difference() {
-                    offset(r = 6) offset(r = -6)
-                        polygon([
-                            [croc_x + croc_larg / 2 - croc_col, croc_z + croc_e - EPS],
-                            [croc_x + croc_larg / 2,            croc_z + croc_e - EPS],
-                            [croc_x + croc_larg / 2,            marche + 20],
-                            [croc_x + croc_larg / 2 - croc_col, marche + 20],
-                        ]);
-                    silhouette_2d(z_top);
+                    // Le col s'évase vers le haut sur un quart de cercle : sans
+                    // cet évasement, son flanc vertical rencontrait le dessous
+                    // horizontal de la coque en une arête vive à 90°.
+                    let (xg = croc_x + croc_larg / 2 - croc_col,
+                         xd = croc_x + croc_larg / 2,
+                         zb = croc_z + croc_e - EPS,
+                         zh = marche + 20,
+                         rc = 20)
+                    offset(r = 4) offset(r = -4)
+                        polygon(concat(
+                            [[xg, zb], [xd, zb], [xd, zh]],
+                            [for (i = [0 : 12])
+                             let (t = i / 12, a = 90 * t)
+                             [xg - rc * sin(a), zh - rc + rc * cos(a)]]
+                        ));
+                    silhouette_bac_2d();
                 }
         }
 

@@ -117,13 +117,13 @@ Mesurées sur les maillages exportés.
 
 | | Volume | PLA | Encombrement |
 |---|---|---|---|
-| Coque | 271,8 cm³ | 337 g | 135 × 98,5 × 133 mm |
-| Inserts (2) | 53,1 cm³ | 66 g | |
-| **Total** | **324,9 cm³** | **403 g** | |
+| Coque | 306,2 cm³ | 380 g | 175 × 98,5 × 145 mm |
+| Inserts (2) | 67,8 cm³ | 84 g | |
+| **Total** | **374,1 cm³** | **464 g** | |
 
-> Ces 403 g sont le **volume géométrique**, pas le fil consommé. Les zones épaisses
+> Ces 464 g sont le **volume géométrique**, pas le fil consommé. Les zones épaisses
 > — bras du crochet, colonnes du dos — seront remplies par le trancheur, pas
-> massives. Compter plutôt **320 à 350 g** réellement.
+> massives. Compter plutôt **370 à 400 g** réellement.
 
 | Cote | Valeur | Origine |
 |---|---|---|
@@ -207,11 +207,6 @@ bac, le bras du crochet — devient vertical.
 
 ## 7. Points de vérification
 
-- [ ] **Le galbe reste un détail de coin, et ne peut pas être autre chose à ces
-      proportions.** La zone profonde fait 85 mm sur 135 parce que la poche à tabac
-      debout en fait 85 ; il ne reste que 47 mm à la zone peu profonde. Une forme
-      qui plonge d'un côté et remonte de l'autre demande deux côtés comparables.
-      Voir la note en fin de fichier.
 - [ ] Vérifier que le casque passe : 32 mm entre le bras et le dessous de la coque,
       à confronter à l'arceau réel.
 - [ ] Le jeu de 0,5 mm au pourtour des inserts n'a pas été validé à l'impression.
@@ -220,14 +215,18 @@ bac, le bras du crochet — devient vertical.
 - [ ] La poche à tabac debout dans une fente de 85 × 30 : une blague souple tient-elle
       droite, ou s'affaisse-t-elle ? C'est elle qui commande toute la largeur.
 
-## Note — pour aller plus loin sur la forme
+## Note — ce que la forme peut et ne peut pas être
 
-Trois façons d'obtenir un galbe qui domine la silhouette au lieu de l'orner :
+Toute la pièce est une **silhouette extrudée à profondeur constante**. C'est
+exactement ce qui la rend imprimable sans support : couchée sur son dos, le plan de
+la façade EST le plan du plateau, et toute courbe qu'on y dessine ne coûte rien.
 
-1. **Élargir la pièce à ~175 mm** : 85 de zone profonde et 85 de zone peu profonde,
-   deux côtés comparables. Coût : environ +60 g et 40 mm de mur en plus.
-2. **Descendre la poche à tabac dans la zone peu profonde.** La zone profonde n'a
-   plus à loger que les lunettes, 50 mm, et le galbe court sur 80. Coût : la poche
-   dépasse de 55 mm au lieu de 9, et une blague souple à moitié sortie s'affaisse.
-3. **Ne rien changer** et assumer le galbe comme un détail de coin, ce qu'il est
-   aujourd'hui.
+La contrepartie est nette. Les surfaces doublement courbes — le Guggenheim de
+Bilbao était la référence demandée — exigent de faire varier la profondeur, et
+chaque variation devient un porte-à-faux. Ce modèle est donc un **bas-relief
+galbé**, pas une sculpture : dessus en arche, dessous en S, plus une seule arête
+franche sur le pourtour, mais un profil constant d'avant en arrière.
+
+Pour aller au-delà il faudrait accepter les supports, et changer d'orientation
+d'impression — ce qui ferait tomber aussi le « aucun support » du crochet et des
+canaux de fixation, qui ne tiennent que parce que tout pointe dans le bon sens.
