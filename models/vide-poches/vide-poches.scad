@@ -56,9 +56,10 @@ tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIR
                   //      son logement ne guide rien, il ne fait que dégager.
                   //      L'élargir ne coûte rien, le sous-estimer coincerait.
 
-entraxe  = 140;   // mm — écartement des deux chevilles. La seconde est à poser,
+entraxe  = 95;    // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
-                  //      le vrillage, avec 30 mm de marge de chaque côté.
+                  //      le vrillage, tout en laissant 10 mm de matière entre la
+                  //      colonne pleine (dos_plein) et le bord de la pièce.
 
 jeu_col  = 0.8;   // mm — jeu diamétral dans le canal de la collerette
 jeu_vis  = 0.8;   // mm — jeu diamétral dans la fente de tige
@@ -72,18 +73,36 @@ dos_av   = 2.4;                                // peau avant, celle qui cache to
 dos_e    = col_h + porteur + loge_e + dos_av;  // 26.9
 
 dos_peau = 1.6;   // mm — peau arrière, celle qui plaque sur le bois
-dos_nerv = 2.4;   // mm — nervures d'allègement
-dos_pas  = 34;    // mm — pas de la grille d'allègement
+dos_nerv = 1.6;   // mm — nervures d'allègement. Elles ne travaillent qu'en
+                  //      cisaillement entre les deux peaux : 4 passes de buse
+                  //      suffisent, et sur 22 mm de profondeur chaque dixième
+                  //      compte.
+dos_bord = 3.0;   // mm — bord de la plaque, DISTINCT des nervures. C'est en les
+                  //      confondant qu'une version antérieure n'a laissé que
+                  //      1,5 mm de matière sur tout le pourtour du dos.
+dos_pas  = 38;    // mm — pas de la grille. Fixe aussi la portée que la peau
+                  //      avant doit ponter au-dessus de chaque cavité.
 dos_plein = 12;   // mm — demi-largeur de matière pleine autour de chaque cheville.
                   //      La fente ne fait que 4,2 : 10 mm de matière de chaque côté
                   //      suffisent largement, et au-delà on ne fait qu'alourdir.
 
 // --- Bac ----------------------------------------------------------------------
 
-larg     = 200;   // mm — largeur hors tout. 150 sont imposés par les lunettes ;
-                  //      200 tient sur un plateau de 220 avec de la marge.
-bac_h    = 60;    // mm
-bac_int  = 76;    // mm — profondeur intérieure utile
+larg     = 135;   // mm — largeur hors tout. Deux objets encombrants rangés
+                  //      DEBOUT au lieu d'à plat : les lunettes pliées passent de
+                  //      150 x 46 au sol à 50 x 37, la poche à tabac de 105 x 30
+                  //      à 85 x 30. C'est ce qui a fait tomber la pièce de 200 à
+                  //      135. Ils dépassent alors du bord — 89 mm pour les
+                  //      lunettes, 44 pour le tabac — comme des stylos dans un
+                  //      pot. C'est le prix, et il est assumé.
+bac_h    = 95;    // mm — commandé par une contrainte de hauteur, pas de volume :
+                  //      le haut des lunettes doit rester à moins de 35 mm
+                  //      au-dessus de l'axe des colonnettes. Debout, elles font
+                  //      145 et posent sur le fond de l'insert, à z_bac + fond +
+                  //      insert_fond. Le dépassement vaut donc
+                  //          145 - (bac_h - fond - insert_fond) - garde_vis
+                  //      soit 34 mm ici. Réduire bac_h les fait ressortir d'autant.
+bac_int  = 70;    // mm — profondeur intérieure utile
 paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
 fond     = 2.4;   // mm
@@ -131,22 +150,28 @@ xi1 =  larg / 2 - paroi;
 yi0 = dos_e;
 yi1 = prof - paroi;
 
-x_sep = xi0 + 150;     // frontière bloc gauche (lunettes) / bloc droit
-x_tab = xi0 + 110;     // largeur de la fente à tabac
-y_sep = yi0 + 46;      // fond du bac à lunettes
-y_cab = yi0 + 42.8;    // le puits à câbles est carré
+x_tab = xi0 + 85;     // largeur de la fente à tabac — le plus large des objets
+x_lun = xi0 + 50;     // largeur de la fente à lunettes
+y_tab = yi0 + 30;     // épaisseur d'une poche à tabac debout
+y_cab = yi0 + 42;     // le puits à câbles est carré
 
-// [x0, x1, y0, y1]
+// [x0, x1, y0, y1, hauteur du fond au-dessus de celui de l'insert]
+//
+// Le dernier champ relève le fond d'un compartiment. Un bac de 95 mm est ce
+// qu'il faut pour que les lunettes ne dépassent pas, mais c'est un puits où il
+// faudrait pêcher un briquet. Les petits compartiments posent donc leur fond
+// plus haut. À l'impression, l'insert étant couché, ces fonds sont des parois
+// verticales : ils ne coûtent rien en supports.
 // TOUS au même congé r_coin, et ce n'est pas un choix esthétique : l'insert se
 // calcule comme « l'intérieur moins les compartiments ». Un compartiment plus
 // arrondi que le pourtour laisse dans le coin un fragment de matière détaché du
 // reste, qui sortirait de l'imprimante en morceau libre.
 cuves = [
-    [xi0,             x_sep, yi0,             y_sep],  // lunettes
-    [xi0,             x_tab, y_sep + cloison, yi1  ],  // tabac, sur la tranche
-    [x_tab + cloison, x_sep, y_sep + cloison, yi1  ],  // petites bricoles
-    [x_sep + cloison, xi1,   yi0,             y_cab],  // câbles USB
-    [x_sep + cloison, xi1,   y_cab + cloison, yi1  ],  // briquets
+    [xi0,             x_tab, yi0,             y_tab,  0],  // tabac, DEBOUT — 91 mm
+    [xi0,             x_lun, y_tab + cloison, yi1,    0],  // lunettes, DEBOUT — 91
+    [x_lun + cloison, x_tab, y_tab + cloison, yi1,   46],  // bricoles — 45 mm
+    [x_tab + cloison, xi1,   yi0,             y_cab, 46],  // câbles USB — 45 mm
+    [x_tab + cloison, xi1,   y_cab + cloison, yi1,   51],  // briquets — 40 mm
 ];
 
 // --- Outils de construction ---------------------------------------------------
@@ -194,11 +219,13 @@ module canaux(xc) {
 
 // Pave une zone de poches d'allègement, en laissant une nervure pleine entre
 // chacune ET sur les quatre bords de la zone.
+// x0..x1 et z0..z1 delimitent la matiere a evider : les poches tiennent
+// exactement dedans, nervures comprises.
 module grille(x0, x1, z0, z1) {
     nx = max(1, round((x1 - x0) / dos_pas));
     nz = max(1, round((z1 - z0) / dos_pas));
-    px = (x1 - x0) / nx;
-    pz = (z1 - z0) / nz;
+    px = (x1 - x0 + dos_nerv) / nx;
+    pz = (z1 - z0 + dos_nerv) / nz;
     for (i = [0 : nx - 1], j = [0 : nz - 1])
         translate([x0 + i * px, dos_peau, z0 + j * pz])
             cube([px - dos_nerv, dos_e - dos_peau - dos_av, pz - dos_nerv]);
@@ -216,8 +243,8 @@ module dos() {
             difference() {
                 translate([-larg / 2, 0, z_bac])
                     cube([larg, dos_e, z_top - z_bac]);
-                grille(-larg / 2 + dos_nerv, larg / 2,
-                       z_bac + dos_nerv,      z_top);
+                grille(-larg / 2 + dos_bord, larg / 2 - dos_bord,
+                       z_bac + dos_bord,      z_top - dos_bord);
             }
 
             // Matière pleine autour de chaque cheville : c'est la plaque porteuse.
@@ -287,6 +314,15 @@ module insert() {
                 }
                 contour_2d();
             }
+
+        // fonds relevés des petits compartiments
+        for (c = cuves) if (c[4] > 0)
+            translate([0, 0, c[4]])
+                linear_extrude(insert_fond)
+                    intersection() {
+                        rect_2d(c[0], c[1], c[2], c[3]);
+                        contour_2d();
+                    }
     }
 }
 
