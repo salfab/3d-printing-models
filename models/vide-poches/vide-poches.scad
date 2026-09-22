@@ -33,15 +33,21 @@ include <../../lib/std.scad>
 PIECE = "panier";
 
 // --- Chevilles de fixation ----------------------------------------------------
-// Relevé sur la cheville en place. Les valeurs À CONFIRMER sont lues sur photo ;
-// elles ne changent que l'épaisseur du dos, jamais le reste de la pièce.
+// Tout relevé au réglet sur la cheville en place. Ces cotes ne pilotent que
+// l'épaisseur du dos, jamais le reste de la pièce.
 
-col_d    = 7.3;   // mm — Ø de la collerette plastique                    (relevé)
-col_h    = 5.0;   // mm — de combien elle dépasse du bois     À CONFIRMER
+col_d    = 7.3;   // mm — Ø du fût noir                                   (relevé)
+col_h    = 6.0;   // mm — de combien il dépasse du bois                   (relevé)
 vis_d    = 3.4;   // mm — Ø de la tige lisse                              (relevé)
-vis_l    = 13.0;  // mm — longueur de tige libre, collerette → tête  À CONFIRMER
-tete_d   = 7.0;   // mm — Ø de la tête bombée                       À CONFIRMER
-tete_h   = 3.0;   // mm — hauteur de la tête                        À CONFIRMER
+vis_l    = 14.0;  // mm — longueur de tige libre, fût → tête              (relevé)
+tete_h   = 3.0;   // mm — hauteur de la tête                              (relevé)
+                  //      Contrôle : 6 + 14 + 3 = 23, pour une cheville annoncée
+                  //      à 22. Un millimètre d'écart sur trois relevés séparés,
+                  //      sans conséquence — cette cote ne dimensionne qu'un
+                  //      dégagement, jamais une portée.
+tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIREMENT :
+                  //      son logement ne guide rien, il ne fait que dégager.
+                  //      L'élargir ne coûte rien, le sous-estimer coincerait.
 
 entraxe  = 140;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
@@ -54,9 +60,9 @@ jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
 // --- Dos ----------------------------------------------------------------------
 
 porteur  = vis_l - 0.5;                        // plaque porteuse : toute la tige
-loge_e   = tete_h + 1.0;                       // logement de la tête
+loge_e   = tete_h + 2.0;                       // logement de la tête, large exprès
 dos_av   = 2.4;                                // peau avant, celle qui cache tout
-dos_e    = col_h + porteur + loge_e + dos_av;  // 23.9
+dos_e    = col_h + porteur + loge_e + dos_av;  // 26.9
 
 dos_peau = 1.6;   // mm — peau arrière, celle qui plaque sur le bois
 dos_nerv = 2.4;   // mm — nervures d'allègement

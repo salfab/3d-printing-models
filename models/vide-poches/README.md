@@ -16,10 +16,13 @@ déjà en place ; la seconde est à poser, donc son écartement est libre.
 douille plastique sertie dans le bois, collerette de **Ø 7,3** qui dépasse de la
 surface, puis **tige lisse de Ø 3,4**, puis tête bombée.
 
-> Les cotes `col_h` (dépassement de la collerette), `vis_l` (longueur de tige
-> libre) et `tete_d` / `tete_h` sont pour l'instant **lues sur photo**, pas au
-> réglet. Elles ne pilotent que l'épaisseur du dos — aucune autre partie de la
-> pièce n'en dépend.
+Relevé au réglet : fût **6 mm**, tige lisse libre **14 mm**, tête **3 mm** de
+haut. Contrôle croisé : 6 + 14 + 3 = 23, pour une cheville annoncée à 22 — un
+millimètre d'écart sur trois relevés séparés, sans conséquence.
+
+Le Ø de la tête n'a pas été mesuré et le modèle le **majore volontairement** à 8 :
+son logement ne guide rien, il ne fait que dégager. L'élargir ne coûte rien, le
+sous-estimer coincerait.
 
 **Objets visés** :
 
@@ -67,14 +70,15 @@ Mesurées sur les maillages exportés.
 
 | | Volume | PLA | Encombrement |
 |---|---|---|---|
-| Coque | 307,7 cm³ | 382 g | 200 × 102,3 × 138 mm |
+| Coque | 321,2 cm³ | 398 g | 200 × 105,3 × 138 mm |
 | Insert | 71,6 cm³ | 89 g | 194,2 × 75,0 × 57,6 mm |
-| **Total** | **379,3 cm³** | **470 g** | |
+| **Total** | **392,7 cm³** | **487 g** | |
 
 | Cote | Valeur | Origine |
 |---|---|---|
-| Épaisseur du dos | 23,9 mm | `col_h + porteur + loge_e + dos_av` |
-| Empilage du dos (plans Y) | 0 / 1,60 / 5,00 / 17,50 / 21,50 / 23,90 | mesuré sur le maillage |
+| Épaisseur du dos | 26,9 mm | `col_h + porteur + loge_e + dos_av` |
+| Empilage du dos (plans Y) | 0 / 1,60 / 6,00 / 19,50 / 24,50 / 26,90 | mesuré sur le maillage |
+| Plaque porteuse | 13,5 mm | `vis_l − 0,5` : toute la tige libre |
 | Entraxe des chevilles | 140 mm | libre — la 2ᵉ est à poser |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Matière autour de la fente | 10 mm de chaque côté | `dos_plein − fente/2` |
@@ -156,12 +160,10 @@ contact : ni brim ni précaution.
 
 ## 7. Points de vérification
 
-- [ ] **Relever au réglet** `col_h`, `vis_l`, `tete_d`, `tete_h`. Elles ne sont pour
-      l'instant que lues sur photo.
 - [ ] **La douille métallique déjà en place**, à ~45 mm en diagonale de la cheville,
       est-elle utilisable ? À cet écartement elle ne convient pas pour un panier de
       200 mm — il faut une seconde cheville à la même hauteur.
-- [ ] **470 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
+- [ ] **487 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
       réduire `bac_h`, `bac_int`, ou la hauteur du bandeau.
 - [ ] Vérifier que le casque passe : `croc_jour` = 30 mm entre le bras et le
       dessous du bac, à confronter à l'arceau réel.
