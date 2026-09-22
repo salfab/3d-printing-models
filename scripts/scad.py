@@ -153,6 +153,13 @@ def render_png(scad_file: Path, out: Path, view: str = "iso", fast: bool = False
 
 def export(scad_file: Path, out: Path, extra: list[str] | None = None) -> None:
     run([find_openscad(), "-o", str(out)] + (extra or []) + [str(scad_file)])
+    # OpenSCAD rend 0 meme quand il n'a rien ecrit : un nom de fichier invalide
+    # (des guillemets passes en trop dans un -D, par exemple) donne un export
+    # silencieusement vide. Sans ce controle, on mesure ensuite le fichier de la
+    # run precedente en croyant mesurer la nouvelle.
+    if not out.exists() or out.stat().st_size == 0:
+        sys.exit(f"export vide : {out}\n"
+                 f"  verifier le nom de fichier et les options -D")
 
 
 def stl_load(path: Path) -> tuple[list, list]:
