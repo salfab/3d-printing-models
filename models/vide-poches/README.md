@@ -91,7 +91,7 @@ paroi avant au dos, le raidisseur de la coque.
 
 Coque et insert se déduisent tous deux de la **même liste `cuves`** : un
 compartiment ajouté ou déplacé met les deux pièces à jour, elles ne peuvent pas
-diverger. Changer d'agencement ne coûte que **99 g** de réimpression, et la coque
+diverger. Changer d'agencement ne coûte que **116 g** de réimpression, et la coque
 reste utilisable en plateau nu.
 
 `PIECE=panier` montre l'ensemble monté ; `dos`, `bac`, `crochet` isolent un
@@ -104,12 +104,12 @@ Mesurées sur les maillages exportés.
 | | Volume | PLA | Encombrement |
 |---|---|---|---|
 | Coque | 292,6 cm³ | 363 g | 135 × 98,5 × 173 mm |
-| Insert | 79,9 cm³ | 99 g | 129,2 × 69,0 × 92,6 mm |
-| **Total** | **372,5 cm³** | **462 g** | |
+| Insert | 93,6 cm³ | 116 g | 129,2 × 69,0 × 92,6 mm |
+| **Total** | **386,2 cm³** | **479 g** | |
 
-> Ces 462 g sont le **volume géométrique**, pas le fil consommé. Les zones épaisses
+> Ces 479 g sont le **volume géométrique**, pas le fil consommé. Les zones épaisses
 > — bras du crochet (10 mm), âme (14), colonnes du dos (24 × 26) — seront remplies
-> par le trancheur, pas massives. Compter plutôt **370 à 400 g** réellement.
+> par le trancheur, pas massives. Compter plutôt **380 à 410 g** réellement.
 
 | Cote | Valeur | Origine |
 |---|---|---|
@@ -152,7 +152,9 @@ l'avant à l'usage — le fond du bac, le bras du crochet — devient vertical.
 contact : ni brim ni précaution.
 
 - **Aucun support, sur aucune des deux pièces.** Les fonds relevés des petits
-  compartiments sont eux aussi verticaux dans cette orientation.
+  compartiments sont horizontaux dans cette orientation, mais chacun repose sur
+  un rebord qui monte jusqu'à lui : ce sont des plateaux appuyés sur tout leur
+  pourtour, pas des pontages en porte-à-faux.
 - Le plus grand pontage est la peau avant du dos au-dessus d'une cavité
   d'allègement : **42 mm**, le pas de la grille. La peau fait 6 couches, seule la
   première ponte.
@@ -176,6 +178,11 @@ contact : ni brim ni précaution.
   rond (r = 18 contre r = 4).
 - **Tout compartiment ajouté doit toucher au moins un autre séparateur**, sinon il
   détache un morceau de l'insert. À vérifier sur le maillage, pas à l'œil.
+- **Un fond relevé impose un rebord relevé en face.** Les compartiments
+  extérieurs sont fermés par les parois de la COQUE, pas par l'insert : côté
+  extérieur, leur fond relevé ne reposerait sur rien et s'affaisserait à
+  l'impression. Le modèle relève le rebord au droit de chacun — uniquement là,
+  car le relever sur tout le pourtour coûte 40 g contre 22.
 - **Le rebord de l'insert n'est pas décoratif.** Sans lui, le bord libre d'un fond
   plat de 129 × 69 en 1,6 mm de PLA gondole à l'impression, et le contenu des
   compartiments extérieurs — fermés par les parois de la coque, pas par l'insert —
@@ -197,7 +204,7 @@ contact : ni brim ni précaution.
 
 ## 7. Points de vérification
 
-- [ ] **462 g géométriques.** Le dos pèse à lui seul 45 % du total, et l'essentiel
+- [ ] **479 g géométriques.** Le dos pèse à lui seul 45 % du total, et l'essentiel
       est dans ses deux peaux — irréductibles tant qu'on veut un caisson fermé, qui
       est précisément ce qui cache les têtes de vis.
 - [ ] Vérifier que le casque passe : `croc_jour` = 30 mm entre le bras et le

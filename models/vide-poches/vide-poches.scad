@@ -276,6 +276,14 @@ module contour_2d() {
     offset(r = -insert_jeu) rect_2d(xi0, xi1, yi0, yi1);
 }
 
+// La bande périphérique dont est fait le rebord.
+module ceinture_2d() {
+    difference() {
+        contour_2d();
+        offset(r = -insert_paroi) contour_2d();
+    }
+}
+
 // L'insert : un bac à séparations d'un seul tenant, qui se pose au fond de la
 // coque et se retire avec son contenu.
 //
@@ -300,11 +308,23 @@ module insert() {
         // perdue. Mais sans rien, leur contenu glisse dès qu'on soulève l'insert,
         // et surtout le bord libre d'un fond plat de 194 × 75 en 1,6 mm gondole à
         // l'impression. Le rebord règle les deux pour 7 g.
-        linear_extrude(insert_rebord)
-            difference() {
-                contour_2d();
-                offset(r = -insert_paroi) contour_2d();
-            }
+        linear_extrude(insert_rebord) ceinture_2d();
+
+        // Rebord relevé, au droit des seuls compartiments à fond relevé.
+        //
+        // Ces compartiments sont fermés par les parois de la COQUE, pas par
+        // l'insert : côté extérieur, leur fond relevé ne reposerait sur rien. À
+        // l'impression ce serait un pontage accroché par deux bords adjacents
+        // seulement, qui s'affaisserait. Le rebord leur donne l'appui manquant.
+        //
+        // Le relever sur tout le pourtour coûterait 40 g ; ne le relever qu'aux
+        // segments qui portent effectivement quelque chose en coûte 22.
+        for (c = cuves) if (c[4] > 0)
+            linear_extrude(c[4] + insert_fond)
+                intersection() {
+                    ceinture_2d();
+                    rect_2d(c[0], c[1], c[2], c[3]);
+                }
 
         linear_extrude(bac_h - fond)
             intersection() {
