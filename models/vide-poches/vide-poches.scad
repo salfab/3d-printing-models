@@ -91,14 +91,14 @@ dos_ep   = 3.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Tou
                   //      la course d'enfilage ; ailleurs une simple plaque suffit,
                   //      et les 23 mm libérés derrière le bac deviennent du
                   //      rangement.
-course   = 20;    // mm — descente nécessaire pour verrouiller. Courte parce que la
+course   = 14;    // mm — descente nécessaire pour verrouiller. Courte parce que la
                   //      tête entre par un TROU, au lieu de remonter depuis le bas
                   //      de la pièce. C'est ce trou qui permet de ne pas épaissir
                   //      tout le dos.
 boss_larg = 20;   // mm — diamètre du noyau plein autour de chaque vis. Le
                   //      renflement s'étale au-delà, mais pas trop : c'est son
                   //      emprise qui décide du couloir à tailler dans l'insert.
-boss_bas  = 8;    // mm — de combien il descend sous le trou d'entrée
+boss_bas  = 6;    // mm — de combien il descend sous le trou d'entrée
 boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
 boss_etale = 20;  // mm — sur quelle distance le renflement de fixation s'éteint
@@ -169,22 +169,23 @@ r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaire
                   //      de la face avant. Le bord du bac n'est plus une ligne
                   //      droite mais une courbe.
 
-// Le dessus du dos : DEUX ÉPAULES au droit des vis, et un creux entre elles.
+// Le dessus du dos : une CASQUETTE, convexe, qui culmine au milieu.
 //
-// L'arche culminait d'abord au milieu, alors que les vis sont sur les côtés : la
-// matière était là où il n'y a pas d'effort, et les bouts ne servaient à rien.
-// En portant les points hauts sur les vis, le dessin devient structurellement
-// honnête — et il autorise un entraxe bien plus large, donc une bien meilleure
-// tenue au vrillage.
-x_bosse  = entraxe / 2;   // les épaules sont à l'aplomb des vis, par construction
-z_creux  = 120;   // mm — le creux entre les deux épaules. Peu marqué : plus
-                  //      bas, les épaules se lisent comme deux oreilles au
-                  //      lieu d'une ligne continue.
-z_epaul_g = 142;  // mm — épaule gauche
-z_epaul_d = 136;  // mm — épaule droite, plus basse : la pièce s'effile vers le
-                  //      crochet, dans le même sens que le fond qui remonte
-z_fin_g  = 124;   // mm — et la retombée aux deux extrémités
-z_fin_d  = 112;   // mm
+// Une version antérieure portait deux épaules à l'aplomb des vis avec un creux
+// entre elles. Structurellement c'était plus honnête — la matière là où l'effort
+// passe — mais le profil concave se lit comme deux oreilles. La casquette gagne.
+//
+// Difficulté : les vis sont à ±70, près des bords, et une casquette y redescend.
+// D'où un exposant élevé sur la retombée — la courbe reste haute jusqu'à 80 % de
+// la demi-largeur puis plonge sur les derniers millimètres. C'est `dessus_p` qui
+// règle ça, et l'assertion plus bas qui le vérifie.
+z_som    = 120;   // mm — sommet de la casquette, au milieu. 25 mm au-dessus de
+                  //      l'arase seulement : une PETITE casquette.
+dessus_p = 8;     // exposant de la retombée. Plus il est grand, plus la casquette
+                  //      reste plate longtemps avant de tomber. À 3, elle passait
+                  //      sous le siège des vis et l'assertion se déclenchait.
+z_fin_g  = 108;   // mm — hauteur au bord gauche
+z_fin_d  = 100;   // mm
 
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
@@ -229,13 +230,17 @@ croc_r_z   = 12;   // mm — remontée de la rampe.
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-garde_vis = 28;                  // mm — de l'arase du bac à l'axe des vis.
-                                 //      Calé pour que boss_z0 tombe exactement
-                                 //      sur l'arase : au-dessous, le renflement
-                                 //      mordrait dans le rangement.
+garde_vis = 12;                  // mm — de l'arase du bac à l'axe des vis.
+                                 //      Elle valait 28 pour que le renflement ne
+                                 //      descende jamais sous l'arase. C'était un
+                                 //      reste de l'époque où le dos faisait 26 mm :
+                                 //      à 8,4, ce qu'il en déborde ne coûte qu'un
+                                 //      copeau de 5 mm dans l'insert. Et cette
+                                 //      garde commandait directement la hauteur de
+                                 //      la casquette.
 z_haut    = bac_h;               //  95 — arase du bac
 z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
-z_top     = max(z_epaul_g, z_epaul_d);   // 138 — le plus haut des deux épaules
+z_top     = z_som;               // 144 — le sommet de la casquette
 
 fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
 fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
@@ -364,22 +369,23 @@ function dessous(x) =
     x >= x_tab + galbe   ? marche
                          : marche * liss((x - x_tab) / galbe);
 
-// Le dessus du dos : deux épaules à l'aplomb des vis, un creux entre elles, et
-// une retombée aux extrémités. Quatre raccords, tous à tangente nulle : le profil
-// n'a pas une seule arête.
+// Le dessus du dos : une casquette convexe, plate au sommet et qui plonge tard.
+// Tangente nulle au milieu comme aux deux bords : pas une arête sur tout le
+// profil, et les deux bords peuvent être à des hauteurs différentes.
 function dessus(x) =
-    x <= -x_bosse ? z_fin_g   + (z_epaul_g - z_fin_g) * liss((x + larg / 2) / (larg / 2 - x_bosse)) :
-    x <=  0       ? z_creux   + (z_epaul_g - z_creux) * liss(-x / x_bosse) :
-    x <=  x_bosse ? z_creux   + (z_epaul_d - z_creux) * liss( x / x_bosse)
-                  : z_fin_d   + (z_epaul_d - z_fin_d) * liss((larg / 2 - x) / (larg / 2 - x_bosse));
+    let (u  = abs(x) / (larg / 2),
+         zb = x < 0 ? z_fin_g : z_fin_d)
+    zb + (z_som - zb) * liss(1 - pow(u, dessus_p));
 
 // L'arche est libre de sa forme SAUF au droit des vis : il faut de la matière
 // au-dessus du siège, sinon le canal débouche par le haut et la vis ne porte
 // plus. Rien dans la géométrie ne le signalerait — d'où l'assertion.
 assert(dessus( entraxe / 2) >= z_vis + 10,
-       "l'arche passe trop bas au droit de la vis droite : remonter z_epaul_d");
+       "la casquette passe sous le siège de la vis droite : monter z_som, z_fin_d
+        ou l'exposant dessus_p");
 assert(dessus(-entraxe / 2) >= z_vis + 10,
-       "l'arche passe trop bas au droit de la vis gauche : remonter z_epaul_g");
+       "la casquette passe sous le siège de la vis gauche : monter z_som, z_fin_g
+        ou l'exposant dessus_p");
 
 // Le galbe ne doit pas passer sous un compartiment profond : il en crèverait le
 // fond, et la cavité déboucherait à l'air libre.
