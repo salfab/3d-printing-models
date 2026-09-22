@@ -171,3 +171,24 @@ Contreparties, à peser avant de l'inclure :
 La skill de projet **`scad-preview`** publie un artefact à deux onglets — viewer 3D
 rotatif alimenté par le STL, et planche des rendus. Elle ne remplace pas la boucle de
 vérification ci-dessus : on regarde les PNG soi-même avant de publier quoi que ce soit.
+
+**Republier l'artefact après CHAQUE modification de géométrie — systématiquement, sans
+qu'on ait à le demander.** Un aperçu qui décrit une version précédente est pire que pas
+d'aperçu : c'est sur lui qu'on juge la pièce, et il n'y a aucun moyen de voir depuis
+l'artefact qu'il est en retard. Republier sur le **même `url`**, jamais dans un nouvel
+artefact.
+
+L'enchaînement, à faire en entier :
+
+```bash
+python scripts/scad.py all     <slug> -D PIECE=<principale>
+python scripts/scad.py stl     <slug> -D PIECE=<chaque pièce>
+python scripts/scad.py check   <slug>        # doit sortir en code 0
+python .claude/skills/scad-preview/scripts/preview_pack.py <slug> --titre "<Nom>" --stl <...>
+```
+
+puis outil `Artifact`, action `publish`, avec l'`url` existante.
+
+Si la skill n'est pas enregistrée dans la session — l'outil répond `Unknown skill` alors
+que `.claude/skills/scad-preview/` existe —, suivre son `SKILL.md` à la main : il décrit
+les cinq étapes et les contraintes vérifiées.
