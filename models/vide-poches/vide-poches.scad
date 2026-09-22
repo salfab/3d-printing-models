@@ -37,14 +37,21 @@ PIECE = "panier";
 // l'épaisseur du dos, jamais le reste de la pièce.
 
 col_d    = 7.3;   // mm — Ø du fût noir                                   (relevé)
-col_h    = 6.0;   // mm — de combien il dépasse du bois                   (relevé)
 vis_d    = 3.4;   // mm — Ø de la tige lisse                              (relevé)
 vis_l    = 14.0;  // mm — longueur de tige libre, fût → tête              (relevé)
 tete_h   = 3.0;   // mm — hauteur de la tête                              (relevé)
-                  //      Contrôle : 6 + 14 + 3 = 23, pour une cheville annoncée
-                  //      à 22. Un millimètre d'écart sur trois relevés séparés,
-                  //      sans conséquence — cette cote ne dimensionne qu'un
-                  //      dégagement, jamais une portée.
+
+// Saillie totale hors bois, VIS EN PLACE. C'est la seule cote prise sur
+// l'ensemble monté, donc la seule qui intègre ce que le fût s'enfonce ; les
+// autres sont prises sur la pièce nue. On en DÉDUIT donc la saillie du fût au
+// lieu de la mesurer : mesuré hors bois il fait 6, en place il n'en dépasse que
+// 5,2. Les 0,8 mm sont enfouis.
+//
+// Ce n'est pas un détail : à col_h = 6 la plaque porteuse irait de 6 à 19,5
+// alors que le dessous de la tête est à 19,2. Elles se chevaucheraient de
+// 0,3 mm et le panier resterait décollé du bois, en appui sur deux têtes de vis.
+col_saillie = 22.2;                          // mm                        (relevé)
+col_h    = col_saillie - vis_l - tete_h;     // 5.2
 tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIREMENT :
                   //      son logement ne guide rien, il ne fait que dégager.
                   //      L'élargir ne coûte rien, le sous-estimer coincerait.

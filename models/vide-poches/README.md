@@ -10,15 +10,31 @@ Vider ses poches en rentrant : paquet de tabac, briquets, lunettes, câbles USB,
 petites bricoles — et suspendre un casque Sony WH-1000XM5 dessous.
 
 La pièce se visse sur le flanc d'un meuble en bois. Une cheville d'assemblage y est
-déjà en place ; la seconde est à poser, donc son écartement est libre.
+déjà en place ; la seconde est à poser, et percer ne pose pas de problème — son
+écartement est donc libre, fixé à 140 mm.
+
+Une douille métallique subsiste à ~45 mm en diagonale de la cheville, reste d'un
+ancien montage. **Elle n'est pas utilisée** : à cet écartement les deux points
+seraient concentrés au centre d'un panier de 200 mm, le couple de vrillage repris
+sur 22 mm de bras au lieu de 70, et la diagonale ne bloque pas la rotation aussi
+bien qu'un alignement horizontal.
 
 **Géométrie de la cheville** (relevée sur la pièce en place, photo au réglet) :
 douille plastique sertie dans le bois, collerette de **Ø 7,3** qui dépasse de la
 surface, puis **tige lisse de Ø 3,4**, puis tête bombée.
 
-Relevé au réglet : fût **6 mm**, tige lisse libre **14 mm**, tête **3 mm** de
-haut. Contrôle croisé : 6 + 14 + 3 = 23, pour une cheville annoncée à 22 — un
-millimètre d'écart sur trois relevés séparés, sans conséquence.
+Relevé au réglet : tige lisse libre **14 mm**, tête **3 mm** de haut, et
+**saillie totale hors bois, vis en place, 22,2 mm**.
+
+Cette dernière est la seule cote prise sur **l'ensemble monté**, donc la seule qui
+intègre ce que le fût s'enfonce. Le modèle en déduit la saillie du fût —
+22,2 − 14 − 3 = **5,2 mm** — au lieu de la mesurer : hors bois le fût fait 6, en
+place il n'en dépasse que 5,2.
+
+Ce n'est pas un détail de 0,8 mm. À `col_h = 6`, la plaque porteuse irait de 6 à
+19,5 alors que le dessous de la tête est à 19,2 : elles se chevaucheraient de
+0,3 mm, la tête taperait la plaque avant que le dos ne touche le bois, et le
+panier resterait décollé, en appui sur deux têtes de vis.
 
 Le Ø de la tête n'a pas été mesuré et le modèle le **majore volontairement** à 8 :
 son logement ne guide rien, il ne fait que dégager. L'élargir ne coûte rien, le
@@ -70,14 +86,15 @@ Mesurées sur les maillages exportés.
 
 | | Volume | PLA | Encombrement |
 |---|---|---|---|
-| Coque | 321,2 cm³ | 398 g | 200 × 105,3 × 138 mm |
+| Coque | 317,5 cm³ | 394 g | 200 × 104,5 × 138 mm |
 | Insert | 71,6 cm³ | 89 g | 194,2 × 75,0 × 57,6 mm |
-| **Total** | **392,7 cm³** | **487 g** | |
+| **Total** | **389,1 cm³** | **482 g** | |
 
 | Cote | Valeur | Origine |
 |---|---|---|
-| Épaisseur du dos | 26,9 mm | `col_h + porteur + loge_e + dos_av` |
-| Empilage du dos (plans Y) | 0 / 1,60 / 6,00 / 19,50 / 24,50 / 26,90 | mesuré sur le maillage |
+| Épaisseur du dos | 26,1 mm | `col_h + porteur + loge_e + dos_av` |
+| Empilage du dos (plans Y) | 0 / 1,60 / 5,20 / 18,70 / 23,70 / 26,10 | mesuré sur le maillage |
+| Dégagement devant la tête | 0,5 mm | plaque à 18,70, dessous de tête à 19,20 |
 | Plaque porteuse | 13,5 mm | `vis_l − 0,5` : toute la tige libre |
 | Entraxe des chevilles | 140 mm | libre — la 2ᵉ est à poser |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
@@ -160,10 +177,7 @@ contact : ni brim ni précaution.
 
 ## 7. Points de vérification
 
-- [ ] **La douille métallique déjà en place**, à ~45 mm en diagonale de la cheville,
-      est-elle utilisable ? À cet écartement elle ne convient pas pour un panier de
-      200 mm — il faut une seconde cheville à la même hauteur.
-- [ ] **487 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
+- [ ] **482 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
       réduire `bac_h`, `bac_int`, ou la hauteur du bandeau.
 - [ ] Vérifier que le casque passe : `croc_jour` = 30 mm entre le bras et le
       dessous du bac, à confronter à l'arceau réel.
