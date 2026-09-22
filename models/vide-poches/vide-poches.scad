@@ -6,7 +6,7 @@
 // démonter pour le décrocher.
 //
 // La fixation tient en trois canaux verticaux superposés dans l'épaisseur du dos,
-// un par étage de la vis : la collerette au fond, la tige lisse au milieu, la tête
+// un par étage de la vis : le fût au fond, la tige lisse au milieu, la tête
 // devant. Chacun monte dans le sien pendant la descente. Conséquence utile : la
 // tête ne traverse jamais rien, elle monte dans son logement — donc aucun trou de
 // passage n'est nécessaire et la peau avant reste pleine. Les vis sont invisibles
@@ -19,14 +19,24 @@
 // le basculement, avec un long bras de levier — les vis ne travaillent qu'en
 // cisaillement.
 //
-// IMPRESSION : posé sur le dos, plaque arrière contre le plateau. Tout ce qui
-// pointe vers l'avant à l'usage devient vertical, y compris le bras du crochet.
-// Aucun support.
+// FORME. Le bac n'est pas une boîte : il plonge à gauche, où les lunettes et la
+// poche à tabac tiennent debout sur 91 mm, et remonte à droite, où les briquets et
+// les câbles n'ont besoin que de 45. Entre les deux, un galbe et non une marche.
+// Le crochet à casque passe sous la partie haute, de sorte que la masse pendante à
+// gauche et le casque à droite se répondent.
+//
+// Cette forme est GRATUITE, et c'est ce qui la rend évidente : la pièce
+// s'imprimant couchée sur son dos, le plan de la façade EST le plan du plateau.
+// Toute silhouette qu'on y dessine sort sans un gramme de support. Ce qui coûte,
+// c'est de faire varier la profondeur — et elle est constante ici. Tout le modèle
+// est donc bâti sur un profil 2D en élévation, extrudé en profondeur.
+//
+// IMPRESSION : coque posée sur le dos, insert posé à plat. Aucun support.
 
 include <../../lib/std.scad>
 
 // "coque"   : dos + bac nu + crochet          — pièce à imprimer n°1
-// "insert"  : les séparateurs seuls            — pièce à imprimer n°2
+// "insert"  : le bac à séparations            — pièce à imprimer n°2
 // "panier"  : les deux en place, pour regarder
 // "gabarit" : réglet de perçage de la deuxième cheville (consommable)
 // "montage" : le panier, le bois et les vis, pour vérifier la cinématique
@@ -58,10 +68,10 @@ tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIR
 
 entraxe  = 95;    // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
-                  //      le vrillage, tout en laissant 10 mm de matière entre la
+                  //      le vrillage, tout en laissant de la matière entre la
                   //      colonne pleine (dos_plein) et le bord de la pièce.
 
-jeu_col  = 0.8;   // mm — jeu diamétral dans le canal de la collerette
+jeu_col  = 0.8;   // mm — jeu diamétral dans le canal du fût
 jeu_vis  = 0.8;   // mm — jeu diamétral dans la fente de tige
 jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
 
@@ -70,7 +80,7 @@ jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
 porteur  = vis_l - 0.5;                        // plaque porteuse : toute la tige
 loge_e   = tete_h + 2.0;                       // logement de la tête, large exprès
 dos_av   = 2.4;                                // peau avant, celle qui cache tout
-dos_e    = col_h + porteur + loge_e + dos_av;  // 26.9
+dos_e    = col_h + porteur + loge_e + dos_av;  // 26.1
 
 dos_peau = 1.6;   // mm — peau arrière, celle qui plaque sur le bois
 dos_nerv = 1.6;   // mm — nervures d'allègement. Elles ne travaillent qu'en
@@ -88,33 +98,44 @@ dos_plein = 12;   // mm — demi-largeur de matière pleine autour de chaque che
 
 // --- Bac ----------------------------------------------------------------------
 
-larg     = 135;   // mm — largeur hors tout. Deux objets encombrants rangés
-                  //      DEBOUT au lieu d'à plat : les lunettes pliées passent de
-                  //      150 x 46 au sol à 50 x 37, la poche à tabac de 105 x 30
-                  //      à 85 x 30. C'est ce qui a fait tomber la pièce de 200 à
-                  //      135. Ils dépassent alors du bord — 89 mm pour les
-                  //      lunettes, 44 pour le tabac — comme des stylos dans un
-                  //      pot. C'est le prix, et il est assumé.
-bac_h    = 95;    // mm — commandé par une contrainte de hauteur, pas de volume :
-                  //      le haut des lunettes doit rester à moins de 35 mm
-                  //      au-dessus de l'axe des colonnettes. Debout, elles font
-                  //      145 et posent sur le fond de l'insert, à z_bac + fond +
-                  //      insert_fond. Le dépassement vaut donc
-                  //          145 - (bac_h - fond - insert_fond) - garde_vis
-                  //      soit 34 mm ici. Réduire bac_h les fait ressortir d'autant.
+larg     = 135;   // mm — largeur hors tout. Commandée par la poche à tabac rangée
+                  //      DEBOUT, 85 mm. À plat elle en aurait pris 105, et les
+                  //      lunettes 150.
+bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Commandée par une
+                  //      contrainte de hauteur, pas de volume : le haut des
+                  //      lunettes doit rester à moins de 35 mm au-dessus de l'axe
+                  //      des colonnettes. Debout elles font 145 et posent sur le
+                  //      fond de l'insert, d'où
+                  //          145 - (bac_h - fond - insert_fond) - garde_vis = 34
 bac_int  = 70;    // mm — profondeur intérieure utile
 paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
 fond     = 2.4;   // mm
 r_coin   = 4;     // mm — congé vertical des compartiments
+
+// Le galbe : de combien le dessous remonte côté peu profond, et sur quelle
+// emprise horizontale il le fait.
+marche   = 46;    // mm — 45 mm de profondeur utile à droite au lieu de 91
+galbe    = 35;    // mm — emprise du raccord. Plus il est long, plus le profil
+                  //      coule ; trop long, il passe sous la zone profonde et
+                  //      crève son fond. Voir la contrainte dans le README.
+r_galbe  = 8;     // mm — arrondi de l'angle rentrant, en haut du galbe.
+                  //      À BORNER : l'arrondi rentrant se fait par un offset(+r)
+                  //      suivi d'un offset(-r), donc la forme est DILATÉE de r
+                  //      avant d'être contractée. Le creux du galbe se rétrécit
+                  //      vers le haut ; à r = 25 la dilatation le rebouchait, et
+                  //      le galbe ne montait plus qu'à 23 mm au lieu de 46 — sans
+                  //      la moindre erreur. Même piège que l'offset qui vide une
+                  //      bride en silence, pris par l'autre bout.
+r_ext    = 12;    // mm — arrondi des angles saillants de la silhouette
+
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
 insert_rebord = 8;   // mm — hauteur du rebord bas de l'insert
 insert_paroi  = 2.0; // mm — épaisseur de ce rebord
-insert_jeu = 0.5; // mm — jeu entre l'insert et la coque, par côté. Sur 195 mm de
-                  //      long, c'est le retrait différentiel des deux pièces qui
-                  //      compte, pas le retrait absolu : même matière, même
-                  //      machine, donc 0,5 suffit.
+insert_jeu = 0.5;    // mm — jeu entre l'insert et la coque, par côté. C'est le
+                     //      retrait DIFFÉRENTIEL des deux pièces qui compte, pas
+                     //      le retrait absolu : même matière, même machine.
 
 prof     = dos_e + bac_int + paroi;   // profondeur hors tout
 
@@ -122,25 +143,41 @@ prof     = dos_e + bac_int + paroi;   // profondeur hors tout
 // Sony WH-1000XM5 : ne se plie pas, seulement à plat. L'arceau porte sur toute la
 // largeur du bras, d'où une portée large plutôt qu'une patte fine.
 
-croc_larg  = 40;   // mm — largeur de portée sous l'arceau
+croc_larg  = 30;   // mm — largeur de portée sous l'arceau. À 40, le crochet
+                   //      occupait 40 des 47 mm du creux laissé par le galbe et
+                   //      la silhouette se refermait en boîte. À 30, calé à
+                   //      droite, il laisse 18 mm d'air visible entre lui et la
+                   //      partie profonde. L'arceau du XM5 fait ~32 mm de large :
+                   //      30 mm de portée restent une assise pleine.
 croc_e     = 10;   // mm — épaisseur du bras
-croc_jour  = 30;   // mm — passage libre entre le bras et le dessous du bac
+croc_bas   = 4;    // mm — Z du dessous du bras. Laisse 4 mm d'air sous lui, pour
+                   //      qu'il se lise comme suspendu et non comme un bloc posé
+                   //      dans le prolongement du fond.
 croc_l     = 70;   // mm — longueur du bras
 croc_ame   = 14;   // mm — épaisseur de l'âme qui relie le bras au dos
+croc_col   = 18;   // mm — LARGEUR de cette âme. Bien plus étroite que le bras,
+                   //      et c'est le point : à 40 mm elle bouchait exactement
+                   //      le vide que le galbe venait de créer, et la silhouette
+                   //      redevenait une boîte. Un col étroit laisse l'air se
+                   //      voir sous la courbe.
 croc_ch    = 3;    // mm — chanfrein des arêtes de portée
 croc_r_y   = 16;   // mm — emprise de la rampe de retenue
-croc_r_z   = 14;   // mm — remontée de la rampe.
+croc_r_z   = 12;   // mm — remontée de la rampe.
                    //      croc_r_z < croc_r_y IMPÉRATIVEMENT : à l'impression la
                    //      rampe est un porte-à-faux dont l'angle depuis la
                    //      verticale vaut atan(croc_r_z / croc_r_y). 14/16 = 41°,
                    //      sous la limite de 45°. Au-delà, il faut des supports.
 
 // --- Niveaux ------------------------------------------------------------------
+// z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-z_bac    = croc_e + croc_jour;   //  40 — dessous du bac
-z_haut   = z_bac + bac_h;        // 100 — bord supérieur du bac
-z_vis    = z_haut + 20;          // 120 — axe des chevilles, en butée haute
-z_top    = z_vis + 18;           // 138 — sommet du dos
+garde_vis = 20;                  // mm — de l'arase du bac à l'axe des vis
+z_haut    = bac_h;               //  95 — arase du bac
+z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
+z_top     = z_vis + 18;          // 133 — sommet du dos
+
+fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
+fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
 
 // --- Compartiments ------------------------------------------------------------
 // Dictés par les objets, pas par une grille régulière.
@@ -155,29 +192,41 @@ x_lun = xi0 + 50;     // largeur de la fente à lunettes
 y_tab = yi0 + 30;     // épaisseur d'une poche à tabac debout
 y_cab = yi0 + 42;     // le puits à câbles est carré
 
-// [x0, x1, y0, y1, hauteur du fond au-dessus de celui de l'insert]
+// [x0, x1, y0, y1, z du fond]
 //
-// Le dernier champ relève le fond d'un compartiment. Un bac de 95 mm est ce
-// qu'il faut pour que les lunettes ne dépassent pas, mais c'est un puits où il
-// faudrait pêcher un briquet. Les petits compartiments posent donc leur fond
-// plus haut. À l'impression, l'insert étant couché, ces fonds sont des parois
-// verticales : ils ne coûtent rien en supports.
-// TOUS au même congé r_coin, et ce n'est pas un choix esthétique : l'insert se
-// calcule comme « l'intérieur moins les compartiments ». Un compartiment plus
-// arrondi que le pourtour laisse dans le coin un fragment de matière détaché du
-// reste, qui sortirait de l'imprimante en morceau libre.
+// Le dernier champ place le fond du compartiment, et c'est lui qui répartit les
+// objets entre la zone profonde et la zone peu profonde. Les deux niveaux se
+// retrouvent dans la coque ET dans l'insert, puisque les deux se calculent d'ici.
+//
+// TOUS les compartiments au même congé r_coin, et ce n'est pas un choix
+// esthétique : l'insert se calcule comme « l'intérieur moins les compartiments ».
+// Un compartiment plus arrondi que le pourtour laisse dans le coin un fragment de
+// matière détaché du reste, qui sortirait de l'imprimante en morceau libre.
 cuves = [
-    [xi0,             x_tab, yi0,             y_tab,  0],  // tabac, DEBOUT — 91 mm
-    [xi0,             x_lun, y_tab + cloison, yi1,    0],  // lunettes, DEBOUT — 91
-    [x_lun + cloison, x_tab, y_tab + cloison, yi1,   46],  // bricoles — 45 mm
-    [x_tab + cloison, xi1,   yi0,             y_cab, 46],  // câbles USB — 45 mm
-    [x_tab + cloison, xi1,   y_cab + cloison, yi1,   51],  // briquets — 40 mm
+    [xi0,             x_tab, yi0,             y_tab, fond_bas ],  // tabac, DEBOUT
+    [xi0,             x_lun, y_tab + cloison, yi1,   fond_bas ],  // lunettes, DEBOUT
+    [x_lun + cloison, x_tab, y_tab + cloison, yi1,   fond_bas ],  // stylos, grands objets
+    [x_tab + cloison, xi1,   yi0,             y_cab, fond_haut],  // câbles USB
+    [x_tab + cloison, xi1,   y_cab + cloison, yi1,   fond_haut],  // briquets
+];
+
+// Les deux niveaux du bac. La cloison qui les sépare appartient à la COQUE et
+// non à l'insert : c'est elle qui retient le socle du côté peu profond, et elle
+// raidit le bac en reliant la paroi avant au dos à mi-largeur.
+//
+// Chaque zone reçoit donc son propre insert. Deux petites pièces plutôt qu'une,
+// et un agencement se change zone par zone.
+//
+// [x0, x1, z du fond]
+zones = [
+    [xi0,             x_tab, fond_bas ],   // profonde     — 91 mm
+    [x_tab + cloison, xi1,   fond_haut],   // peu profonde — 45 mm
 ];
 
 // --- Outils de construction ---------------------------------------------------
 
-// Extrude un profil 2D dessiné dans le plan de la face (X horizontal, Y = Z du
-// modèle) à travers l'épaisseur du dos, de y0 à y0 + e.
+// Extrude un profil 2D dessiné dans le plan de la façade (X horizontal, Y = Z du
+// modèle) à travers la profondeur, de y0 à y0 + e.
 module en_travers(y0, e) {
     translate([0, y0, 0])
         rotate([90, 0, 0])
@@ -191,7 +240,7 @@ module en_travers(y0, e) {
 module fente_2d(l, z_siege) {
     hull() {
         translate([0, z_siege - l / 2]) circle(d = l);
-        translate([-l / 2, z_bac - 20]) square([l, 1]);
+        translate([-l / 2, -20]) square([l, 1]);
     }
 }
 
@@ -199,6 +248,27 @@ module fente_2d(l, z_siege) {
 module rect_2d(x0, x1, y0, y1, r = r_coin) {
     offset(r = r) offset(r = -r)
         polygon([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
+}
+
+// --- La silhouette ------------------------------------------------------------
+
+// L'élévation de la pièce, arase à `ztop`. Le dessous plonge à gauche et remonte
+// à droite par un galbe.
+//
+// Le galbe DOIT démarrer à l'aplomb de x_tab, la frontière entre la zone
+// profonde et la zone peu profonde : plus à gauche il passerait sous un
+// compartiment profond et en crèverait le fond.
+module silhouette_2d(ztop) {
+    offset(r =  r_ext)   offset(r = -r_ext)      // angles saillants
+        offset(r = -r_galbe) offset(r = r_galbe) // angle rentrant, en haut du galbe
+            polygon([
+                [-larg / 2,       0],
+                [ x_tab,          0],
+                [ x_tab + galbe,  marche],
+                [ larg / 2,       marche],
+                [ larg / 2,       ztop],
+                [-larg / 2,       ztop],
+            ]);
 }
 
 // --- Géométrie ----------------------------------------------------------------
@@ -217,34 +287,29 @@ module canaux(xc) {
         translate([xc, 0]) fente_2d(tete_d + jeu_tete, z_vis + tete_d / 2 + 1);
 }
 
-// Pave une zone de poches d'allègement, en laissant une nervure pleine entre
-// chacune ET sur les quatre bords de la zone.
-// x0..x1 et z0..z1 delimitent la matiere a evider : les poches tiennent
-// exactement dedans, nervures comprises.
-module grille(x0, x1, z0, z1) {
-    nx = max(1, round((x1 - x0) / dos_pas));
-    nz = max(1, round((z1 - z0) / dos_pas));
-    px = (x1 - x0 + dos_nerv) / nx;
-    pz = (z1 - z0 + dos_nerv) / nz;
-    for (i = [0 : nx - 1], j = [0 : nz - 1])
-        translate([x0 + i * px, dos_peau, z0 + j * pz])
-            cube([px - dos_nerv, dos_e - dos_peau - dos_av, pz - dos_nerv]);
-}
-
 module dos() {
     difference() {
         union() {
-            // La plaque, allégée par une grille de poches. Elles sont FERMÉES —
-            // la peau avant les referme — donc chacune est une cavité scellée que
-            // le trancheur doit ponter sur le pas de la grille, 30 mm. C'est sans
-            // difficulté en PLA, et la peau fait 6 couches : seule la première
-            // ponte, les cinq autres se posent dessus. Mais ce n'est pas gratuit,
+            // La plaque, allégée par une grille de poches confinée à la
+            // silhouette. Elles sont FERMÉES — la peau avant les referme — donc
+            // chacune est une cavité scellée que le trancheur doit ponter sur le
+            // pas de la grille. Sans difficulté en PLA, et la peau fait 6
+            // couches : seule la première ponte. Mais ce n'est pas gratuit,
             // contrairement à ce qu'on croirait si on les imaginait ouvertes.
             difference() {
-                translate([-larg / 2, 0, z_bac])
-                    cube([larg, dos_e, z_top - z_bac]);
-                grille(-larg / 2 + dos_bord, larg / 2 - dos_bord,
-                       z_bac + dos_bord,      z_top - dos_bord);
+                en_travers(0, dos_e) silhouette_2d(z_top);
+
+                nx = ceil(larg / dos_pas);
+                nz = ceil(z_top / dos_pas);
+                intersection() {
+                    for (i = [0 : nx - 1], j = [0 : nz - 1])
+                        translate([-larg / 2 + i * dos_pas, dos_peau, j * dos_pas])
+                            cube([dos_pas - dos_nerv,
+                                  dos_e - dos_peau - dos_av,
+                                  dos_pas - dos_nerv]);
+                    en_travers(dos_peau, dos_e - dos_peau - dos_av)
+                        offset(r = -dos_bord) silhouette_2d(z_top);
+                }
             }
 
             // Matière pleine autour de chaque cheville : c'est la plaque porteuse.
@@ -260,91 +325,94 @@ module dos() {
     }
 }
 
-// La coque : le bac nu, sans aucune séparation. Utilisable seule en plateau.
+// La coque : le bac nu, sans aucune séparation intérieure sauf la cloison qui
+// sépare les deux niveaux — celle-là est structurelle.
 module bac() {
     difference() {
-        translate([-larg / 2, dos_e, z_bac])
-            cube([larg, prof - dos_e, bac_h]);
-        translate([0, 0, z_bac + fond])
-            linear_extrude(bac_h)
-                rect_2d(xi0, xi1, yi0, yi1);
+        en_travers(dos_e, prof - dos_e) silhouette_2d(z_haut);
+
+        // une seule cavité par zone, depuis son propre fond
+        for (z = zones)
+            translate([0, 0, z[2]])
+                linear_extrude(z_haut - z[2] + 10)
+                    rect_2d(z[0], z[1], yi0, yi1);
+
+        // Évidement sous le socle du côté peu profond. Sans lui, le coin entre le
+        // galbe et ce socle serait un bloc plein : des dizaines de grammes de
+        // matière qui ne servent à rien.
+        en_travers(dos_e, prof - dos_e - paroi)
+            intersection() {
+                offset(r = -paroi) silhouette_2d(z_haut);
+                polygon([
+                    [-larg,            -20],
+                    [ larg,            -20],
+                    [ larg,            fond_haut],
+                    [ x_tab + cloison, fond_haut],
+                    [ x_tab + cloison, fond_bas],
+                    [-larg,            fond_bas],
+                ]);
+            }
     }
 }
 
-// Le contour de l'insert : l'intérieur de la coque, rétréci du jeu de montage.
-module contour_2d() {
-    offset(r = -insert_jeu) rect_2d(xi0, xi1, yi0, yi1);
+// --- Insert -------------------------------------------------------------------
+
+// Le contour d'un insert : l'intérieur de sa zone, rétréci du jeu de montage.
+module contour_2d(z) {
+    offset(r = -insert_jeu) rect_2d(z[0], z[1], yi0, yi1);
 }
 
 // La bande périphérique dont est fait le rebord.
-module ceinture_2d() {
+module ceinture_2d(z) {
     difference() {
-        contour_2d();
-        offset(r = -insert_paroi) contour_2d();
+        contour_2d(z);
+        offset(r = -insert_paroi) contour_2d(z);
     }
 }
 
-// L'insert : un bac à séparations d'un seul tenant, qui se pose au fond de la
-// coque et se retire avec son contenu.
+// L'insert d'une zone : un bac à séparations d'un seul tenant, qui se pose au
+// fond de sa cavité et se retire avec son contenu.
 //
 // Il porte son propre fond. Une version antérieure n'était qu'un peigne de
 // cloisons sans fond, pour ne pas empiler deux fonds : elle économisait 29 g et
-// donnait quatre parois de 2,4 mm hautes de 57, en porte-à-faux jusqu'à 97 mm,
-// ne touchant le plateau que par leur tranche — 7 cm² pour toute la pièce.
-// Fragile à l'impression comme à la main. Le fond raidit tout, colle la pièce au
-// plateau sur 145 cm², et permet de sortir l'insert plein.
-//
-// Il reste mince parce qu'il ne travaille pas : il repose à plat sur le fond de
-// la coque, qui reprend seul les charges.
+// ne touchait le plateau que par la tranche de ses parois — 7 cm² pour toute la
+// pièce. Fragile à l'impression comme à la main.
 //
 // Séparations et coque se calculent toutes deux à partir de la liste `cuves` :
 // une seule description, donc pas de divergence possible.
-module insert() {
-    translate([0, 0, z_bac + fond]) {
-        linear_extrude(insert_fond) contour_2d();
+module insert_zone(z) {
+    miennes = [for (c = cuves) if (c[0] >= z[0] - EPS && c[1] <= z[1] + EPS) c];
+    translate([0, 0, z[2]]) {
+        linear_extrude(insert_fond) contour_2d(z);
 
-        // Rebord bas. Les compartiments extérieurs sont fermés par les parois de
-        // la coque, pas par l'insert — pas de double paroi, donc pas de place
+        // Rebord. Les compartiments extérieurs sont fermés par les parois de la
+        // COQUE, pas par l'insert — pas de double paroi, donc pas de place
         // perdue. Mais sans rien, leur contenu glisse dès qu'on soulève l'insert,
-        // et surtout le bord libre d'un fond plat de 194 × 75 en 1,6 mm gondole à
-        // l'impression. Le rebord règle les deux pour 7 g.
-        linear_extrude(insert_rebord) ceinture_2d();
+        // et le bord libre d'un fond plat mince gondole à l'impression.
+        linear_extrude(insert_rebord) ceinture_2d(z);
 
-        // Rebord relevé, au droit des seuls compartiments à fond relevé.
-        //
-        // Ces compartiments sont fermés par les parois de la COQUE, pas par
-        // l'insert : côté extérieur, leur fond relevé ne reposerait sur rien. À
-        // l'impression ce serait un pontage accroché par deux bords adjacents
-        // seulement, qui s'affaisserait. Le rebord leur donne l'appui manquant.
-        //
-        // Le relever sur tout le pourtour coûterait 40 g ; ne le relever qu'aux
-        // segments qui portent effectivement quelque chose en coûte 22.
-        for (c = cuves) if (c[4] > 0)
-            linear_extrude(c[4] + insert_fond)
-                intersection() {
-                    ceinture_2d();
-                    rect_2d(c[0], c[1], c[2], c[3]);
-                }
-
-        linear_extrude(bac_h - fond)
+        // Séparations : la matière entre les compartiments, jusqu'à l'arase.
+        linear_extrude(z_haut - z[2])
             intersection() {
                 difference() {
-                    rect_2d(xi0, xi1, yi0, yi1);
-                    for (c = cuves) rect_2d(c[0], c[1], c[2], c[3]);
+                    rect_2d(z[0], z[1], yi0, yi1);
+                    for (c = miennes) rect_2d(c[0], c[1], c[2], c[3]);
                 }
-                contour_2d();
+                contour_2d(z);
             }
-
-        // fonds relevés des petits compartiments
-        for (c = cuves) if (c[4] > 0)
-            translate([0, 0, c[4]])
-                linear_extrude(insert_fond)
-                    intersection() {
-                        rect_2d(c[0], c[1], c[2], c[3]);
-                        contour_2d();
-                    }
     }
 }
+
+module insert() {
+    for (z = zones) insert_zone(z);
+}
+
+// --- Crochet ------------------------------------------------------------------
+
+croc_x = larg / 2 - croc_larg / 2;    // calé à droite, sous la zone peu profonde
+croc_z = croc_bas;                    // 4
+// Passage libre pour l'arceau, entre le dessus du bras et le dessous de la coque.
+croc_jour = marche - croc_z - croc_e; // 32
 
 module crochet() {
     profil = [
@@ -358,34 +426,47 @@ module crochet() {
     difference() {
         union() {
             // bras : profil dans le plan YZ, extrudé sur la largeur de portée
-            rotate([90, 0, 90])
-                translate([0, 0, -croc_larg / 2])
-                    linear_extrude(croc_larg)
-                        offset(r = 1.2) offset(r = -1.2)
-                            polygon(profil);
+            translate([croc_x, 0, croc_z])
+                rotate([90, 0, 90])
+                    translate([0, 0, -croc_larg / 2])
+                        linear_extrude(croc_larg)
+                            offset(r = 1.2) offset(r = -1.2)
+                                polygon(profil);
 
-            // âme : relie le bras au dos et au fond du bac
-            translate([-croc_larg / 2, 0, croc_e - EPS])
-                cube([croc_larg, croc_ame, z_bac - croc_e + EPS]);
+            // Âme : un col étroit, calé à droite, qui descend de la coque
+            // jusqu'au bras. Ce qu'il reste du rectangle une fois la coque
+            // retirée — il épouse donc le galbe au lieu de le couper au carré.
+            en_travers(0, croc_ame)
+                difference() {
+                    offset(r = 6) offset(r = -6)
+                        polygon([
+                            [croc_x + croc_larg / 2 - croc_col, croc_z + croc_e - EPS],
+                            [croc_x + croc_larg / 2,            croc_z + croc_e - EPS],
+                            [croc_x + croc_larg / 2,            marche + 20],
+                            [croc_x + croc_larg / 2 - croc_col, marche + 20],
+                        ]);
+                    silhouette_2d(z_top);
+                }
         }
 
         // arêtes de portée chanfreinées : une arête vive marque la mousse de
         // l'arceau à la longue. Verticales à l'impression, donc gratuites.
         for (s = [-1, 1])
-            translate([s * croc_larg / 2, croc_l / 2, croc_e])
+            translate([croc_x + s * croc_larg / 2, croc_l / 2, croc_z + croc_e])
                 rotate([0, 45, 0])
                     cube([croc_ch * sqrt(2), croc_l + 20, croc_ch * sqrt(2)],
                          center = true);
     }
 }
 
+// --- Assemblages --------------------------------------------------------------
+
+module coque() {
+    union() { dos(); bac(); crochet(); }
+}
+
 module panier() {
-    union() {
-        dos();
-        bac();
-        insert();
-        crochet();
-    }
+    union() { coque(); insert(); }
 }
 
 // Réglet de perçage de la seconde cheville : se pose sur la première, se met de
@@ -416,16 +497,15 @@ module montage() {
     panier();
     for (s = [-1, 1])
         translate([s * entraxe / 2, 0, z_vis]) vis_reelle();
-    translate([-larg / 2 - 20, -18, z_bac - 20])
-        cube([larg + 40, 18, z_top - z_bac + 40]);
+    translate([-larg / 2 - 20, -18, -20])
+        cube([larg + 40, 18, z_top + 40]);
 }
 
 module main() {
     if (PIECE == "gabarit")      gabarit();
     else if (PIECE == "montage") montage();
-    // sous-ensembles : pour inspecter et pour mesurer où part la matière
     // les deux pièces à imprimer
-    else if (PIECE == "coque")   { dos(); bac(); crochet(); }
+    else if (PIECE == "coque")   coque();
     else if (PIECE == "insert")  insert();
     // sous-ensembles : pour inspecter et pour mesurer où part la matière
     else if (PIECE == "dos")     dos();
