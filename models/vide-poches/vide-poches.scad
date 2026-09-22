@@ -91,10 +91,13 @@ course   = 20;    // mm — descente nécessaire pour verrouiller. Courte parce 
                   //      tête entre par un TROU, au lieu de remonter depuis le bas
                   //      de la pièce. C'est ce trou qui permet de ne pas épaissir
                   //      tout le dos.
-boss_larg = 30;   // mm — largeur du bossage autour de chaque vis
+boss_larg = 26;   // mm — diamètre du noyau plein autour de chaque vis. Le
+                  //      renflement, lui, s'étale bien au-delà.
 boss_bas  = 8;    // mm — de combien il descend sous le trou d'entrée
 boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
+boss_etale = 18;  // mm — sur quelle distance le renflement de fixation s'éteint
+n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
 // même travail, mieux, et sans piège.
@@ -136,7 +139,12 @@ r_galbe  = 4;     // mm — arrondi des angles rentrants.
                   //      de 46 — sans la moindre erreur. Depuis que les raccords
                   //      sont des courbes à tangente nulle, il n'y a presque plus
                   //      d'angle rentrant à traiter : 4 suffit.
-r_ext    = 14;    // mm — arrondi des angles saillants de la silhouette
+r_ext    = 20;    // mm — arrondi des angles saillants de la silhouette.
+                  //      DOIT rester franchement supérieur à `r_av_bac` : le
+                  //      galbe avant rétrécit le contour de r_av_bac, et à 14
+                  //      contre 15 il effaçait purement et simplement les coins
+                  //      — d'où les ruptures de continuité en haut et en bas du
+                  //      panier.
 r_av_dos = 10;    // mm — arrondi de l'arête avant du dos. Généreux : c'est lui
                   //      qui effile la crête de l'arche en une nervure au lieu
                   //      d'une tranche de 26 mm.
@@ -181,23 +189,24 @@ prof     = dos_ep + bac_int + paroi;  // profondeur hors tout
 // Sony WH-1000XM5 : ne se plie pas, seulement à plat. L'arceau porte sur toute la
 // largeur du bras, d'où une portée large plutôt qu'une patte fine.
 
-croc_larg  = 30;   // mm — largeur de portée sous l'arceau. À 40, le crochet
+croc_larg  = 34;   // mm — largeur de portée sous l'arceau. À 40, le crochet
                    //      occupait 40 des 47 mm du creux laissé par le galbe et
                    //      la silhouette se refermait en boîte. À 30, calé à
                    //      droite, il laisse 18 mm d'air visible entre lui et la
                    //      partie profonde. L'arceau du XM5 fait ~32 mm de large :
                    //      30 mm de portée restent une assise pleine.
-croc_e     = 10;   // mm — épaisseur du bras
+croc_e     = 13;   // mm — épaisseur du bras. Épais comme les parois galbées
+                   //      du panier : un bras mince se lisait comme une pièce
+                   //      rapportée, d'un autre vocabulaire.
 croc_bas   = 4;    // mm — Z du dessous du bras. Laisse 4 mm d'air sous lui, pour
                    //      qu'il se lise comme suspendu et non comme un bloc posé
                    //      dans le prolongement du fond.
 croc_l     = 70;   // mm — longueur du bras
 croc_ame   = 14;   // mm — épaisseur de l'âme qui relie le bras au dos
-croc_col   = 18;   // mm — LARGEUR de cette âme. Bien plus étroite que le bras,
-                   //      et c'est le point : à 40 mm elle bouchait exactement
-                   //      le vide que le galbe venait de créer, et la silhouette
-                   //      redevenait une boîte. Un col étroit laisse l'air se
-                   //      voir sous la courbe.
+croc_col_y = 22;   // mm — profondeur de la racine adossée au dos
+croc_rc    = 12;    // mm — congé des plis RENTRANTS. C'est lui qui fait du crochet
+                   //      un fer plié plutôt que deux pièces soudées.
+croc_rv    = 6;    // mm — arrondi des arêtes saillantes
 croc_ch    = 3;    // mm — chanfrein des arêtes de portée
 croc_r_y   = 16;   // mm — emprise de la rampe de retenue
 croc_r_z   = 12;   // mm — remontée de la rampe.
@@ -288,11 +297,12 @@ module en_travers(y0, e) {
 // toit, et un toit se pose sur la couche du dessous quelle que soit sa pente. On
 // peut donc galber l'avant librement. C'est l'arrière qui est contraint — et
 // justement il reste plat, puisque c'est la face qui porte sur le bois.
-// n : nombre de marches de l'approximation. À 5 les gradins se voient ; le pas
-// doit rester de l'ordre de quelques couches d'impression, d'où 2 marches par mm
-// de rayon.
-module extrude_arrondi(y0, e, r) {
-    n = max(4, ceil(r * 2));
+// `n` est imposé de l'extérieur pour que la peau et l'enveloppe intérieure
+// partagent EXACTEMENT les mêmes plans de marche. Avec deux échantillonnages
+// différents, l'épaisseur de paroi oscille d'une marche à l'autre, et ça se voit
+// sur les arêtes.
+module extrude_arrondi(y0, e, r, n = 0) {
+    n = n > 0 ? n : max(4, ceil(r * 2));
     translate([0, y0, 0]) {
         en_travers(0, e - r + EPS) children();
         for (i = [0 : n - 1]) {
@@ -431,18 +441,37 @@ module canaux(xc) {
 
 // Les deux bossages qui portent la fixation. `marge` les grossit, pour dégager
 // l'insert qui doit passer devant.
-// `marge` > 0 donne la forme de dégagement : un peu plus grosse et sans nez
-// galbé, pour envelopper à coup sûr le bossage réel.
+// Le renflement qui porte la fixation.
+//
+// Ce n'était d'abord que deux plaques posées sur l'arche : des mottes, avec une
+// arête franche tout autour. Ici l'épaisseur du dos passe de `dos_ep` au bord à
+// `dos_e` au droit des vis, par une lentille qui s'éteint sur `boss_etale`. Le
+// rayon de dilatation suit un cosinus : large en bas, NUL au sommet, donc la
+// lentille arrive tangente à sa propre crête au lieu de finir par une marche.
+//
+// `marge` > 0 donne la forme de dégagement pour l'insert, un peu plus grosse.
+// DEUX noyaux distincts, un par vis, et surtout pas leur enveloppe convexe : en
+// les reliant, le renflement devenait une seule bosse en travers de toute la
+// largeur, et une casquette au-dessus du bac.
+module noyau_2d() {
+    for (s = [-1, 1]) hull() {
+        translate([s * entraxe / 2, boss_z0 + boss_larg / 2]) circle(d = boss_larg);
+        translate([s * entraxe / 2, boss_z1 - boss_larg / 2]) circle(d = boss_larg);
+    }
+}
+
 module bossages(marge = 0) {
-    for (s = [-1, 1])
-        intersection() {
-            extrude_arrondi(0, dos_e + marge, marge > 0 ? 0.8 : 8)
-                offset(r = marge)
-                    rect_2d(s * entraxe / 2 - boss_larg / 2,
-                            s * entraxe / 2 + boss_larg / 2,
-                            boss_z0, boss_z1, 11);
-            extrude_arrondi(0, dos_e + marge, r_av_dos) silhouette_dos_2d();
+    n = 20;
+    intersection() {
+        union() for (i = [0 : n - 1]) {
+            y0 = dos_ep + (dos_e - dos_ep) * i / n;
+            y1 = dos_ep + (dos_e - dos_ep) * (i + 1) / n;
+            en_travers(y0, y1 - y0 + EPS)
+                offset(r = boss_etale * cos(90 * i / n) + marge)
+                    noyau_2d();
         }
+        extrude_arrondi(0, dos_e + marge, r_av_dos) silhouette_dos_2d();
+    }
 }
 
 // Le dos : la plaque qui porte contre le bois et qui reçoit la fixation.
@@ -465,39 +494,48 @@ module dos() {
     }
 }
 
-// La coque : le bac nu, sans aucune séparation intérieure sauf la cloison qui
-// sépare les deux niveaux — celle-là est structurelle.
-module bac() {
-    difference() {
-        extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac) silhouette_bac_2d();
+// Le bac, plein — sa cavité est retirée plus haut, au niveau de la coque.
+module bac_plein() {
+    extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac, n_galbe) silhouette_bac_2d();
+}
 
-        // une seule cavité par zone, depuis son propre fond, découpée dans
-        // l'enveloppe intérieure
-        intersection() {
-            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi))
-                enveloppe_int_2d();
-            union() for (z = zones)
-                translate([0, 0, z[2]])
-                    linear_extrude(z_haut - z[2] + 10)
-                        rect_2d(z[0], z[1], yi0, yi1);
-        }
-
-        // Évidement sous le socle du côté peu profond. Sans lui, le coin entre le
-        // galbe et ce socle serait un bloc plein : des dizaines de grammes de
-        // matière qui ne servent à rien.
-        en_travers(dos_ep, prof - dos_ep - paroi)
-            intersection() {
-                offset(r = -paroi) silhouette_bac_2d();
-                polygon([
-                    [-larg,            -20],
-                    [ larg,            -20],
-                    [ larg,            fond_haut],
-                    [ x_tab + cloison, fond_haut],
-                    [ x_tab + cloison, fond_bas],
-                    [-larg,            fond_bas],
-                ]);
-            }
+// Les cavités de rangement, découpées dans l'enveloppe intérieure de la coque.
+//
+// Elles ne doivent PAS être posées à un niveau : le dessous de la coque remonte
+// vers les extrémités — coins arrondis, galbe — alors qu'un fond de compartiment
+// est plat. Posées à plat, elles passaient sous la peau près des coins et le bac
+// débouchait par en dessous.
+module cavites() {
+    intersection() {
+        extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), n_galbe)
+            enveloppe_int_2d();
+        union() for (z = zones)
+            translate([0, 0, z[2]])
+                linear_extrude(z_haut - z[2] + 10)
+                    rect_2d(z[0], z[1], yi0, yi1);
     }
+}
+
+// Évidement sous le socle du côté peu profond : sans lui, le coin entre le galbe
+// et ce socle serait un bloc plein.
+module evidement() {
+    en_travers(dos_ep, prof - dos_ep - paroi)
+        intersection() {
+            offset(r = -paroi) silhouette_bac_2d();
+            polygon([
+                [-larg,            -20],
+                [ larg,            -20],
+                [ larg,            fond_haut],
+                [ x_tab + cloison, fond_haut],
+                [ x_tab + cloison, fond_bas],
+                [-larg,            fond_bas],
+            ]);
+        }
+}
+
+// Pour inspection seule : le bac creusé, sans le reste.
+module bac() {
+    difference() { bac_plein(); cavites(); evidement(); }
 }
 
 // --- Insert -------------------------------------------------------------------
@@ -553,7 +591,8 @@ module insert() {
         // borné à l'enveloppe intérieure comme les cavités de la coque, sinon
         // l'insert dépasse là où la coque remonte
         intersection() {
-            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi))
+            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi),
+                            n_galbe)
                 enveloppe_int_2d(insert_jeu);
             union() for (z = zones) insert_zone(z);
         }
@@ -565,52 +604,46 @@ module insert() {
 
 // --- Crochet ------------------------------------------------------------------
 
-croc_x = larg / 2 - croc_larg / 2;    // calé à droite, sous la zone peu profonde
+croc_x = 66;      // mm — centré sous la partie plate du dessous, à l'écart du
+                  //      galbe, qui se termine vers x = 45
 croc_z = croc_bas;                    // 4
 // Passage libre pour l'arceau, entre le dessus du bras et le dessous de la coque.
 croc_jour = marche - croc_z - croc_e; // 32
 
+// Le crochet, d'UN SEUL PROFIL plié.
+//
+// Une version antérieure l'assemblait en deux morceaux : un bras extrudé dans un
+// sens, un col extrudé dans l'autre, qui se rencontraient en T sans le moindre
+// congé. Ça se voyait, et ça concentrait la contrainte exactement là où le
+// casque tire. Ici c'est une seule section, du dos jusqu'à la butée, avec des
+// congés rentrants à chaque pli — comme un fer plié, pas comme deux pièces
+// soudées.
 module crochet() {
     profil = [
-        [0,                  0],
-        [croc_l,             0],
-        [croc_l,             croc_e + croc_r_z],
-        [croc_l - croc_r_y,  croc_e],
-        [0,                  croc_e],
+        [0,                 marche + 15],              // adossé au dos, noyé dedans
+        [0,                 croc_z],                   // descend le long du bois
+        [croc_l,            croc_z],                   // file vers l'avant
+        [croc_l,            croc_z + croc_e + croc_r_z],  // remonte : la butée
+        [croc_l - croc_r_y, croc_z + croc_e],          // redescend le long de la rampe
+        [croc_col_y,        croc_z + croc_e],          // le dessus du bras
+        [croc_col_y,        marche + 15],              // et remonte au dos
     ];
 
     difference() {
-        union() {
-            // bras : profil dans le plan YZ, extrudé sur la largeur de portée
-            translate([croc_x, 0, croc_z])
-                rotate([90, 0, 90])
-                    translate([0, 0, -croc_larg / 2])
-                        linear_extrude(croc_larg)
-                            offset(r = 1.2) offset(r = -1.2)
+        translate([croc_x, 0, 0])
+            rotate([90, 0, 90])
+                translate([0, 0, -croc_larg / 2])
+                    linear_extrude(croc_larg)
+                        offset(r = -croc_rc) offset(r = croc_rc)   // plis rentrants
+                            offset(r = croc_rv) offset(r = -croc_rv)  // arêtes vives
                                 polygon(profil);
 
-            // Âme : un col étroit, calé à droite, qui descend de la coque
-            // jusqu'au bras. Ce qu'il reste du rectangle une fois la coque
-            // retirée — il épouse donc le galbe au lieu de le couper au carré.
-            extrude_arrondi(0, croc_ame, 4)
-                difference() {
-                    // Le col s'évase vers le haut sur un quart de cercle : sans
-                    // cet évasement, son flanc vertical rencontrait le dessous
-                    // horizontal de la coque en une arête vive à 90°.
-                    let (xg = croc_x + croc_larg / 2 - croc_col,
-                         xd = croc_x + croc_larg / 2,
-                         zb = croc_z + croc_e - EPS,
-                         zh = marche + 20,
-                         rc = 20)
-                    offset(r = 4) offset(r = -4)
-                        polygon(concat(
-                            [[xg, zb], [xd, zb], [xd, zh]],
-                            [for (i = [0 : 12])
-                             let (t = i / 12, a = 90 * t)
-                             [xg - rc * sin(a), zh - rc + rc * cos(a)]]
-                        ));
-                    silhouette_bac_2d();
-                }
+        // La racine est noyée de 15 mm dans la coque pour que la jonction soit
+        // franche. Ce qui dépasserait au-dessus du dessous de la coque — près du
+        // coin arrondi, elle remonte — est retiré.
+        difference() {
+            translate([-BIG / 2, -BIG / 2, marche]) cube(BIG);
+            en_travers(-1, prof + 2) silhouette_bac_2d();
         }
 
         // arêtes de portée chanfreinées : une arête vive marque la mousse de
@@ -625,8 +658,18 @@ module crochet() {
 
 // --- Assemblages --------------------------------------------------------------
 
+// Les cavités sont retirées au niveau de la COQUE, pas dans le bac.
+//
+// C'est ce qui a fait qu'un crochet dont la racine est noyée de 15 mm dans la
+// coque ressortait à l'intérieur d'un compartiment : le bac faisait sa
+// soustraction dans son coin, et rien ne taillait le crochet. Toute pièce qui
+// vient se noyer dans la coque doit être creusée par les mêmes cavités.
 module coque() {
-    union() { dos(); bac(); crochet(); }
+    difference() {
+        union() { dos(); bac_plein(); crochet(); }
+        cavites();
+        evidement();
+    }
 }
 
 module panier() {
