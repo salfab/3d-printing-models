@@ -69,7 +69,7 @@ tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIR
 entraxe  = 95;    // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
                   //      le vrillage, tout en laissant de la matière entre la
-                  //      colonne pleine (dos_plein) et le bord de la pièce.
+                  //      colonne de fixation et le bord de la pièce.
 
 jeu_col  = 0.8;   // mm — jeu diamétral dans le canal du fût
 jeu_vis  = 0.8;   // mm — jeu diamétral dans la fente de tige
@@ -82,19 +82,22 @@ loge_e   = tete_h + 2.0;                       // logement de la tête, large ex
 dos_av   = 2.4;                                // peau avant, celle qui cache tout
 dos_e    = col_h + porteur + loge_e + dos_av;  // 26.1
 
-dos_peau = 1.6;   // mm — peau arrière, celle qui plaque sur le bois
-dos_nerv = 1.6;   // mm — nervures d'allègement. Elles ne travaillent qu'en
-                  //      cisaillement entre les deux peaux : 4 passes de buse
-                  //      suffisent, et sur 22 mm de profondeur chaque dixième
-                  //      compte.
-dos_bord = 3.0;   // mm — bord de la plaque, DISTINCT des nervures. C'est en les
-                  //      confondant qu'une version antérieure n'a laissé que
-                  //      1,5 mm de matière sur tout le pourtour du dos.
-dos_pas  = 38;    // mm — pas de la grille. Fixe aussi la portée que la peau
-                  //      avant doit ponter au-dessus de chaque cavité.
-dos_plein = 12;   // mm — demi-largeur de matière pleine autour de chaque cheville.
-                  //      La fente ne fait que 4,2 : 10 mm de matière de chaque côté
-                  //      suffisent largement, et au-delà on ne fait qu'alourdir.
+dos_ep   = 3.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
+                  //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
+                  //      la course d'enfilage ; ailleurs une simple plaque suffit,
+                  //      et les 23 mm libérés derrière le bac deviennent du
+                  //      rangement.
+course   = 20;    // mm — descente nécessaire pour verrouiller. Courte parce que la
+                  //      tête entre par un TROU, au lieu de remonter depuis le bas
+                  //      de la pièce. C'est ce trou qui permet de ne pas épaissir
+                  //      tout le dos.
+boss_larg = 30;   // mm — largeur du bossage autour de chaque vis
+boss_bas  = 8;    // mm — de combien il descend sous le trou d'entrée
+boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
+jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
+
+// La grille d'allègement a été retirée : le remplissage du trancheur fait le
+// même travail, mieux, et sans piège.
 
 // --- Bac ----------------------------------------------------------------------
 
@@ -109,7 +112,10 @@ bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Commandée par 
                   //      des colonnettes. Debout elles font 145 et posent sur le
                   //      fond de l'insert, d'où
                   //          145 - (bac_h - fond - insert_fond) - garde_vis = 34
-bac_int  = 70;    // mm — profondeur intérieure utile
+bac_int  = 78;    // mm — profondeur intérieure utile. Gagne 8 mm sur la version
+                  //      à dos plein, alors que la pièce en perd 15 hors tout :
+                  //      c'est l'épaisseur de fixation qu'on ne traîne plus
+                  //      partout.
 paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
 fond     = 2.4;   // mm
@@ -131,6 +137,24 @@ r_galbe  = 4;     // mm — arrondi des angles rentrants.
                   //      sont des courbes à tangente nulle, il n'y a presque plus
                   //      d'angle rentrant à traiter : 4 suffit.
 r_ext    = 14;    // mm — arrondi des angles saillants de la silhouette
+r_av_dos = 10;    // mm — arrondi de l'arête avant du dos. Généreux : c'est lui
+                  //      qui effile la crête de l'arche en une nervure au lieu
+                  //      d'une tranche de 26 mm.
+r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaires
+                  //      au mur et la face avant. Large, pas un simple bourrelet.
+                  //
+                  //      Il a longtemps été borné à 2 mm : tant que les cavités
+                  //      étaient de simples prismes posés à un niveau, l'arrondi
+                  //      rétrécissait le pourtour jusqu'à passer DERRIÈRE elles,
+                  //      et le bac débouchait. Depuis que les cavités se
+                  //      découpent dans l'enveloppe intérieure, celle-ci suit le
+                  //      galbe à `paroi` en retrait : la coque garde son
+                  //      épaisseur partout et le galbe peut être aussi ample
+                  //      qu'on veut.
+                  //
+                  //      Effet de bord voulu : l'arase descend de r à l'approche
+                  //      de la face avant. Le bord du bac n'est plus une ligne
+                  //      droite mais une courbe.
 
 // Le dessus du dos : une arche, pas un bandeau. Elle ne doit rester haute que là
 // où les vis portent ; au-delà elle peut redescendre, et c'est ce qui casse la
@@ -151,7 +175,7 @@ insert_jeu = 0.5;    // mm — jeu entre l'insert et la coque, par côté. C'est
                      //      retrait DIFFÉRENTIEL des deux pièces qui compte, pas
                      //      le retrait absolu : même matière, même machine.
 
-prof     = dos_e + bac_int + paroi;   // profondeur hors tout
+prof     = dos_ep + bac_int + paroi;  // profondeur hors tout
 
 // --- Crochet à casque ---------------------------------------------------------
 // Sony WH-1000XM5 : ne se plie pas, seulement à plat. L'arceau porte sur toute la
@@ -193,12 +217,16 @@ z_top     = z_som;               // 145 — point le plus haut de l'arche
 fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
 fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
 
+z_entree  = z_vis - course;      //  95 — hauteur du trou de passage de la tête
+boss_z0   = z_entree - boss_bas; //  87
+boss_z1   = z_vis + boss_haut;   // 127 — le bossage ne fait que 40 mm de haut
+
 // --- Compartiments ------------------------------------------------------------
 // Dictés par les objets, pas par une grille régulière.
 
 xi0 = -larg / 2 + paroi;
 xi1 =  larg / 2 - paroi;
-yi0 = dos_e;
+yi0 = dos_ep;
 yi1 = prof - paroi;
 
 x_tab = xi0 + 85;     // largeur de la fente à tabac — le plus large des objets
@@ -251,12 +279,38 @@ module en_travers(y0, e) {
                     children();
 }
 
-// Fente verticale à sommet rond : le sommet est le siège, la vis y porte en
-// contact réparti plutôt que sur une arête.
-module fente_2d(l, z_siege) {
+// Extrude un profil 2D depuis y0 sur une épaisseur e, en arrondissant l'arête
+// AVANT — celle qui se voit — sur un rayon r.
+//
+// C'est ici que se joue la marge de manœuvre sur la forme, et je l'avais d'abord
+// crue nulle. La pièce s'imprimant dos contre le plateau, la direction de
+// construction est la PROFONDEUR : toute surface tournée vers l'avant est un
+// toit, et un toit se pose sur la couche du dessous quelle que soit sa pente. On
+// peut donc galber l'avant librement. C'est l'arrière qui est contraint — et
+// justement il reste plat, puisque c'est la face qui porte sur le bois.
+// n : nombre de marches de l'approximation. À 5 les gradins se voient ; le pas
+// doit rester de l'ordre de quelques couches d'impression, d'où 2 marches par mm
+// de rayon.
+module extrude_arrondi(y0, e, r) {
+    n = max(4, ceil(r * 2));
+    translate([0, y0, 0]) {
+        en_travers(0, e - r + EPS) children();
+        for (i = [0 : n - 1]) {
+            ya = e - r + r * sin(90 * i / n);
+            yb = e - r + r * sin(90 * (i + 1) / n);
+            en_travers(ya, yb - ya + EPS)
+                offset(r = -r * (1 - cos(90 * (i + 1) / n)))
+                    children();
+        }
+    }
+}
+
+// Fente verticale à deux bouts ronds, entre les axes z0 et z1. Le bout haut est
+// le siège : la vis y porte en contact réparti plutôt que sur une arête.
+module fente_2d(l, z0, z1) {
     hull() {
-        translate([0, z_siege - l / 2]) circle(d = l);
-        translate([-l / 2, -20]) square([l, 1]);
+        translate([0, z0]) circle(d = l);
+        translate([0, z1]) circle(d = l);
     }
 }
 
@@ -325,68 +379,88 @@ module silhouette_dos_2d() {
 }
 
 // Le bac : même dessous, arase plate — c'est le bord où l'on pose la main.
-module silhouette_bac_2d() {
+// `ztop` sert à en obtenir une version prolongée vers le haut : l'enveloppe
+// intérieure doit rester OUVERTE à l'arase, sinon les compartiments se
+// retrouveraient coiffés d'un couvercle.
+module silhouette_bac_2d(ztop = 0) {
+    zt = ztop > 0 ? ztop : z_haut;
     arrondi() polygon(concat(
         sil_bas(),
-        [[larg / 2, z_haut], [-larg / 2, z_haut]]
+        [[larg / 2, zt], [-larg / 2, zt]]
     ));
+}
+
+// L'enveloppe intérieure de la coque : sa peau en retrait de `paroi`.
+//
+// Les cavités doivent être DÉCOUPÉES DEDANS, et non simplement posées à un
+// niveau donné. Le dessous de la coque remonte vers les extrémités — coins
+// arrondis, galbe — alors qu'un fond de compartiment est plat : près des coins
+// il passait sous la peau et le bac débouchait par en dessous. Rien dans la
+// géométrie ne le signalait.
+module enveloppe_int_2d(retrait = 0) {
+    offset(r = -(paroi + retrait)) silhouette_bac_2d(z_haut + 60);
 }
 
 // --- Géométrie ----------------------------------------------------------------
 
-// Les trois canaux d'une cheville, superposés dans l'épaisseur du dos.
-// Seule la fente de tige porte : les deux autres ont 1 mm de dégagement au
-// sommet pour ne pas venir en butée avant elle.
+// Le trou de serrure d'une cheville, en trois étages superposés dans l'épaisseur
+// du bossage : le fût au fond, la tige lisse au milieu, la tête devant.
+//
+// La tête entre par un TROU percé dans la plaque porteuse, au bas de la course.
+// C'est tout le changement : en la faisant auparavant remonter depuis le bord
+// inférieur de la pièce, il fallait 26 mm d'épaisseur sur 145 mm de haut. Ici
+// 40 mm suffisent, et la pose devient « présenter, pousser, descendre de 20 ».
 module canaux(xc) {
-    en_travers(-EPS, col_h + EPS)
-        translate([xc, 0]) fente_2d(col_d + jeu_col, z_vis + col_d / 2 + 1);
+    translate([xc, 0, 0]) {
+        // 1. le fût, dans une rainure de la face arrière
+        en_travers(-EPS, col_h + EPS)
+            fente_2d(col_d + jeu_col, z_entree, z_vis);
 
-    en_travers(col_h, porteur)
-        translate([xc, 0]) fente_2d(vis_d + jeu_vis, z_vis + vis_d / 2);
+        // 2. la tige lisse — c'est cette fente qui porte — et le trou par lequel
+        //    la tête traverse la plaque au moment de la pose
+        en_travers(col_h, porteur) {
+            fente_2d(vis_d + jeu_vis, z_entree, z_vis);
+            translate([0, z_entree]) circle(d = tete_d + jeu_entree);
+        }
 
-    en_travers(col_h + porteur, loge_e)
-        translate([xc, 0]) fente_2d(tete_d + jeu_tete, z_vis + tete_d / 2 + 1);
+        // 3. le logement de la tête, devant la plaque
+        en_travers(col_h + porteur, loge_e)
+            fente_2d(tete_d + jeu_tete, z_entree, z_vis);
+    }
 }
 
+// Les deux bossages qui portent la fixation. `marge` les grossit, pour dégager
+// l'insert qui doit passer devant.
+// `marge` > 0 donne la forme de dégagement : un peu plus grosse et sans nez
+// galbé, pour envelopper à coup sûr le bossage réel.
+module bossages(marge = 0) {
+    for (s = [-1, 1])
+        intersection() {
+            extrude_arrondi(0, dos_e + marge, marge > 0 ? 0.8 : 8)
+                offset(r = marge)
+                    rect_2d(s * entraxe / 2 - boss_larg / 2,
+                            s * entraxe / 2 + boss_larg / 2,
+                            boss_z0, boss_z1, 11);
+            extrude_arrondi(0, dos_e + marge, r_av_dos) silhouette_dos_2d();
+        }
+}
+
+// Le dos : la plaque qui porte contre le bois et qui reçoit la fixation.
+//
+// Elle est PLEINE. Une version antérieure la creusait d'une grille de poches
+// d'allègement ; le trancheur fait le même travail avec sa densité de
+// remplissage, et sans aucun des pièges qui allaient avec — pontages, cavités
+// scellées, et surtout le recul de la grille vis-à-vis du galbe avant, qui mal
+// calculé avait supprimé cinq poches et alourdi la coque de 77 cm³ d'un coup.
+//
+// Conséquence à garder en tête : le volume géométrique mesuré plus bas surestime
+// franchement le fil consommé, puisque toute cette épaisseur sera remplie.
 module dos() {
     difference() {
         union() {
-            // La plaque, allégée par une grille de poches confinée à la
-            // silhouette. Elles sont FERMÉES — la peau avant les referme — donc
-            // chacune est une cavité scellée que le trancheur doit ponter sur le
-            // pas de la grille. Sans difficulté en PLA, et la peau fait 6
-            // couches : seule la première ponte. Mais ce n'est pas gratuit,
-            // contrairement à ce qu'on croirait si on les imaginait ouvertes.
-            difference() {
-                en_travers(0, dos_e) silhouette_dos_2d();
-
-                nx = ceil(larg / dos_pas);
-                nz = ceil(z_top / dos_pas);
-                intersection() {
-                    for (i = [0 : nx - 1], j = [0 : nz - 1])
-                        translate([-larg / 2 + i * dos_pas, dos_peau, j * dos_pas])
-                            cube([dos_pas - dos_nerv,
-                                  dos_e - dos_peau - dos_av,
-                                  dos_pas - dos_nerv]);
-                    en_travers(dos_peau, dos_e - dos_peau - dos_av)
-                        offset(r = -dos_bord) silhouette_dos_2d();
-                }
-            }
-
-            // Matière pleine autour de chaque cheville : c'est la plaque porteuse.
-            // Uniquement dans le bandeau — c'est la seule hauteur où la vis porte.
-            // Plus bas, le canal n'est qu'un couloir libre entre les nervures, et
-            // le dos peut rester un caisson creux.
-            // Taillées DANS la silhouette : sans l'intersection, elles restent
-            // rectangulaires et dépassent de l'arche en deux oreilles carrées.
-            for (s = [-1, 1])
-                intersection() {
-                    translate([s * entraxe / 2 - dos_plein, 0, z_haut - 12])
-                        cube([2 * dos_plein, dos_e, z_top - z_haut + 12]);
-                    en_travers(0, dos_e) silhouette_dos_2d();
-                }
+            extrude_arrondi(0, dos_ep, min(r_av_dos, dos_ep - 0.6)) silhouette_dos_2d();
+            bossages();
         }
-
         for (s = [-1, 1]) canaux(s * entraxe / 2);
     }
 }
@@ -395,18 +469,23 @@ module dos() {
 // sépare les deux niveaux — celle-là est structurelle.
 module bac() {
     difference() {
-        en_travers(dos_e, prof - dos_e) silhouette_bac_2d();
+        extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac) silhouette_bac_2d();
 
-        // une seule cavité par zone, depuis son propre fond
-        for (z = zones)
-            translate([0, 0, z[2]])
-                linear_extrude(z_haut - z[2] + 10)
-                    rect_2d(z[0], z[1], yi0, yi1);
+        // une seule cavité par zone, depuis son propre fond, découpée dans
+        // l'enveloppe intérieure
+        intersection() {
+            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi))
+                enveloppe_int_2d();
+            union() for (z = zones)
+                translate([0, 0, z[2]])
+                    linear_extrude(z_haut - z[2] + 10)
+                        rect_2d(z[0], z[1], yi0, yi1);
+        }
 
         // Évidement sous le socle du côté peu profond. Sans lui, le coin entre le
         // galbe et ce socle serait un bloc plein : des dizaines de grammes de
         // matière qui ne servent à rien.
-        en_travers(dos_e, prof - dos_e - paroi)
+        en_travers(dos_ep, prof - dos_ep - paroi)
             intersection() {
                 offset(r = -paroi) silhouette_bac_2d();
                 polygon([
@@ -470,7 +549,18 @@ module insert_zone(z) {
 }
 
 module insert() {
-    for (z = zones) insert_zone(z);
+    difference() {
+        // borné à l'enveloppe intérieure comme les cavités de la coque, sinon
+        // l'insert dépasse là où la coque remonte
+        intersection() {
+            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi))
+                enveloppe_int_2d(insert_jeu);
+            union() for (z = zones) insert_zone(z);
+        }
+        // Les bossages de fixation descendent de quelques millimètres sous
+        // l'arase : l'insert doit leur laisser la place.
+        bossages(insert_jeu);
+    }
 }
 
 // --- Crochet ------------------------------------------------------------------
@@ -502,7 +592,7 @@ module crochet() {
             // Âme : un col étroit, calé à droite, qui descend de la coque
             // jusqu'au bras. Ce qu'il reste du rectangle une fois la coque
             // retirée — il épouse donc le galbe au lieu de le couper au carré.
-            en_travers(0, croc_ame)
+            extrude_arrondi(0, croc_ame, 4)
                 difference() {
                     // Le col s'évase vers le haut sur un quart de cercle : sans
                     // cet évasement, son flanc vertical rencontrait le dessous

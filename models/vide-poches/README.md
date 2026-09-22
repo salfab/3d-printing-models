@@ -40,46 +40,68 @@ resterait décollé, en appui sur deux têtes de vis.
 Le Ø de la tête n'a pas été mesuré et le modèle le **majore volontairement** à 8 :
 son logement ne guide rien, il ne fait que dégager.
 
+### Un vrai trou de serrure, et ce qu'il change
+
+La tête entre par un **trou percé dans la plaque porteuse**, au bas de la course.
+On présente, on pousse contre le bois, on descend de 20 mm : la tige monte dans la
+fente étroite et la tête se retrouve captive derrière.
+
+Une version antérieure faisait remonter la tête depuis le **bord inférieur** de la
+pièce. Conséquence invisible mais lourde : les 26 mm d'épaisseur de fixation
+devaient courir sur toute la hauteur, 145 mm. Avec le trou d'entrée, **40 mm de
+bossage suffisent** — le reste du dos n'est plus qu'une plaque de 3 mm, les 23 mm
+libérés derrière le bac deviennent du rangement, et la pièce perd 15 mm de
+profondeur hors tout tout en gagnant 8 mm de rangement.
+
 ### Ce qui commande la forme
 
 **Le rangement debout.** Les lunettes pliées passent de 150 × 46 au sol à 50 × 37,
-la poche à tabac de 105 × 30 à 85 × 30. C'est ce qui a fait tomber la pièce de
-200 mm de large à 135.
+la poche à tabac de 105 × 30 à 85 × 30.
 
 **La hauteur des lunettes.** Debout elles font 145 mm et leur sommet doit rester à
 moins de 35 mm au-dessus de l'axe des colonnettes. D'où
 
 ```
-dépassement = 145 − (bac_h − fond − insert_fond) − garde_vis
-            = 145 − 91 − 20 = 34 mm
+dépassement = 145 − (bac_h − fond − insert_fond) − garde_vis = 34 mm
 ```
 
 C'est cette inégalité, et non un besoin de volume, qui fixe `bac_h` à 95.
 
-**Le fond à deux niveaux.** Un bac uniformément profond de 95 mm serait un puits où
-il faudrait pêcher un briquet. Le fond plonge donc à gauche, où les lunettes et le
-tabac tiennent debout sur 91 mm, et remonte à droite, où les briquets et les câbles
-n'ont besoin que de 45. Entre les deux, un galbe et non une marche.
+**Le fond à deux niveaux.** Un bac uniformément profond serait un puits où il
+faudrait pêcher un briquet. Le fond plonge à gauche, où les lunettes et le tabac
+tiennent debout sur 91 mm, et remonte à droite, où les briquets et les câbles n'ont
+besoin que de 45. Entre les deux, un galbe et non une marche.
 
-**Et cette forme est gratuite.** La pièce s'imprimant couchée sur son dos, le plan
-de la façade EST le plan du plateau : toute silhouette qu'on y dessine sort sans un
-gramme de support. Ce qui coûte, c'est de faire varier la profondeur — et elle est
-constante. Tout le modèle est donc bâti sur un profil 2D en élévation, extrudé en
-profondeur. Le passage de la boîte droite à cette forme a **retiré 76 g**.
-
-| Objet | Rangé | Zone | Empreinte | Dépasse du bord |
-|---|---|---|---|---|
-| Lunettes pliées | debout | profonde, 91 mm | 50 × 37,6 | 54 mm |
-| Poche à tabac | debout | profonde, 91 mm | 85 × 30 | 9 mm |
-| Stylos, grands objets | debout | profonde, 91 mm | 32,6 × 37,6 | — |
-| Câbles USB | en vrac | peu profonde, 45 mm | 42,8 × 42 | — |
-| Briquets | en vrac | peu profonde, 45 mm | 42,8 × 25,6 | — |
-| Casque WH-1000XM5 | pendu au crochet | — | — | — |
+| Objet | Rangé | Zone | Empreinte |
+|---|---|---|---|
+| Lunettes pliées | debout | profonde, 91 mm | 50 × 37,6 |
+| Poche à tabac | debout | profonde, 91 mm | 85 × 30 |
+| Stylos, grands objets | debout | profonde, 91 mm | 32,6 × 37,6 |
+| Câbles USB | en vrac | peu profonde, 45 mm | 42,7 × 42 |
+| Briquets | en vrac | peu profonde, 45 mm | 37,7 × 42 |
+| Petites bricoles | en vrac | peu profonde, 45 mm | 82,8 × 25,6 |
 
 Le XM5 **ne se plie pas**, contrairement au XM4 : il faut une portée large sous
 l'arceau, pas une patte fine.
 
-## 2. Pièces à imprimer
+## 2. Ce que l'orientation d'impression autorise
+
+La coque s'imprime **couchée sur son dos**, plaque arrière contre le plateau. La
+direction de construction est donc la **profondeur**, et c'est tout le sujet :
+
+- Le plan de la **façade est le plan du plateau**. Toute silhouette qu'on y dessine
+  sort sans un gramme de support : dessous en S, dessus en arche, congés partout.
+- Toute surface tournée **vers l'avant est un toit**, et un toit se pose sur la
+  couche du dessous quelle que soit sa pente. La face visible peut donc varier
+  librement en profondeur — d'où le galbe de 15 mm à la jointure entre les faces
+  perpendiculaires au mur et la face avant.
+- C'est l'**arrière** qui est contraint, et justement il est plat : c'est la face
+  qui porte sur le bois.
+
+La pièce n'est donc pas un profil constant, contrairement à ce que j'ai d'abord
+cru : c'est un volume dont seule la face cachée est plane.
+
+## 3. Pièces à imprimer
 
 | Pièce | `PIECE=` | Qté | Rôle |
 |---|---|---|---|
@@ -94,139 +116,109 @@ python scripts/scad.py stl vide-poches -D PIECE=gabarit --binaire
 ```
 
 `PIECE=insert` sort **deux solides disjoints** dans un même STL, un par zone : la
-cloison qui sépare les deux niveaux appartient à la coque, pas à l'insert, puisque
-c'est elle qui retient le socle du côté peu profond et qu'elle raidit le bac en
-reliant la paroi avant au dos à mi-largeur. Un contrôle de morceaux détachés doit
-donc en attendre deux ici, et un seul par zone.
-
-**Chaque insert porte son propre fond.** Une version antérieure n'était qu'un peigne
-de cloisons sans fond, pour ne pas empiler deux fonds : elle économisait 29 g et ne
-touchait le plateau que par la tranche de ses parois — 7 cm² pour toute la pièce.
-Fragile à l'impression comme à la main.
+cloison qui sépare les deux niveaux appartient à la coque, pas à l'insert. Un
+contrôle de morceaux détachés doit donc en attendre deux ici, et **un seul** pour
+la coque.
 
 Coque et inserts se déduisent tous de la **même liste `cuves`** : un compartiment
-ajouté ou déplacé met tout à jour, rien ne peut diverger. Et un agencement se change
-maintenant **zone par zone**.
+ajouté ou déplacé met tout à jour, rien ne peut diverger.
 
-`PIECE=panier` montre l'ensemble monté ; `dos`, `bac`, `crochet` isolent un
-sous-ensemble pour l'inspecter ou le mesurer. Aucun de ces quatre ne s'imprime.
+**Le dos est plein, sans grille d'allègement** — c'est le remplissage du trancheur
+qui s'en charge, mieux et sans les pièges qui allaient avec.
 
-## 3. Cotes principales
+## 4. Cotes principales
 
 Mesurées sur les maillages exportés.
 
-| | Volume | PLA | Encombrement |
-|---|---|---|---|
-| Coque | 306,2 cm³ | 380 g | 175 × 98,5 × 145 mm |
-| Inserts (2) | 67,8 cm³ | 84 g | |
-| **Total** | **374,1 cm³** | **464 g** | |
+| | Volume | Encombrement |
+|---|---|---|
+| Coque | 224,7 cm³ | 175 × 83,4 × 145 mm |
+| Inserts (2) | 62,2 cm³ | |
+| **Total** | **286,8 cm³** | |
 
-> Ces 464 g sont le **volume géométrique**, pas le fil consommé. Les zones épaisses
-> — bras du crochet, colonnes du dos — seront remplies par le trancheur, pas
-> massives. Compter plutôt **370 à 400 g** réellement.
+> Volume **géométrique**. Le fil consommé dépend du remplissage choisi ; seuls les
+> deux bossages de fixation et le bras du crochet sont épais, tout le reste est en
+> parois minces qui s'impriment pleines.
 
 | Cote | Valeur | Origine |
 |---|---|---|
-| Épaisseur du dos | 26,1 mm | `col_h + porteur + loge_e + dos_av` |
-| Empilage du dos (plans Y) | 0 / 1,60 / 5,20 / 18,70 / 23,70 / 26,10 | mesuré sur le maillage |
+| Épaisseur du dos, hors fixation | 3,0 mm | `dos_ep` |
+| Épaisseur au droit des vis | 26,1 mm | `col_h + porteur + loge_e + dos_av` |
+| Hauteur du bossage | 40 mm | `boss_z1 − boss_z0` |
+| Course d'enfilage | 20 mm | `course` |
 | Plaque porteuse | 13,5 mm | `vis_l − 0,5` : toute la tige libre |
 | Dégagement devant la tête | 0,5 mm | plaque à 18,70, dessous de tête à 19,20 |
-| Fonds du bac (plans Z) | 2,40 et 48,40 ; arase 95 | mesuré sur le maillage |
 | Entraxe des chevilles | 95 mm | libre — la 2ᵉ est à poser |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
-| Matière autour de la fente | 10 mm de chaque côté | `dos_plein − fente/2` |
+| Trou de passage de la tête | 9,5 mm | `tete_d + jeu_entree` |
 | Profondeur, zone profonde | 91 mm | tabac, lunettes, stylos |
-| Profondeur, zone peu profonde | 45 mm | câbles, briquets |
-| Passage libre sous le crochet | 32 mm | `marche − croc_z − croc_e` |
+| Profondeur, zone peu profonde | 45 mm | câbles, briquets, bricoles |
+| Galbe de la jointure avant | 15 mm | `r_av_bac` |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
 
-## 4. Montage ou usage
+## 5. Montage
 
-1. **Percer la seconde cheville.** Poser le gabarit sur la cheville existante, le
-   mettre de niveau, pointer par le petit trou. Les deux chevilles doivent être à
-   la **même hauteur** : c'est ce qui empêche le panier de vriller quand on le
-   charge de travers.
-2. **Présenter la coque au-dessus des vis**, les deux têtes en face des canaux.
-3. **La descendre.** Les fûts montent dans leur canal, les tiges dans leur fente,
-   les têtes dans leur logement. Elle vient en butée toute seule.
-4. **Poser les deux inserts**, chacun dans sa zone. Rien à fixer.
+1. **Percer la seconde cheville** au gabarit, à la **même hauteur** que
+   l'existante : c'est ce qui empêche le panier de vriller quand on le charge de
+   travers.
+2. **Présenter la coque**, les deux têtes en face des trous de passage.
+3. **Pousser contre le bois**, puis **descendre de 20 mm**. Elle vient en butée
+   toute seule.
+4. **Poser les deux inserts**, chacun dans sa zone.
 
-Pour décrocher : soulever, tirer vers soi. Rien à dévisser.
+Pour décrocher : remonter de 20 mm, tirer vers soi. Rien à dévisser.
 
-## 5. Impression
-
-**La coque se pose sur son dos, plaque arrière contre le plateau.** C'est
-l'orientation qui la rend imprimable d'un seul bloc, et c'est aussi elle qui rend
-la silhouette gratuite : tout ce qui pointe vers l'avant à l'usage — le fond du
-bac, le bras du crochet — devient vertical.
-
-**Les inserts se posent à plat**, fond contre le plateau, séparations debout.
+## 6. Impression
 
 - **Aucun support, sur aucune pièce.**
-- Le plus grand pontage est la peau avant du dos au-dessus d'une cavité
-  d'allègement : **38 mm**, le pas de la grille. La peau fait 6 couches, seule la
-  première ponte.
+- Coque sur son dos ; inserts à plat, fond contre le plateau.
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
   250 g de casque à 60 mm de porte-à-faux donnent **0,29 MPa** sur une section de
   30 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 70.
-- Emprise plateau : 135 × 133 mm pour la coque.
+- Emprise plateau : 175 × 145 mm pour la coque.
 
-## 6. Contraintes à connaître avant de modifier
+## 7. Contraintes à connaître avant de modifier
 
-- **Le galbe DOIT démarrer à l'aplomb de `x_tab`**, la frontière entre les deux
-  zones. Plus à gauche, il passe sous un compartiment profond et en crève le fond.
-  C'est `galbe`, son emprise horizontale, qui est bornée par là.
-- **`r_galbe` doit rester petit.** L'arrondi d'un angle rentrant se fait par un
-  `offset(+r)` suivi d'un `offset(−r)` : la forme est **dilatée de r avant d'être
-  contractée**. Le creux du galbe se rétrécit vers le haut ; à r = 25 la dilatation
-  le rebouchait et le galbe ne montait plus qu'à 23 mm au lieu de 46 — sans la
-  moindre erreur. Même piège que l'`offset` qui vide une bride en silence, pris par
-  l'autre bout.
-- **La largeur du crochet est un paramètre de forme autant que de fonction.** À
-  40 mm il occupait 40 des 47 mm du creux laissé par le galbe, et la silhouette se
-  refermait en boîte. À 30, calé à droite, il laisse de l'air visible.
+- **Les cavités doivent être découpées dans l'enveloppe intérieure, jamais posées
+  à un niveau.** Le dessous de la coque remonte vers les extrémités — coins
+  arrondis, galbe — alors qu'un fond de compartiment est plat. Posées à plat, les
+  cavités passaient sous la peau près des coins et **le bac débouchait par en
+  dessous**, sur plusieurs millimètres, sans que rien ne le signale.
+- **C'est cette même enveloppe qui débride le galbe avant.** Tant que les cavités
+  étaient des prismes posés, `r_av_bac` était borné à l'épaisseur de paroi, 2 mm :
+  au-delà l'arrondi passait derrière elles. Depuis, la coque garde son épaisseur
+  partout et le galbe peut être aussi ample qu'on veut. Effet voulu : l'arase
+  descend de `r_av_bac` à l'approche de la face avant.
+- **L'arche doit passer au-dessus du siège de chaque vis** — assertion dans le
+  modèle. Sinon le canal débouche par le haut et la vis ne retient plus rien. Elle
+  a arrêté le rendu dès le premier essai.
+- **Le galbe ne doit pas passer sous un compartiment profond** — autre assertion.
+- **`r_galbe` doit rester petit.** L'arrondi d'un angle rentrant dilate la forme de
+  r avant de la contracter ; le creux du galbe se rétrécit vers le haut, et à
+  r = 25 la dilatation le rebouchait — le galbe ne montait plus qu'à 23 mm au lieu
+  de 46, sans la moindre erreur.
+- **L'arrondi avant se fait par marches empilées.** Deux marches par millimètre de
+  rayon : à cinq marches pour 10 mm, les gradins se voient.
 - **`bac_h` est fixé par une contrainte de hauteur, pas de volume.** Le réduire fait
-  ressortir les lunettes d'autant au-dessus de l'axe des colonnettes, où la limite
-  est de 35 mm. On est à 34.
-- **`porteur` ≤ `vis_l`.** La plaque porteuse se glisse entre le fût et la tête :
-  plus épaisse que la tige libre, elle ne rentre pas.
-- **Tous les compartiments doivent avoir le même congé.** L'insert se calcule comme
-  *l'intérieur de sa zone moins les compartiments* : un compartiment plus arrondi
-  que le pourtour laisse dans le coin un **fragment de matière détaché**, qui
-  sortirait de l'imprimante en morceau libre.
-- **Un compartiment doit tenir entièrement dans une zone.** À cheval sur les deux,
-  il n'appartient à aucun insert et disparaît.
-- **`croc_r_z` < `croc_r_y` impérativement.** À l'impression, la rampe de retenue
-  du crochet est un porte-à-faux dont l'angle depuis la verticale vaut
-  `atan(croc_r_z / croc_r_y)`. À 12/16 on est à 37°, sous la limite de 45°.
-- **`dos_bord` est distinct de `dos_nerv`, et c'est voulu.** En les confondant, une
-  version antérieure ne laissait que 1,5 mm de matière sur tout le pourtour du dos.
-- **`dos_plein` ne doit pas avaler la grille.** À 22 mm, les colonnes pleines
-  recouvraient la moitié des poches et ne laissaient que des fentes de 2 à 3 mm.
-  12 mm suffisent.
+  ressortir les lunettes au-dessus de l'axe des colonnettes, où la limite est 35 mm.
+- **`porteur` ≤ `vis_l`.** La plaque porteuse se glisse entre le fût et la tête.
+- **Tous les compartiments au même congé.** L'insert se calcule comme *l'intérieur
+  de sa zone moins les compartiments* : un compartiment plus arrondi que le pourtour
+  laisse dans le coin un fragment de matière détaché, qui sortirait de l'imprimante
+  en morceau libre.
+- **Un compartiment doit tenir entièrement dans une zone**, sinon il n'appartient à
+  aucun insert et disparaît.
+- **`croc_r_z` < `croc_r_y` impérativement** : la rampe de retenue du crochet est un
+  porte-à-faux dont l'angle depuis la verticale vaut `atan(croc_r_z / croc_r_y)`.
 
-## 7. Points de vérification
+## 8. Points de vérification
 
-- [ ] Vérifier que le casque passe : 32 mm entre le bras et le dessous de la coque,
-      à confronter à l'arceau réel.
+- [ ] Vérifier que le casque passe : le jour sous le crochet, à confronter à
+      l'arceau réel.
 - [ ] Le jeu de 0,5 mm au pourtour des inserts n'a pas été validé à l'impression.
-- [ ] Les lunettes debout dans une fente de 50 × 37,6 sur 91 mm de profondeur :
-      tenue à vérifier en vrai.
-- [ ] La poche à tabac debout dans une fente de 85 × 30 : une blague souple tient-elle
-      droite, ou s'affaisse-t-elle ? C'est elle qui commande toute la largeur.
-
-## Note — ce que la forme peut et ne peut pas être
-
-Toute la pièce est une **silhouette extrudée à profondeur constante**. C'est
-exactement ce qui la rend imprimable sans support : couchée sur son dos, le plan de
-la façade EST le plan du plateau, et toute courbe qu'on y dessine ne coûte rien.
-
-La contrepartie est nette. Les surfaces doublement courbes — le Guggenheim de
-Bilbao était la référence demandée — exigent de faire varier la profondeur, et
-chaque variation devient un porte-à-faux. Ce modèle est donc un **bas-relief
-galbé**, pas une sculpture : dessus en arche, dessous en S, plus une seule arête
-franche sur le pourtour, mais un profil constant d'avant en arrière.
-
-Pour aller au-delà il faudrait accepter les supports, et changer d'orientation
-d'impression — ce qui ferait tomber aussi le « aucun support » du crochet et des
-canaux de fixation, qui ne tiennent que parce que tout pointe dans le bon sens.
+- [ ] Les lunettes debout dans une fente de 50 × 37,6 sur 91 mm : tenue à vérifier.
+- [ ] La poche à tabac debout dans une fente de 85 × 30 : une blague souple
+      tient-elle droite ? C'est elle qui commande la largeur de la zone profonde.
+- [ ] Les bossages descendent de 8 mm sous l'arase et mordent donc sur le haut des
+      compartiments arrière. L'insert leur est dégagé, mais l'encombrement réel
+      reste à juger en main.
