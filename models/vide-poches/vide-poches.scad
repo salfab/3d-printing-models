@@ -75,6 +75,10 @@ paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
 fond     = 2.4;   // mm
 r_coin   = 4;     // mm — congé vertical des compartiments
+insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
+                     //      pas : il repose à plat sur celui de la coque.
+insert_rebord = 8;   // mm — hauteur du rebord bas de l'insert
+insert_paroi  = 2.0; // mm — épaisseur de ce rebord
 insert_jeu = 0.5; // mm — jeu entre l'insert et la coque, par côté. Sur 195 mm de
                   //      long, c'est le retrait différentiel des deux pièces qui
                   //      compte, pas le retrait absolu : même matière, même
@@ -227,23 +231,50 @@ module bac() {
     }
 }
 
-// L'insert : uniquement la matière qui sépare les compartiments. Pas de fond —
-// c'est celui de la coque qui sert. Il n'ajoute donc rien au poids par rapport à
-// la version monobloc, et se réimprime seul pour changer d'agencement.
+// Le contour de l'insert : l'intérieur de la coque, rétréci du jeu de montage.
+module contour_2d() {
+    offset(r = -insert_jeu) rect_2d(xi0, xi1, yi0, yi1);
+}
+
+// L'insert : un bac à séparations d'un seul tenant, qui se pose au fond de la
+// coque et se retire avec son contenu.
 //
-// Il se calcule par soustraction, ce qui garantit qu'insert et coque restent
-// cohérents : une seule liste `cuves` décrit les deux.
+// Il porte son propre fond. Une version antérieure n'était qu'un peigne de
+// cloisons sans fond, pour ne pas empiler deux fonds : elle économisait 29 g et
+// donnait quatre parois de 2,4 mm hautes de 57, en porte-à-faux jusqu'à 97 mm,
+// ne touchant le plateau que par leur tranche — 7 cm² pour toute la pièce.
+// Fragile à l'impression comme à la main. Le fond raidit tout, colle la pièce au
+// plateau sur 145 cm², et permet de sortir l'insert plein.
+//
+// Il reste mince parce qu'il ne travaille pas : il repose à plat sur le fond de
+// la coque, qui reprend seul les charges.
+//
+// Séparations et coque se calculent toutes deux à partir de la liste `cuves` :
+// une seule description, donc pas de divergence possible.
 module insert() {
-    translate([0, 0, z_bac + fond])
+    translate([0, 0, z_bac + fond]) {
+        linear_extrude(insert_fond) contour_2d();
+
+        // Rebord bas. Les compartiments extérieurs sont fermés par les parois de
+        // la coque, pas par l'insert — pas de double paroi, donc pas de place
+        // perdue. Mais sans rien, leur contenu glisse dès qu'on soulève l'insert,
+        // et surtout le bord libre d'un fond plat de 194 × 75 en 1,6 mm gondole à
+        // l'impression. Le rebord règle les deux pour 7 g.
+        linear_extrude(insert_rebord)
+            difference() {
+                contour_2d();
+                offset(r = -insert_paroi) contour_2d();
+            }
+
         linear_extrude(bac_h - fond)
             intersection() {
                 difference() {
                     rect_2d(xi0, xi1, yi0, yi1);
                     for (c = cuves) rect_2d(c[0], c[1], c[2], c[3]);
                 }
-                // rétréci au pourtour pour entrer dans la coque
-                offset(r = -insert_jeu) rect_2d(xi0, xi1, yi0, yi1);
+                contour_2d();
             }
+    }
 }
 
 module crochet() {

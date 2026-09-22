@@ -1,7 +1,8 @@
 # vide-poches
 
 Panier mural qui s'enfile par le haut sur deux chevilles d'assemblage de meuble,
-en les gardant invisibles, avec crochet à casque intégré et séparateurs amovibles.
+en les gardant invisibles, avec crochet à casque intégré et bac à séparations
+amovible.
 
 ## 1. À quoi sert la pièce
 
@@ -33,7 +34,7 @@ surface, puis **tige lisse de Ø 3,4**, puis tête bombée.
 | Pièce | `PIECE=` | Qté | Rôle |
 |---|---|---|---|
 | Coque | `coque` | 1 | dos, bac nu, crochet |
-| Insert | `insert` | 1 | les séparateurs seuls |
+| Insert | `insert` | 1 | le bac à séparations, amovible |
 | Gabarit | `gabarit` | 1 | réglet de perçage de la seconde cheville — consommable |
 
 ```bash
@@ -42,14 +43,20 @@ python scripts/scad.py stl vide-poches -D PIECE=insert  --binaire
 python scripts/scad.py stl vide-poches -D PIECE=gabarit --binaire
 ```
 
-**L'insert n'a pas de fond** : c'est celui de la coque qui sert de fond aux
-compartiments. Il n'ajoute donc rien au poids par rapport à une version monobloc —
-il en retire même 20 g, parce qu'il est rétréci de `insert_jeu` au pourtour.
-Changer d'agencement ne coûte que **53 g** de réimpression, et la coque reste
-utilisable en plateau nu.
+**L'insert porte son propre fond**, et c'est délibéré même si cela empile deux
+fonds. Une version antérieure n'était qu'un peigne de cloisons sans fond, pour
+économiser 29 g : elle donnait quatre parois de 2,4 mm hautes de 57, en
+porte-à-faux jusqu'à 97 mm, ne touchant le plateau que par leur tranche — **7 cm²
+pour toute la pièce**. Avec son fond, l'insert colle au plateau sur **145 cm²**,
+tient tout seul, et se sort plein.
 
-Coque et insert se déduisent tous deux de la **même liste `cuves`** : un compartiment
-ajouté ou déplacé met les deux pièces à jour, elles ne peuvent pas diverger.
+Le fond de la coque n'est pas supprimé pour compenser : c'est lui qui relie la
+paroi avant au dos sur 200 mm de portée, le raidisseur de la coque.
+
+Coque et insert se déduisent tous deux de la **même liste `cuves`** : un
+compartiment ajouté ou déplacé met les deux pièces à jour, elles ne peuvent pas
+diverger. Changer d'agencement ne coûte que **89 g** de réimpression, et la coque
+reste utilisable en plateau nu.
 
 `PIECE=panier` montre l'ensemble monté ; `dos`, `bac`, `crochet` isolent un
 sous-ensemble pour l'inspecter ou le mesurer. Aucun de ces quatre ne s'imprime.
@@ -61,8 +68,8 @@ Mesurées sur les maillages exportés.
 | | Volume | PLA | Encombrement |
 |---|---|---|---|
 | Coque | 307,7 cm³ | 382 g | 200 × 102,3 × 138 mm |
-| Insert | 43,0 cm³ | 53 g | 194,2 × 75,0 × 57,6 mm |
-| **Total** | **350,7 cm³** | **435 g** | |
+| Insert | 71,6 cm³ | 89 g | 194,2 × 75,0 × 57,6 mm |
+| **Total** | **379,3 cm³** | **470 g** | |
 
 | Cote | Valeur | Origine |
 |---|---|---|
@@ -72,7 +79,9 @@ Mesurées sur les maillages exportés.
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Matière autour de la fente | 10 mm de chaque côté | `dos_plein − fente/2` |
 | Course d'enfilage | 80 mm | du bas du dos au siège |
+| Profondeur utile des compartiments | 56 mm | `bac_h − fond − insert_fond` |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
+| Contact plateau de l'insert | 145,5 cm² | mesuré sur le maillage |
 | Air piégé dans le dos | 221,2 cm³ en 14 cavités | mesuré sur le maillage |
 
 ## 4. Montage ou usage
@@ -86,9 +95,10 @@ Mesurées sur les maillages exportés.
    fente, les têtes dans leur logement. Elle vient en butée toute seule.
 4. **Poser l'insert** dans le bac. Il tombe en place, rien à fixer.
 
-Pour décrocher : retirer l'insert si on veut, soulever de 80 mm, tirer vers soi.
-Rien à dévisser. L'insert se reprend en pinçant le séparateur central, qui court
-sur toute la profondeur.
+Pour décrocher : soulever de 80 mm, tirer vers soi. Rien à dévisser.
+
+L'insert se reprend en pinçant le séparateur central, qui court sur toute la
+profondeur. Son rebord de 8 mm retient le contenu pendant le transfert.
 
 ## 5. Impression
 
@@ -96,9 +106,8 @@ sur toute la profondeur.
 l'orientation qui la rend imprimable d'un seul bloc : tout ce qui pointe vers
 l'avant à l'usage — le fond du bac, le bras du crochet — devient vertical.
 
-**L'insert se pose à plat**, séparateurs debout. Un **bord d'adhérence (brim) est
-recommandé** : il ne touche le plateau que par la tranche de ses cloisons, soit
-7,1 cm² seulement, pour des parois de 57,6 mm de haut.
+**L'insert se pose à plat**, fond contre le plateau, séparateurs debout. 145 cm² de
+contact : ni brim ni précaution.
 
 - **Aucun support, sur aucune des deux pièces.**
 - Le plus grand pontage est la peau avant du dos au-dessus d'une cavité
@@ -123,6 +132,10 @@ recommandé** : il ne touche le plateau que par la tranche de ses cloisons, soit
   rond (r = 18 contre r = 4).
 - **Tout compartiment ajouté doit toucher au moins un autre séparateur**, sinon il
   détache un morceau de l'insert. À vérifier sur le maillage, pas à l'œil.
+- **Le rebord de l'insert n'est pas décoratif.** Sans lui, le bord d'un fond plat de
+  194 × 75 en 1,6 mm de PLA gondole à l'impression, et le contenu des compartiments
+  extérieurs — fermés par les parois de la coque, pas par l'insert — glisse dès
+  qu'on soulève celui-ci.
 - **`croc_r_z` < `croc_r_y` impérativement.** À l'impression, la rampe de retenue
   du crochet est un porte-à-faux dont l'angle depuis la verticale vaut
   `atan(croc_r_z / croc_r_y)`. À 14/16 on est à 41°, sous la limite de 45° ;
@@ -148,7 +161,7 @@ recommandé** : il ne touche le plateau que par la tranche de ses cloisons, soit
 - [ ] **La douille métallique déjà en place**, à ~45 mm en diagonale de la cheville,
       est-elle utilisable ? À cet écartement elle ne convient pas pour un panier de
       200 mm — il faut une seconde cheville à la même hauteur.
-- [ ] **435 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
+- [ ] **470 g de PLA** pour une pièce annoncée « petit panier ». À arbitrer :
       réduire `bac_h`, `bac_int`, ou la hauteur du bandeau.
 - [ ] Vérifier que le casque passe : `croc_jour` = 30 mm entre le bras et le
       dessous du bac, à confronter à l'arceau réel.
