@@ -46,25 +46,24 @@ PIECE = "panier";
 // Tout relevé au réglet sur la cheville en place. Ces cotes ne pilotent que
 // l'épaisseur du dos, jamais le reste de la pièce.
 
-col_d    = 7.3;   // mm — Ø du fût noir                                   (relevé)
-vis_d    = 3.4;   // mm — Ø de la tige lisse                              (relevé)
-vis_l    = 14.0;  // mm — longueur de tige libre, fût → tête              (relevé)
-tete_h   = 3.0;   // mm — hauteur de la tête                              (relevé)
-
-// Saillie totale hors bois, VIS EN PLACE. C'est la seule cote prise sur
-// l'ensemble monté, donc la seule qui intègre ce que le fût s'enfonce ; les
-// autres sont prises sur la pièce nue. On en DÉDUIT donc la saillie du fût au
-// lieu de la mesurer : mesuré hors bois il fait 6, en place il n'en dépasse que
-// 5,2. Les 0,8 mm sont enfouis.
+// VIS COURTES. C'est le choix de vis qui commande l'épaisseur du dos, et donc
+// tout le dessin. Avec la cheville d'origine — fût de 5,2 hors bois, tige lisse
+// de 14, tête de 3 — il fallait 26,1 mm d'épaisseur, d'où des renflements de
+// fixation massifs et un couloir large à réserver dans l'insert.
 //
-// Ce n'est pas un détail : à col_h = 6 la plaque porteuse irait de 6 à 19,5
-// alors que le dessous de la tête est à 19,2. Elles se chevaucheraient de
-// 0,3 mm et le panier resterait décollé du bois, en appui sur deux têtes de vis.
-col_saillie = 22.2;                          // mm                        (relevé)
-col_h    = col_saillie - vis_l - tete_h;     // 5.2
-tete_d   = 8.0;   // mm — Ø de la tête. Jamais mesuré, et MAJORÉ VOLONTAIREMENT :
-                  //      son logement ne guide rien, il ne fait que dégager.
-                  //      L'élargir ne coûte rien, le sous-estimer coincerait.
+// Avec une vis dont la tige ne dépasse que de 2,5 mm plus une tête de 3, le dos
+// tombe à 8,4. Les renflements deviennent des ondulations.
+//
+// Si la douille plastique reste en place et dépasse du bois, remettre sa saillie
+// dans `col_h` : c'est un recul sec, ajouté à tout le reste.
+col_d    = 7.3;   // mm — Ø du fût, si une douille dépasse encore
+col_h    = 0;     // mm — de combien elle dépasse du bois. Zéro : vis directement
+                  //      dans le bois, ou douille arasée.
+vis_d    = 3.4;   // mm — Ø de la tige lisse
+vis_l    = 2.5;   // mm — longueur de tige libre entre le bois et la tête
+tete_h   = 3.0;   // mm — hauteur de la tête
+tete_d   = 8.0;   // mm — Ø de la tête, MAJORÉ volontairement : son logement ne
+                  //      guide rien, il ne fait que dégager.
 
 entraxe  = 140;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
@@ -78,9 +77,14 @@ jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
 // --- Dos ----------------------------------------------------------------------
 
 porteur  = vis_l - 0.5;                        // plaque porteuse : toute la tige
+                                               // libre. À 2,0 mm elle ne travaille
+                                               // qu'en cisaillement sous le poids :
+                                               // ~8,5 N sur 50 mm² de section utile,
+                                               // soit 0,17 MPa. Sans commune mesure
+                                               // avec ce que tient le PLA.
 loge_e   = tete_h + 2.0;                       // logement de la tête, large exprès
 dos_av   = 2.4;                                // peau avant, celle qui cache tout
-dos_e    = col_h + porteur + loge_e + dos_av;  // 26.1
+dos_e    = col_h + porteur + loge_e + dos_av;  // 8.4 avec des vis courtes
 
 dos_ep   = 3.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
                   //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
@@ -91,13 +95,13 @@ course   = 20;    // mm — descente nécessaire pour verrouiller. Courte parce 
                   //      tête entre par un TROU, au lieu de remonter depuis le bas
                   //      de la pièce. C'est ce trou qui permet de ne pas épaissir
                   //      tout le dos.
-boss_larg = 22;   // mm — diamètre du noyau plein autour de chaque vis. Le
+boss_larg = 20;   // mm — diamètre du noyau plein autour de chaque vis. Le
                   //      renflement s'étale au-delà, mais pas trop : c'est son
                   //      emprise qui décide du couloir à tailler dans l'insert.
 boss_bas  = 8;    // mm — de combien il descend sous le trou d'entrée
 boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
-boss_etale = 14;  // mm — sur quelle distance le renflement de fixation s'éteint
+boss_etale = 20;  // mm — sur quelle distance le renflement de fixation s'éteint
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
@@ -173,7 +177,9 @@ r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaire
 // honnête — et il autorise un entraxe bien plus large, donc une bien meilleure
 // tenue au vrillage.
 x_bosse  = entraxe / 2;   // les épaules sont à l'aplomb des vis, par construction
-z_creux  = 102;   // mm — le creux entre les deux épaules
+z_creux  = 120;   // mm — le creux entre les deux épaules. Peu marqué : plus
+                  //      bas, les épaules se lisent comme deux oreilles au
+                  //      lieu d'une ligne continue.
 z_epaul_g = 142;  // mm — épaule gauche
 z_epaul_d = 136;  // mm — épaule droite, plus basse : la pièce s'effile vers le
                   //      crochet, dans le même sens que le fond qui remonte
@@ -691,6 +697,27 @@ module crochet() {
 // coque ressortait à l'intérieur d'un compartiment : le bac faisait sa
 // soustraction dans son coin, et rien ne taillait le crochet. Toute pièce qui
 // vient se noyer dans la coque doit être creusée par les mêmes cavités.
+// TEST DE DESCENTE — doit sortir VIDE.
+//
+// L'insert descend verticalement dans la coque. Tout point (x, y) où l'insert a
+// de la matière et où la coque en a au-dessus de l'arase l'empêche d'entrer :
+// il buterait en cours de descente, et pas forcément à la hauteur de l'obstacle.
+// C'est ce qui rend le défaut invisible à l'œil — d'où ce test.
+//
+//   python scripts/scad.py stl vide-poches -D PIECE=descente
+//
+// Un export vide (OpenSCAD refuse d'écrire) signifie que le montage passe.
+module descente() {
+    linear_extrude(1)
+        intersection() {
+            projection() insert();
+            projection() intersection() {
+                coque();
+                translate([-BIG / 2, -BIG / 2, z_haut]) cube(BIG);
+            }
+        }
+}
+
 module coque() {
     difference() {
         union() { dos(); bac_plein(); crochet(); }
@@ -745,6 +772,7 @@ module main() {
     else if (PIECE == "dos")     dos();
     else if (PIECE == "bac")     bac();
     else if (PIECE == "crochet") crochet();
+    else if (PIECE == "descente") descente();
     else                         panier();
 }
 
