@@ -132,6 +132,33 @@ jamais par la couleur : dessiner un détail reconnaissable, ou simplement retire
 scène ce qui n'est pas le sujet. Le corollaire vaut aussi pour le diagnostic : un trou vu
 sur un aperçu se vérifie sur le maillage avant d'être cru.
 
+**Une pièce obtenue par soustraction peut sortir en plusieurs morceaux.** Quand on
+définit un objet comme « le plein moins les creux » — des séparateurs comme
+l'intérieur moins les compartiments, par exemple — il suffit qu'un creux soit plus
+arrondi que son voisin pour qu'il reste dans un coin un fragment détaché du reste,
+que rien ne signale. Le contrôle se fait sur le maillage : on soude les sommets par
+position, on relie ceux qui partagent un triangle, et on somme le volume signé de
+chaque composante. **Une composante de volume positif est une pièce, une composante
+de volume négatif est une cavité fermée.** Deux volumes positifs, c'est un morceau
+libre. Le dos du vide-poches, par exemple, compte 1 coque et 14 cavités : correct.
+
+**Une cavité fermée n'est pas un allègement gratuit.** Des poches prises entre deux
+peaux se lisent volontiers comme « ouvertes », alors que le trancheur doit ponter
+chacune sur tout son pas. Le commentaire qui les décrit doit dire laquelle des deux
+choses elles sont, sinon c'est lui qu'on croira.
+
+**Un `-D` mal cité échoue en silence.** OpenSCAD rend 0 même quand il n'a rien
+écrit : des guillemets passés en trop produisent un nom de fichier invalide, aucun
+export, aucune erreur — et la mesure suivante porte sur le fichier de la run
+précédente. `scripts/scad.py` refuse désormais un export vide.
+
+**Éditer un fichier par script est dangereux ; passer par un outil d'édition qui
+exige une correspondance unique ne l'est pas.** Un `str.index()` sur un marqueur qui
+apparaît deux fois dans un fichier a produit une tranche vide, puis un
+`replace("")` a inséré un bloc entre chaque caractère : 339 lignes devenues 1,2
+million. Corollaire : **commiter un modèle dès qu'il compile**, avant toute
+retouche — c'est ce qui rend l'incident réparable au lieu d'être une perte sèche.
+
 **Les têtes fraisées annulent le jeu des trous de passage.** Un cône à 90° se centre
 dans son fraisage en se serrant. Ce sont donc les avant-trous qui imposent la position
 d'une pièce vissée, pas l'ajustement des trous — d'où l'obligation de marquer les

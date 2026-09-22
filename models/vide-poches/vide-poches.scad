@@ -25,7 +25,9 @@
 
 include <../../lib/std.scad>
 
-// "panier"  : la pièce à imprimer
+// "coque"   : dos + bac nu + crochet          — pièce à imprimer n°1
+// "insert"  : les séparateurs seuls            — pièce à imprimer n°2
+// "panier"  : les deux en place, pour regarder
 // "gabarit" : réglet de perçage de la deuxième cheville (consommable)
 // "montage" : le panier, le bois et les vis, pour vérifier la cinématique
 PIECE = "panier";
@@ -73,6 +75,10 @@ paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
 fond     = 2.4;   // mm
 r_coin   = 4;     // mm — congé vertical des compartiments
+insert_jeu = 0.5; // mm — jeu entre l'insert et la coque, par côté. Sur 195 mm de
+                  //      long, c'est le retrait différentiel des deux pièces qui
+                  //      compte, pas le retrait absolu : même matière, même
+                  //      machine, donc 0,5 suffit.
 
 prof     = dos_e + bac_int + paroi;   // profondeur hors tout
 
@@ -113,13 +119,17 @@ x_tab = xi0 + 110;     // largeur de la fente à tabac
 y_sep = yi0 + 46;      // fond du bac à lunettes
 y_cab = yi0 + 42.8;    // le puits à câbles est carré
 
-// [x0, x1, y0, y1, rayon de congé]
+// [x0, x1, y0, y1]
+// TOUS au même congé r_coin, et ce n'est pas un choix esthétique : l'insert se
+// calcule comme « l'intérieur moins les compartiments ». Un compartiment plus
+// arrondi que le pourtour laisse dans le coin un fragment de matière détaché du
+// reste, qui sortirait de l'imprimante en morceau libre.
 cuves = [
-    [xi0,             x_sep, yi0,             y_sep, r_coin],  // lunettes
-    [xi0,             x_tab, y_sep + cloison, yi1,   r_coin],  // tabac, sur la tranche
-    [x_tab + cloison, x_sep, y_sep + cloison, yi1,   r_coin],  // petites bricoles
-    [x_sep + cloison, xi1,   yi0,             y_cab, 18],      // câbles USB, puits rond
-    [x_sep + cloison, xi1,   y_cab + cloison, yi1,   r_coin],  // briquets
+    [xi0,             x_sep, yi0,             y_sep],  // lunettes
+    [xi0,             x_tab, y_sep + cloison, yi1  ],  // tabac, sur la tranche
+    [x_tab + cloison, x_sep, y_sep + cloison, yi1  ],  // petites bricoles
+    [x_sep + cloison, xi1,   yi0,             y_cab],  // câbles USB
+    [x_sep + cloison, xi1,   y_cab + cloison, yi1  ],  // briquets
 ];
 
 // --- Outils de construction ---------------------------------------------------
@@ -143,12 +153,10 @@ module fente_2d(l, z_siege) {
     }
 }
 
-// Boîte à congés verticaux, définie par ses deux coins en plan.
-module cuve(x0, x1, y0, y1, r) {
-    translate([0, 0, z_bac + fond])
-        linear_extrude(bac_h)
-            offset(r = r) offset(r = -r)
-                polygon([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
+// Rectangle à coins arrondis, en 2D.
+module rect_2d(x0, x1, y0, y1, r = r_coin) {
+    offset(r = r) offset(r = -r)
+        polygon([[x0, y0], [x1, y0], [x1, y1], [x0, y1]]);
 }
 
 // --- Géométrie ----------------------------------------------------------------
@@ -182,9 +190,12 @@ module grille(x0, x1, z0, z1) {
 module dos() {
     difference() {
         union() {
-            // la plaque, allégée par une grille de poches ouvertes vers l'avant.
-            // À l'impression elles sont ouvertes vers le haut : rien à ponter
-            // sauf la peau avant, sur le pas de la grille.
+            // La plaque, allégée par une grille de poches. Elles sont FERMÉES —
+            // la peau avant les referme — donc chacune est une cavité scellée que
+            // le trancheur doit ponter sur le pas de la grille, 30 mm. C'est sans
+            // difficulté en PLA, et la peau fait 6 couches : seule la première
+            // ponte, les cinq autres se posent dessus. Mais ce n'est pas gratuit,
+            // contrairement à ce qu'on croirait si on les imaginait ouvertes.
             difference() {
                 translate([-larg / 2, 0, z_bac])
                     cube([larg, dos_e, z_top - z_bac]);
@@ -205,12 +216,34 @@ module dos() {
     }
 }
 
+// La coque : le bac nu, sans aucune séparation. Utilisable seule en plateau.
 module bac() {
     difference() {
         translate([-larg / 2, dos_e, z_bac])
             cube([larg, prof - dos_e, bac_h]);
-        for (c = cuves) cuve(c[0], c[1], c[2], c[3], c[4]);
+        translate([0, 0, z_bac + fond])
+            linear_extrude(bac_h)
+                rect_2d(xi0, xi1, yi0, yi1);
     }
+}
+
+// L'insert : uniquement la matière qui sépare les compartiments. Pas de fond —
+// c'est celui de la coque qui sert. Il n'ajoute donc rien au poids par rapport à
+// la version monobloc, et se réimprime seul pour changer d'agencement.
+//
+// Il se calcule par soustraction, ce qui garantit qu'insert et coque restent
+// cohérents : une seule liste `cuves` décrit les deux.
+module insert() {
+    translate([0, 0, z_bac + fond])
+        linear_extrude(bac_h - fond)
+            intersection() {
+                difference() {
+                    rect_2d(xi0, xi1, yi0, yi1);
+                    for (c = cuves) rect_2d(c[0], c[1], c[2], c[3]);
+                }
+                // rétréci au pourtour pour entrer dans la coque
+                offset(r = -insert_jeu) rect_2d(xi0, xi1, yi0, yi1);
+            }
 }
 
 module crochet() {
@@ -250,6 +283,7 @@ module panier() {
     union() {
         dos();
         bac();
+        insert();
         crochet();
     }
 }
@@ -289,6 +323,10 @@ module montage() {
 module main() {
     if (PIECE == "gabarit")      gabarit();
     else if (PIECE == "montage") montage();
+    // sous-ensembles : pour inspecter et pour mesurer où part la matière
+    // les deux pièces à imprimer
+    else if (PIECE == "coque")   { dos(); bac(); crochet(); }
+    else if (PIECE == "insert")  insert();
     // sous-ensembles : pour inspecter et pour mesurer où part la matière
     else if (PIECE == "dos")     dos();
     else if (PIECE == "bac")     bac();
