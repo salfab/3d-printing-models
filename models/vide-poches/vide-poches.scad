@@ -34,6 +34,7 @@
 // IMPRESSION : coque posée sur le dos, insert posé à plat. Aucun support.
 
 include <../../lib/std.scad>
+include <BOSL2/std.scad>
 
 // "coque"   : dos + bac nu + crochet          — pièce à imprimer n°1
 // "insert"  : le bac à séparations            — pièce à imprimer n°2
@@ -86,7 +87,7 @@ loge_e   = tete_h + 2.0;                       // logement de la tête, large ex
 dos_av   = 2.4;                                // peau avant, celle qui cache tout
 dos_e    = col_h + porteur + loge_e + dos_av;  // 8.4 avec des vis courtes
 
-dos_ep   = 3.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
+dos_ep   = 2.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
                   //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
                   //      la course d'enfilage ; ailleurs une simple plaque suffit,
                   //      et les 23 mm libérés derrière le bac deviennent du
@@ -103,6 +104,17 @@ boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
 boss_etale = 20;  // mm — sur quelle distance le renflement de fixation s'éteint
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
+
+// La plaque du dos doit tenir ENTIÈREMENT dans la longueur de tige libre :
+// c'est elle qui vient se glisser entre le bois et la tête de vis. Plus épaisse,
+// elle ne rentre pas, et la fente de tige ne la traverse même pas de part en
+// part — il reste de la matière en travers du trou de serrure.
+//
+// Le piège est qu'elle ne se voit pas : le passage aux vis courtes a fait tomber
+// `porteur` de 13,5 à 2,0 pendant que `dos_ep` restait à 3,0, et rien ne l'a
+// signalé.
+assert(dos_ep <= col_h + porteur,
+       "dos_ep depasse la longueur de tige libre : la plaque ne peut pas se glisser sous la tete");
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
 // même travail, mieux, et sans piège.
@@ -180,13 +192,14 @@ r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaire
 // D'où un exposant élevé sur la retombée — la courbe reste haute jusqu'à 80 % de
 // la demi-largeur puis plonge sur les derniers millimètres. C'est `dessus_p` qui
 // règle ça, et l'assertion plus bas qui le vérifie.
-z_som    = 120;   // mm — sommet de la casquette, au milieu. 25 mm au-dessus de
-                  //      l'arase seulement : une PETITE casquette.
+z_som    = 128;   // mm — sommet de la casquette, au milieu. 33 mm au-dessus de
+                  //      l'arase : une petite casquette, bornée par le bas par
+                  //      l'assertion qui la veut au-dessus du siège des vis.
 dessus_p = 8;     // exposant de la retombée. Plus il est grand, plus la casquette
                   //      reste plate longtemps avant de tomber. À 3, elle passait
                   //      sous le siège des vis et l'assertion se déclenchait.
-z_fin_g  = 108;   // mm — hauteur au bord gauche
-z_fin_d  = 100;   // mm
+z_fin_g  = 116;   // mm — hauteur au bord gauche
+z_fin_d  = 108;   // mm
 
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
@@ -231,7 +244,14 @@ croc_r_z   = 12;   // mm — remontée de la rampe.
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-garde_vis = 12;                  // mm — de l'arase du bac à l'axe des vis.
+garde_vis = course + boss_bas;   // 20 mm — de l'arase du bac à l'axe des vis.
+                                 //      DÉDUITE, pas choisie : c'est la valeur
+                                 //      qui pose la base du renflement exactement
+                                 //      sur l'arase. En dessous, le renflement
+                                 //      descend dans le bac, la cavité le tranche,
+                                 //      et le logement de tête débouche dans la
+                                 //      paroi arrière — on voit la vis de
+                                 //      l'intérieur.
                                  //      Elle valait 28 pour que le renflement ne
                                  //      descende jamais sous l'arase. C'était un
                                  //      reste de l'époque où le dos faisait 26 mm :
@@ -411,24 +431,14 @@ module arrondi() {
 }
 
 // Le dos : dessous galbé, dessus en arche.
-module silhouette_dos_2d() {
-    arrondi() polygon(concat(
-        sil_bas(),
-        [for (i = [sil_n : -1 : 0])
-         let (x = -larg / 2 + i * larg / sil_n) [x, dessus(x)]]
-    ));
-}
+module silhouette_dos_2d() { polygon(chemin_dos()); }
 
 // Le bac : même dessous, arase plate — c'est le bord où l'on pose la main.
 // `ztop` sert à en obtenir une version prolongée vers le haut : l'enveloppe
 // intérieure doit rester OUVERTE à l'arase, sinon les compartiments se
 // retrouveraient coiffés d'un couvercle.
 module silhouette_bac_2d(ztop = 0) {
-    zt = ztop > 0 ? ztop : z_haut;
-    arrondi() polygon(concat(
-        sil_bas(),
-        [[larg / 2, zt], [-larg / 2, zt]]
-    ));
+    polygon(chemin_bac(ztop > 0 ? ztop : z_haut));
 }
 
 // L'enveloppe intérieure de la coque : sa peau en retrait de `paroi`.
@@ -438,8 +448,65 @@ module silhouette_bac_2d(ztop = 0) {
 // arrondis, galbe — alors qu'un fond de compartiment est plat : près des coins
 // il passait sous la peau et le bac débouchait par en dessous. Rien dans la
 // géométrie ne le signalait.
-module enveloppe_int_2d(retrait = 0) {
-    offset(r = -(paroi + retrait)) silhouette_bac_2d(z_haut + 60);
+module enveloppe_int_2d(retrait = 0) { polygon(chemin_int(retrait)); }
+
+// --- Les mêmes contours, en CHEMINS DE POINTS ---------------------------------
+//
+// `offset_sweep` de BOSL2 réclame une liste de points, pas de la géométrie 2D
+// opaque. En échange il rend une surface arrondie CONTINUE là où un empilement de
+// tranches décalées laisse des marches — et il valide ce qu'on lui demande, au
+// lieu de se vider en silence.
+//
+// Contrainte qui en découle : on ne met des points QUE là où la courbe en a
+// besoin. `round_corners` refuse un congé plus large que la place disponible
+// entre deux sommets ; échantillonner les parties droites tous les 2,4 mm tuait
+// les congés de 20 mm, et il le dit sans ambiguïté.
+//
+// Seule la COQUE passe par ce chemin. Le bornage de l'insert reste sur
+// l'extrusion en tranches : c'est lui qui avait fait exploser la pièce à
+// 1708 cm³, et il n'a besoin que d'être conservateur — le jeu de 0,5 mm absorbe
+// l'écart entre les deux méthodes.
+
+n_galbe_pts = 20;   // points sur le S du dessous
+n_cap_pts   = 24;   // points sur la casquette
+r_coin_haut = 6;    // mm — congé des deux coins hauts du dos. Petit PAR
+                    //      NÉCESSITÉ : la casquette y arrive par des segments
+                    //      courts, un congé plus large n'y tiendrait pas.
+
+function pts_bas() = concat(
+    [[-larg / 2, 0], [x_tab, 0]],
+    [for (i = [1 : n_galbe_pts - 1]) let (t = i / n_galbe_pts)
+        [x_tab + galbe * t, marche * liss(t)]],
+    [[x_tab + galbe, marche], [larg / 2, marche]]
+);
+function ray_bas() = concat([r_ext, 0], [for (i = [1 : n_galbe_pts - 1]) 0], [0, r_ext]);
+
+function chemin_bac(ztop) =
+    round_corners(concat(pts_bas(), [[larg / 2, ztop], [-larg / 2, ztop]]),
+                  r = concat(ray_bas(), [r_ext, r_ext]), closed = true);
+
+function chemin_dos() =
+    round_corners(
+        concat(pts_bas(),
+               [[larg / 2, dessus(larg / 2)]],
+               [for (i = [n_cap_pts - 1 : -1 : 1])
+                   let (x = -larg / 2 + larg * i / n_cap_pts) [x, dessus(x)]],
+               [[-larg / 2, dessus(-larg / 2)]]),
+        r = concat(ray_bas(), [r_coin_haut],
+                   [for (i = [n_cap_pts - 1 : -1 : 1]) 0], [r_coin_haut]),
+        closed = true);
+
+function chemin_int(retrait) =
+    offset(chemin_bac(z_haut + 60), r = -(paroi + retrait), closed = true);
+
+// Extrusion en profondeur, arête AVANT arrondie, par BOSL2.
+module sweep_y(y0, e, r, chemin) {
+    translate([0, y0, 0])
+        rotate([90, 0, 0])
+            translate([0, 0, -e])
+                offset_sweep(chemin, height = e,
+                             bottom = os_circle(r = min(r, e - 0.6)),
+                             steps = 12, check_valid = false);
 }
 
 // --- Géométrie ----------------------------------------------------------------
@@ -501,7 +568,7 @@ module bossages(marge = 0) {
                 offset(r = boss_etale * cos(90 * i / n) + marge)
                     noyau_2d();
         }
-        extrude_arrondi(0, dos_e + marge, r_av_dos) silhouette_dos_2d();
+        sweep_y(0, dos_e + marge, r_av_dos, chemin_dos());
     }
 }
 
@@ -518,7 +585,7 @@ module bossages(marge = 0) {
 module dos() {
     difference() {
         union() {
-            extrude_arrondi(0, dos_ep, min(r_av_dos, dos_ep - 0.6)) silhouette_dos_2d();
+            sweep_y(0, dos_ep, r_av_dos, chemin_dos());
             bossages();
         }
         for (s = [-1, 1]) canaux(s * entraxe / 2);
@@ -527,7 +594,7 @@ module dos() {
 
 // Le bac, plein — sa cavité est retirée plus haut, au niveau de la coque.
 module bac_plein() {
-    extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac, n_galbe) silhouette_bac_2d();
+    sweep_y(dos_ep, prof - dos_ep, r_av_bac, chemin_bac(z_haut));
 }
 
 // Les cavités de rangement, découpées dans l'enveloppe intérieure de la coque.
@@ -538,11 +605,15 @@ module bac_plein() {
 // débouchait par en dessous.
 module cavites() {
     intersection() {
-        extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), n_galbe)
-            enveloppe_int_2d();
+        sweep_y(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), chemin_int(0));
+        // Arrêtées EXACTEMENT à l'arase, à EPS près. Elles montaient 10 mm
+        // au-dessus — un débord de confort contre les faces coplanaires — et
+        // tranchaient le renflement de fixation, qui vit précisément là et
+        // s'avance dans l'emprise du bac. Dix millimètres de commodité
+        // détruisaient la fixation, sans un mot.
         union() for (z = zones)
             translate([0, 0, z[2]])
-                linear_extrude(z_haut - z[2] + 10)
+                linear_extrude(z_haut - z[2] + EPS)
                     rect_2d(z[0], z[1], yi0, yi1);
     }
 }
@@ -732,6 +803,28 @@ module descente() {
         }
 }
 
+// TEST DE PEAU — le pavé doit sortir PLEIN, soit 691 mm³.
+//
+// Il prélève l'épaisseur de la peau avant, au droit de chaque vis, sur toute la
+// course du trou de serrure. S'il ressort creux, le logement de tête débouche et
+// on voit la vis — de l'extérieur si c'est la peau avant qui manque, de
+// l'intérieur du bac si c'est la cavité qui a tranché le renflement.
+//
+//   python scripts/scad.py stl vide-poches -D PIECE=peau
+//
+// Deux défauts l'ont déclenché : des prismes de cavité qui montaient 10 mm
+// au-dessus de l'arase et tranchaient le renflement, et une garde de vis trop
+// faible qui faisait descendre le renflement dans le bac.
+module peau() {
+    for (s = [-1, 1])
+        intersection() {
+            coque();
+            translate([s * entraxe / 2 - 6, col_h + porteur + loge_e + 0.2,
+                       z_entree - 2])
+                cube([12, dos_av - 0.8, course + 4]);
+        }
+}
+
 module coque() {
     difference() {
         union() { dos(); bac_plein(); crochet(); }
@@ -787,6 +880,7 @@ module main() {
     else if (PIECE == "bac")     bac();
     else if (PIECE == "crochet") crochet();
     else if (PIECE == "descente") descente();
+    else if (PIECE == "peau")     peau();
     else                         panier();
 }
 
