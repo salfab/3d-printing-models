@@ -173,18 +173,57 @@ r_galbe  = 4;     // mm — arrondi des angles rentrants.
                   //      de 46 — sans la moindre erreur. Depuis que les raccords
                   //      sont des courbes à tangente nulle, il n'y a presque plus
                   //      d'angle rentrant à traiter : 4 suffit.
-r_ext    = 20;    // mm — arrondi des angles saillants de la silhouette.
+r_ext    = 20;    // mm — arrondi des angles BAS de la silhouette.
                   //      DOIT rester franchement supérieur à `r_av_bac` : le
                   //      galbe avant rétrécit le contour de r_av_bac, et à 14
                   //      contre 15 il effaçait purement et simplement les coins
                   //      — d'où les ruptures de continuité en haut et en bas du
                   //      panier.
+r_coin_bac = 6;   // mm — arrondi des DEUX angles HAUTS du bac, et rien d'autre.
+                  //
+                  //      Il valait `r_ext`, soit 20, et c'était un piège. Le
+                  //      contour intérieur, lui, est bâti sur
+                  //      `chemin_bac(z_haut + 60)` : ses angles hauts sont 60 mm
+                  //      plus haut, donc il monte tout droit à x = ±85,1 et
+                  //      TRAVERSAIT l'arrondi extérieur. Au-dessus de z = 84,5 les
+                  //      côtés du panier n'existaient plus du tout — mesuré au
+                  //      lancer de rayon, la tranche à z = 86 ne contient plus que
+                  //      la cloison. C'est ça, les angles en lame de couteau.
+                  //
+                  //      À 6, la paroi tient ses 2,4 mm jusqu'à z = 89 et ne
+                  //      s'éteint que sur les 4 derniers millimètres. C'est aussi
+                  //      le rayon des angles hauts du dos, `r_coin_haut` : les deux
+                  //      silhouettes se répondent.
+                  //
+                  //      Le correctif de fond serait de donner au contour intérieur
+                  //      les mêmes angles hauts, concentriques. Il y faut un contour
+                  //      ouvert par le haut MAIS congé à la bonne hauteur, ce qu'un
+                  //      simple offset du contour surélevé ne sait pas produire.
 r_av_dos = 3.5;   // mm — arrondi de l'arête avant du dos. Il valait 10 quand le
                   //      dos faisait 26 mm ; à 9,4 c'était plus que l'épaisseur
                   //      elle-même. `extrude_arrondi` le borne désormais, mais
                   //      autant le régler juste.
-r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaires
-                  //      au mur et la face avant. Large, pas un simple bourrelet.
+r_av_bac = 8;     // mm — galbe de la jointure entre les faces perpendiculaires
+                  //      au mur et la face avant.
+                  //
+                  //      IL EST BORNÉ PAR L'ÉPAISSEUR DE L'ARASE, et c'est la
+                  //      contrainte qu'on oublie. L'arrondi rentre le contour
+                  //      extérieur de `r` à l'approche de la face avant, et le
+                  //      contour intérieur de `r - paroi` seulement : les deux ne
+                  //      sont donc PAS parallèles, et l'anneau de matière s'amincit
+                  //      vers l'avant. À la dernière hauteur où la cavité existe il
+                  //      ne vaut plus que
+                  //          paroi + f(r-paroi, paroi) - f(r, paroi),
+                  //      avec f(r,h) = r - sqrt(2rh - h²).
+                  //      À r = 15 : 0,74 mm, sur les 12,6 derniers millimètres de
+                  //      la pièce — un fil de couteau, mesuré sur le maillage. La
+                  //      paroi avant y tombait même à ZÉRO au-dessus de z = 88,1.
+                  //      À r = 8 : 1,12 mm, et seulement sur 5,6 mm.
+                  //
+                  //      Aller au-delà demanderait une lèvre roulée — la cavité se
+                  //      retirant de `r` au droit de l'arase — qui coûterait autant
+                  //      de profondeur d'ouverture et se répercuterait sur les
+                  //      inserts. Ce n'est pas un réglage, c'est une refonte.
                   //
                   //      Il a longtemps été borné à 2 mm : tant que les cavités
                   //      étaient de simples prismes posés à un niveau, l'arrondi
@@ -544,7 +583,7 @@ function ray_bas() = concat([r_ext, 0], [for (i = [1 : n_galbe_pts - 1]) 0], [0,
 
 function chemin_bac(ztop) =
     round_corners(concat(pts_bas(), [[larg / 2, ztop], [-larg / 2, ztop]]),
-                  r = concat(ray_bas(), [r_ext, r_ext]), closed = true);
+                  r = concat(ray_bas(), [r_coin_bac, r_coin_bac]), closed = true);
 
 function chemin_dos() =
     round_corners(
@@ -670,7 +709,7 @@ module bac_plein() {
 // débouchait par en dessous.
 module cavites() {
     intersection() {
-        sweep_y(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), chemin_int(0));
+        sweep_y(dos_ep, prof - dos_ep, r_av_bac, chemin_int(0));
         // Arrêtées EXACTEMENT à l'arase, à EPS près. Elles montaient 10 mm
         // au-dessus — un débord de confort contre les faces coplanaires — et
         // tranchaient le renflement de fixation, qui vit précisément là et
@@ -772,7 +811,7 @@ module insert() {
         // borné à l'enveloppe intérieure comme les cavités de la coque, sinon
         // l'insert dépasse là où la coque remonte
         intersection() {
-            extrude_arrondi(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi),
+            extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac,
                             n_galbe)
                 enveloppe_int_2d(insert_jeu);
             union() for (z = zones) insert_zone(z);

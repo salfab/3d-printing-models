@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 273,2 cm³ | 175,0 × 82,4 × 128,0 mm |
-| Inserts (2 corps) | 62,0 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **335,2 cm³** | |
+| Coque | 287,1 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Inserts (2 corps) | 63,2 cm³ | 169,2 × 77,0 × 92,1 mm |
+| **Total** | **350,3 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -154,7 +154,9 @@ Mesurées sur les maillages exportés.
 | Profondeur, zone profonde | 92,2 mm | `bac_h − fond_bas` |
 | Profondeur, zone peu profonde | 46,2 mm | `bac_h − fond_haut` |
 | Marche entre les deux niveaux | 46 mm sur 45 de galbe | `marche`, `galbe` |
-| Galbe de la jointure avant | 15 mm | `r_av_bac` |
+| Galbe de la jointure avant | 8 mm | `r_av_bac` — borné par l'arase, voir §7 |
+| Angles hauts du bac | 6 mm | `r_coin_bac`, découplé de `r_ext` |
+| Arase, paroi pleine jusqu'à | z = 88 | puis extinction sur 4 mm |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
 | Portée du crochet | 82 mm | `croc_l` — pointe alignée sur la face avant |
@@ -236,7 +238,44 @@ Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
   dessous**, sur plusieurs millimètres, sans que rien ne le signale.
 - **C'est cette même enveloppe qui débride le galbe avant.** Tant que les cavités
   étaient des prismes posés, `r_av_bac` était borné à l'épaisseur de paroi : au-delà
-  l'arrondi passait derrière elles. Depuis, la coque garde son épaisseur partout.
+  l'arrondi passait derrière elles.
+### Le haut du bac : deux contours qui doivent rester parallèles
+
+Ce README a affirmé que « la coque garde son épaisseur partout ». C'était faux, et
+deux fois plutôt qu'une. Les deux défauts ont la même forme — **le contour intérieur
+ne suivait pas l'extérieur** — et se voyaient tous deux comme des angles en lame de
+couteau en haut du panier.
+
+- **Les angles hauts du bac.** `chemin_bac` les arrondissait de `r_ext` = 20, mais
+  `chemin_int` est bâti sur `chemin_bac(z_haut + 60)` : ses angles hauts sont 60 mm
+  plus haut, donc il monte tout droit à x = ±85,1 et **traversait** l'arrondi
+  extérieur. Au-dessus de z = 84,5 **les côtés du panier n'existaient plus du
+  tout** — la tranche à z = 86 ne contenait que la cloison. D'où `r_coin_bac`,
+  découplé de `r_ext` et ramené à 6, qui est aussi le rayon des angles hauts du dos.
+- **Les deux arrondis avant doivent avoir le MÊME rayon.** L'intérieur valait
+  `r_av_bac − paroi` — le réflexe pour un offset 3D, et l'erreur. Ce qui compte à
+  l'impression est la distance dans le **plan du lit**, couche par couche, et elle
+  ne vaut `paroi` que si les deux rayons sont égaux. À rayons différents, l'anneau
+  tombait à 0,74 mm sur les 12,6 derniers millimètres de la pièce.
+
+Mesuré au lancer de rayon, avant et après :
+
+| z | paroi latérale, avant | après | paroi avant, avant | après |
+|---|---|---|---|---|
+| 80 | 1,68 mm | **2,40** | 2,40 mm | **2,40** |
+| 86 | **néant** | **2,40** | 0,98 mm | **2,40** |
+| 88 | néant | **2,40** | néant | **2,28** |
+| 91 | néant | 1,94 | néant | 1,13 |
+
+- **Ce qui reste, et qui est normal :** `r_av_bac` fixe la hauteur à laquelle la
+  paroi avant s'éteint, `z_haut − f(r_av_bac, paroi)` avec `f(r,h) = r − √(2rh − h²)`.
+  À 8 c'est z = 92,7 ; à 15 c'était 88,1. Les 4 derniers millimètres s'amincissent :
+  c'est un bord supérieur arrondi, pas un défaut.
+
+  Un bord franc jusqu'à l'arase demanderait une **lèvre roulée** — la cavité se
+  retirant de `r` au droit de l'arase. Ça coûte autant de profondeur d'ouverture,
+  ça se répercute sur les inserts qui doivent passer dessous, et l'intérieur de la
+  lèvre devient un porte-à-faux à brider à 45°. Ce n'est pas un réglage.
 - **Le socle du côté peu profond est PLEIN, et doit le rester.** Il a été creux ;
   refermé proprement, ce creux devenait une cavité scellée de 60 cm³ dont le plafond
   est la face avant. En orientation d'impression c'est un pontage de 80 × 40 mm à
