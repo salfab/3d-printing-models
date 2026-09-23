@@ -158,6 +158,12 @@ arrondi `offset_sweep` rentre le profil de son propre rayon, donc un extérieur 
 de `r` et un intérieur décalé de `e` et arrondi de `r - e` **coïncident exactement** à
 la lèvre ; tout ce qui se soustrait doit s'arrêter avant.
 
+Un quatrième cas, rencontré en refaisant le crochet : **un plan de recoupe qui passe
+par un sommet du profil.** Une courbe échantillonnée dont le premier point tombait à
+y = 0 pile, recoupée en y = 0, a donné 35 arêtes non-variété d'un coup. Le remède est
+le même que partout ailleurs — faire déborder la forme au-delà du plan de coupe, et
+ne pas y laisser de sommet.
+
 Le diagnostic qui a marché : compter les arêtes du maillage par nombre de faces, puis
 **lister les arêtes non-variété une par une avec leurs coordonnées**. Les histogrammes
 par axe ne disent rien ; les coordonnées brutes, elles, tombent pile sur les valeurs
