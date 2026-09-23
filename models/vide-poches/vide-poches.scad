@@ -150,9 +150,10 @@ r_ext    = 20;    // mm — arrondi des angles saillants de la silhouette.
                   //      contre 15 il effaçait purement et simplement les coins
                   //      — d'où les ruptures de continuité en haut et en bas du
                   //      panier.
-r_av_dos = 10;    // mm — arrondi de l'arête avant du dos. Généreux : c'est lui
-                  //      qui effile la crête de l'arche en une nervure au lieu
-                  //      d'une tranche de 26 mm.
+r_av_dos = 3.5;   // mm — arrondi de l'arête avant du dos. Il valait 10 quand le
+                  //      dos faisait 26 mm ; à 9,4 c'était plus que l'épaisseur
+                  //      elle-même. `extrude_arrondi` le borne désormais, mais
+                  //      autant le régler juste.
 r_av_bac = 15;    // mm — galbe de la jointure entre les faces perpendiculaires
                   //      au mur et la face avant. Large, pas un simple bourrelet.
                   //
@@ -320,7 +321,14 @@ module en_travers(y0, e) {
 // partagent EXACTEMENT les mêmes plans de marche. Avec deux échantillonnages
 // différents, l'épaisseur de paroi oscille d'une marche à l'autre, et ça se voit
 // sur les arêtes.
-module extrude_arrondi(y0, e, r, n = 0) {
+module extrude_arrondi(y0, e, rr, n = 0) {
+    // RAYON BORNÉ PAR L'ÉPAISSEUR. Un rayon supérieur à `e` donne un corps
+    // d'épaisseur NÉGATIVE et des tranches rognées de plus que leur propre
+    // largeur : la forme se vide par le sommet, sans la moindre erreur. C'est
+    // exactement ce qui est arrivé quand le dos est passé de 26 à 9,4 mm sans que
+    // r_av_dos suive — les renflements de fixation existaient partout SAUF au
+    // droit des vis, donc ne servaient à rien.
+    r = min(rr, e - 0.6);
     n = n > 0 ? n : max(4, ceil(r * 2));
     translate([0, y0, 0]) {
         en_travers(0, e - r + EPS) children();
