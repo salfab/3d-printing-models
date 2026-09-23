@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 269,0 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Coque | 273,2 cm³ | 175,0 × 82,4 × 128,0 mm |
 | Inserts (2 corps) | 62,0 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **331,0 cm³** | |
+| **Total** | **335,2 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -157,12 +157,40 @@ Mesurées sur les maillages exportés.
 | Galbe de la jointure avant | 15 mm | `r_av_bac` |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
-| Portée du crochet | 70 mm | `croc_l` |
-| Largeur du crochet | 34 mm | `croc_larg` — l'arceau du XM5 fait ~32 |
+| Portée du crochet | 82 mm | `croc_l` — pointe alignée sur la face avant |
+| Largeur du crochet | 34 mm | `croc_larg`, mesurée le long de l'ARC du casque |
+| **Vallée de l'arceau** | **42 mm** | `croc_vallee` — la cote qui compte, voir ci-dessous |
 | Passage libre sous la coque | 28 mm | `marche − croc_creux` |
 | Bras au plus fin | 10 mm | `croc_creux − croc_z − croc_relev` |
 | Nez du crochet | demi-rond Ø 20 | `croc_nez`, déduit du profil |
 | Galbe latéral du crochet | 4 mm | `croc_rb` |
+
+### Le crochet et le Sony WH-1000XM5
+
+Une seule cote du crochet dépend vraiment du casque, et ce n'est pas celle qu'on
+croit. **Le bras enfourche l'arceau** : `croc_larg` se mesure donc le long de l'arc
+du casque — c'est la longueur sur laquelle le poids se répartit, 34 mm, assez pour
+ne pas marquer la mousse. La **sangle**, elle, se couche selon Y, et c'est la
+longueur de la vallée qui décide si le casque s'assoit ou se perche.
+
+Assise mesurée sur le maillage exporté, en posant une sangle plate sur le profil :
+
+| Largeur de sangle | S'assoit à | Au-dessus du fond de gorge | Butée restante devant |
+|---|---|---|---|
+| 30 mm | z 18,8 | 0,8 mm | 9,2 mm |
+| 34 mm | z 20,2 | 2,2 mm | 7,8 mm |
+| 38 mm | z 22,1 | 4,1 mm | 5,9 mm |
+| 42 mm | — | ne s'assoit pas | — |
+
+Le XM5 pèse **250 g** (spécification Sony) et **ne se plie pas** — il ne fait que
+pivoter à plat, donc on le pend tel quel. Sa sangle fait de l'ordre de 38 mm ; c'est
+la seule cote que Sony ne publie pas, et elle mérite un coup de réglet avant
+impression. Le crochet accepte jusqu'à ~40 mm.
+
+À `croc_l` = 70, la vallée ne faisait que 26 mm : une sangle de 38 mm reposait sur
+les deux épaules, 11 mm au-dessus du fond, et la butée ne retenait plus rien. C'est
+pour ça que la portée est passée à 82 — qui aligne au passage la pointe sur la face
+avant du panier, à 82,4.
 
 Contrôles topologiques sur le maillage, tous à zéro :
 
@@ -271,11 +299,36 @@ latéral `croc_rb` est contraint de quatre côtés.
 - **`croc_l` − `croc_nez` − `croc_gorge` ≥ `croc_col_y` + `croc_conge`.** Sinon la
   butée et le congé de gorge se chevauchent et la vallée disparaît.
 
+Deux bornes de plus, qui viennent du casque et non de la géométrie :
+
+- **`croc_vallee` ≥ 40 mm**, sinon la sangle se perche au lieu de s'asseoir. Voir §4.
+- **`croc_l` ≤ `prof`**, sinon la pointe dépasse la face avant du panier.
+
 Et une règle qui n'est pas une borne mais un piège : **aucun échantillon du profil
 ne doit tomber sur un plan de recoupe.** Le dos du profil déborde exprès de
 `croc_dos` = `croc_rb` + 2 derrière le mur, et l'échantillonnage du dessous démarre
 à `i = 1`. Avec un point à y = 0 pile, le plan de coupe passait par un sommet du
 maillage : 35 arêtes non-variété au pied du crochet, mesurées.
+
+### La racine du crochet ne se recoupe PAS à plat
+
+Il y a eu une recoupe « tout ce qui dépasse au-dessus de `marche` et hors de la
+silhouette ». L'idée était juste — le dessous de la coque remonte près du coin
+arrondi, la racine ne doit pas pendre dans le vide — mais elle coupait **à plat**,
+alors que ce dessous suit l'arc de `r_ext`. Le coin bas-droit est arrondi de 20 mm :
+son arc part de x = 67,5 à z = 46 et monte jusqu'à x = 87,5 à z = 66. Le crochet va
+de x = 49 à 83 : il **traverse cet arc**. La recoupe lui taillait donc un croissant,
+mesuré au lancer de rayon — 0,25 mm de jour à x = 70, 1,2 à x = 74, 3,4 à x = 78 et
+**5,5 à x = 81**. La racine ne tenait plus que par sa moitié gauche.
+
+Sans recoupe, la colonne monte à `croc_haut` et rencontre le dessous réel de la
+coque. Le prix est visible et assumé : la racine comble le bas de l'arc du coin, sur
+7,4 mm au plus — sur un arc qui en monte 20, et le crochet est de toute façon là.
+
+Deux façons d'éviter le croissant sans combler, toutes deux écartées : **déplacer le
+crochet** ne marche pas (le dessous n'est plat que de x = 44,9 à 67,5, soit 22,6 mm,
+alors que le crochet en fait 34), et **réduire `r_ext`** au coin bas-droit rendrait
+la silhouette plus boîteuse exactement là où elle doit être dynamique.
 
 ### Les deux tests permanents
 
@@ -285,6 +338,7 @@ Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pi
 |---|---|---|
 | `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de la coque au-dessus de l'arase | **vide** (`Current top level object is empty`) |
 | `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 691 mm³ |
+| `jointure` | qu'il ne reste aucun jour entre la racine du crochet et le dessous de la coque | **vide** |
 
 Un renflement mal placé rend `peau` creux ; un renflement trop gros rend `descente`
 non vide. Les deux sont muets si on ne les lance pas.
@@ -293,8 +347,14 @@ non vide. Les deux sont muets si on ne les lance pas.
 
 - [ ] **La cheville reste-t-elle en saillie du bois ?** Si oui, sa hauteur hors bois
       doit revenir dans `col_h`, aujourd'hui à 0 — et toute la fixation se décale.
-- [ ] Vérifier que le casque passe : le jour sous le crochet, à confronter à
-      l'arceau réel.
+- [ ] **Mesurer la sangle du XM5 au réglet**, dans le sens avant-arrière. C'est la
+      seule cote du casque que Sony ne publie pas, et c'est celle qui commande
+      `croc_l`. Le crochet est dimensionné pour 38 et accepte jusqu'à ~40.
+- [ ] **Mesurer l'épaisseur de la sangle**, coussin compris, et la confronter aux
+      28 mm de `croc_jour` — c'est le passage entre le fond de gorge et le dessous
+      de la coque. 28 mm devraient être confortables, mais ce n'est pas vérifié.
+- [ ] Les coquilles pendent librement sous le crochet : rien ne les gêne dans le
+      modèle, mais l'écart au mur reste à juger casque en main.
 - [ ] Le jeu de 0,5 mm au pourtour des inserts n'a pas été validé à l'impression.
 - [ ] Les lunettes debout dans une fente de 50 × 37,6 sur 92,2 mm : tenue à vérifier.
 - [ ] La poche à tabac debout dans une fente de 85 × 30 : une blague souple

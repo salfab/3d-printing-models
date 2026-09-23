@@ -236,15 +236,31 @@ croc_larg  = 34;   // mm — largeur de portée sous l'arceau. À 40, le crochet
                    //      occupait 40 des 47 mm du creux laissé par le galbe et
                    //      la silhouette se refermait en boîte. À 30, calé à
                    //      droite, il laisse 18 mm d'air visible entre lui et la
-                   //      partie profonde. L'arceau du XM5 fait ~32 mm de large :
-                   //      30 mm de portée restent une assise pleine.
+                   //      partie profonde.
+                   //      ATTENTION à ne pas confondre les deux directions : le
+                   //      bras enfourche l'arceau, donc `croc_larg` est mesuré le
+                   //      long de l'ARC du casque, pas de la largeur de sa sangle.
+                   //      C'est la longueur d'arc sur laquelle le poids se répartit
+                   //      — 34 mm, assez pour ne pas marquer la mousse. La largeur
+                   //      de la sangle, elle, se couche selon Y et c'est `croc_l`
+                   //      qui la commande.
 croc_e     = 14;   // mm — épaisseur du bras au droit du mur. Épais comme les
                    //      parois galbées du panier : un bras mince se lisait
                    //      comme une pièce rapportée, d'un autre vocabulaire.
 croc_bas   = 4;    // mm — Z du dessous du bras. Laisse 4 mm d'air sous lui, pour
                    //      qu'il se lise comme suspendu et non comme un bloc posé
                    //      dans le prolongement du fond.
-croc_l     = 70;   // mm — longueur du bras
+croc_l     = 82;   // mm — longueur du bras. C'est elle qui décide si le casque
+                   //      s'assoit ou se perche, et rien d'autre : l'arceau se
+                   //      couche en travers du bras, sa SANGLE le long de Y. Le
+                   //      XM5 a une sangle d'environ 38 mm. À 70 mm de bras la
+                   //      vallée ne faisait que 26 mm du pied du congé au sommet
+                   //      de la butée — la sangle reposait sur les deux épaules,
+                   //      11 mm au-dessus du fond, et la butée ne retenait plus
+                   //      rien. À 82 la vallée fait 42 mm : la sangle descend à
+                   //      3,6 mm du fond et il reste 6,4 mm de butée devant elle.
+                   //      82 aligne aussi la pointe sur la face avant du panier,
+                   //      qui est à 82,4 — le crochet ne dépasse pas.
 croc_col_y = 22;   // mm — profondeur de la racine adossée au dos
 
 // Le galbe du crochet. Rien ici n'est un pli : le profil est une suite d'arcs et
@@ -254,16 +270,17 @@ croc_relev = 4;    // mm — de combien le dessous du bras remonte vers la point
                    //      Un S tangent aux deux bouts : le bras s'affine en
                    //      s'éloignant du mur au lieu de filer droit.
 croc_r_z   = 10;   // mm — hauteur de la butée au-dessus du fond de gorge
-croc_gorge = 24;   // mm — longueur sur laquelle la butée se relève.
+croc_gorge = 20;   // mm — longueur sur laquelle la butée se relève.
                    //      C'est elle qui fixe le porte-à-faux : un S de course
                    //      `croc_gorge` et de hauteur `croc_r_z` a pour pente
                    //      maximale 1,875·croc_r_z/croc_gorge, et cette pente est
                    //      l'angle depuis la verticale à l'impression. Assertion
                    //      plus bas : elle doit rester sous 45°.
-croc_conge = 12;   // mm — rayon du quart de cercle qui relève le fond de gorge
-                   //      vers la colonne. Remplace le congé de pli : la gorge
-                   //      où l'arceau se pose est une vallée continue, d'un bord
-                   //      à l'autre, sans un seul segment droit de plus de 2 mm.
+croc_conge = 8;    // mm — rayon du quart de cercle qui relève le fond de gorge
+                   //      vers la colonne. Remplace le congé de pli : la gorge où
+                   //      l'arceau se pose est une vallée continue. Il mange sur
+                   //      cette vallée, d'où 8 et non 12 : chaque millimètre de
+                   //      congé est un millimètre de moins pour la sangle.
 croc_rb    = 4;    // mm — galbe latéral, sur TOUT le pourtour du profil.
                    //      Le bac s'arrondit de `r_av_bac` sur sa face avant ; le
                    //      crochet s'arrondit de même sur ses flancs. Remplace les
@@ -779,6 +796,11 @@ croc_dos   = croc_rb + 2;             //  6 — débord du profil DERRIÈRE le m
 // Passage libre pour l'arceau, entre le fond de gorge et le dessous de la coque.
 croc_jour  = marche - croc_creux;     // 28
 
+// La vallée : du pied du congé au sommet de la butée. C'est la cote qui décide si
+// le casque s'assoit ou se perche, et la seule du crochet qui dépende vraiment du
+// casque. La sangle du XM5 fait ~38 mm et se couche là-dedans.
+croc_vallee = (croc_l - croc_nez) - (croc_col_y + croc_conge);   // 42
+
 // Épaisseur du bras à son point le plus fin : juste avant que la butée ne se
 // relève, là où le dessous a déjà pris ses `croc_relev`.
 croc_mince = croc_creux - croc_z - croc_relev;   // 10
@@ -793,6 +815,10 @@ assert(croc_conge > croc_rb,
        "le congé de gorge est plus serré que le galbe latéral : offset_sweep se recoupera");
 assert(croc_l - croc_nez - croc_gorge >= croc_col_y + croc_conge,
        "la butée et le congé de gorge se chevauchent : raccourcir croc_gorge ou croc_conge");
+assert(croc_vallee >= 40,
+       "la vallée est trop courte pour la sangle du casque : allonger croc_l ou raccourcir croc_conge");
+assert(croc_l <= prof,
+       "le crochet dépasse la face avant du panier : raccourcir croc_l");
 
 // Le profil du crochet, dans le plan (y, z) — QUE des courbes tangentes.
 //
@@ -850,18 +876,43 @@ module crochet() {
         // par ailleurs rester plat — c'est la face qui porte contre le bois, et
         // c'est elle qui repose sur le plateau d'impression.
         translate([-BIG / 2, -BIG, -BIG / 2]) cube(BIG);
+    }
+}
 
-        // La racine est noyée de 15 mm dans la coque pour que la jonction soit
-        // franche. Ce qui dépasserait au-dessus du dessous de la coque — près du
-        // coin arrondi, elle remonte — est retiré.
-        // La coque est GROSSIE d'EPS pour cette découpe : sans ça, le plan de
-        // coupe et le dessous de la coque sont au même niveau, et la racine du
-        // crochet se raccorde par une face coplanaire — d'où des arêtes
-        // non-variété tout autour de la jonction.
-        difference() {
-            translate([-BIG / 2, -BIG / 2, marche]) cube(BIG);
-            en_travers(-1, prof + 2) offset(r = EPS) silhouette_bac_2d();
+// PAS de recoupe à plat de la racine — et c'est un correctif, pas un oubli.
+//
+// Il y en a eu une : « tout ce qui dépasse au-dessus de z = marche et hors de la
+// silhouette ». Elle partait d'une idée juste — le dessous de la coque remonte
+// près du coin arrondi, la racine ne doit pas pendre dans le vide — mais elle
+// coupait à PLAT, en z = marche, alors que ce dessous remonte le long de l'arc de
+// `r_ext`. Le coin bas-droit de la silhouette est arrondi de 20 mm : son arc part
+// de x = 67,5 à z = 46 et monte jusqu'à x = 87,5 à z = 66. Or le crochet va de
+// x = 49 à 83 — il TRAVERSE cet arc. La recoupe lui taillait donc un croissant,
+// mesuré au lancer de rayon : 0,25 mm de jour à x = 70, 1,2 à x = 74, 3,4 à
+// x = 78, et 5,5 à x = 81. La racine ne tenait plus que par sa moitié gauche.
+//
+// Sans recoupe, la colonne monte jusqu'à `croc_haut` et rencontre le dessous réel
+// de la coque, quel qu'il soit. Ce qui reste au-dessus est noyé dans la coque, et
+// `cavites()` s'occupe de ce qui déborderait dans un compartiment. Le prix à payer
+// est visible et assumé : la racine comble le bas de l'arc du coin, sur 7,4 mm au
+// plus. C'est 7,4 mm d'un arc qui en monte 20, et le crochet est de toute façon
+// là — il vaut mieux qu'il s'y raccorde franchement que proprement détaché.
+//
+// `PIECE=jointure` vérifie en permanence qu'il ne reste pas de jour.
+module jointure() {
+    difference() {
+        intersection() {
+            // Au coeur de la colonne, à l'écart du galbe latéral qui la rentre
+            // de `croc_rb` sur les bords.
+            translate([croc_x - croc_larg / 2 + croc_rb + 1, 1, marche + 0.2])
+                cube([croc_larg - 2 * (croc_rb + 1), croc_col_y - 2, 30]);
+            // Le croissant : au-dessus de l'arase du socle, hors silhouette.
+            difference() {
+                translate([-BIG / 2, -BIG / 2, marche]) cube(BIG);
+                en_travers(-1, prof + 2) silhouette_bac_2d();
+            }
         }
+        coque();
     }
 }
 
@@ -971,6 +1022,7 @@ module main() {
     else if (PIECE == "crochet") crochet();
     else if (PIECE == "descente") descente();
     else if (PIECE == "peau")     peau();
+    else if (PIECE == "jointure") jointure();
     else                         panier();
 }
 
