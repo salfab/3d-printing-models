@@ -147,6 +147,26 @@ peaux se lisent volontiers comme « ouvertes », alors que le trancheur doit pon
 chacune sur tout son pas. Le commentaire qui les décrit doit dire laquelle des deux
 choses elles sont, sinon c'est lui qu'on croira.
 
+**Un trou dans un modèle est presque toujours une coïncidence, pas une absence.**
+Trois s'en sont suivies sur la même pièce, toutes rendues en arêtes non-variété et
+toutes vues à l'écran comme un trou. *Un niveau dérivé qui retombe sur une surface* :
+un fond de compartiment à `marche + fond` et un dessous d'enveloppe à `marche + paroi`
+sont le même plan tant que `fond == paroi`. *Un prisme de creusement borné pile sur la
+paroi qu'il longe* : il doit déborder franchement — 5 mm, pas 0,2, sinon on remplace la
+face coplanaire par un éclat rasant. *Deux balayages concentriques à leur lèvre* : un
+arrondi `offset_sweep` rentre le profil de son propre rayon, donc un extérieur arrondi
+de `r` et un intérieur décalé de `e` et arrondi de `r - e` **coïncident exactement** à
+la lèvre ; tout ce qui se soustrait doit s'arrêter avant.
+
+Le diagnostic qui a marché : compter les arêtes du maillage par nombre de faces, puis
+**lister les arêtes non-variété une par une avec leurs coordonnées**. Les histogrammes
+par axe ne disent rien ; les coordonnées brutes, elles, tombent pile sur les valeurs
+nommées du source — `±xi0`, `dos_ep`, `fond_haut` — et nomment le coupable.
+
+**Zéro arête de bord ne veut pas dire zéro trou.** Une soustraction qui débouche là où
+elle ne devrait pas produit une forme parfaitement fermée : le maillage est sain, la
+pièce est percée. C'est le volume et les composantes qu'il faut regarder, pas l'étanchéité.
+
 **Un `-D` mal cité échoue en silence.** OpenSCAD rend 0 même quand il n'a rien
 écrit : des guillemets passés en trop produisent un nom de fichier invalide, aucun
 export, aucune erreur — et la mesure suivante porte sur le fichier de la run
