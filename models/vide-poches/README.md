@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 268,6 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Coque | 269,0 cm³ | 175,0 × 82,4 × 128,0 mm |
 | Inserts (2 corps) | 62,0 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **330,6 cm³** | |
+| **Total** | **331,0 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -157,6 +157,12 @@ Mesurées sur les maillages exportés.
 | Galbe de la jointure avant | 15 mm | `r_av_bac` |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
+| Portée du crochet | 70 mm | `croc_l` |
+| Largeur du crochet | 34 mm | `croc_larg` — l'arceau du XM5 fait ~32 |
+| Passage libre sous la coque | 28 mm | `marche − croc_creux` |
+| Bras au plus fin | 10 mm | `croc_creux − croc_z − croc_relev` |
+| Nez du crochet | demi-rond Ø 20 | `croc_nez`, déduit du profil |
+| Galbe latéral du crochet | 4 mm | `croc_rb` |
 
 Contrôles topologiques sur le maillage, tous à zéro :
 
@@ -182,8 +188,11 @@ Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
 - **Aucun support, sur aucune pièce.**
 - Coque sur son dos ; inserts à plat, fond contre le plateau.
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
-  250 g de casque à 60 mm de porte-à-faux donnent **0,29 MPa** sur une section de
-  30 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 70.
+  250 g de casque à 60 mm de porte-à-faux donnent **0,26 MPa** sur sa section la
+  plus faible, 34 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 77.
+- Le crochet n'a **aucun porte-à-faux au-delà de 45°** : la butée est le seul
+  élément qui s'écarte de la verticale à l'impression, et son S atteint au plus
+  1,875·`croc_r_z`/`croc_gorge` = 0,78, soit 38°. Assertion dans le modèle.
 - Emprise plateau : 175 × 128 mm pour la coque.
 - Remplissage libre : aucun volume fermé dans la pièce, donc rien que le trancheur
   doive ponter à l'aveugle.
@@ -244,8 +253,29 @@ Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme
   laisse dans le coin un fragment détaché, qui sortirait en morceau libre.
 - **Un compartiment doit tenir entièrement dans une zone**, sinon il n'appartient à
   aucun insert et disparaît.
-- **`croc_r_z` < `croc_r_y` impérativement** : la rampe de retenue du crochet est un
-  porte-à-faux dont l'angle depuis la verticale vaut `atan(croc_r_z / croc_r_y)`.
+### Le crochet — quatre bornes, toutes sous assertion
+
+Son profil n'a plus un seul pli : chaque portion arrive tangente à la suivante, et
+le galbe est dans la courbe, pas dans un congé posé dessus. En échange, le galbe
+latéral `croc_rb` est contraint de quatre côtés.
+
+- **`croc_mince` > 2·`croc_rb` + 1.** Le galbe latéral est un `offset_sweep`, qui
+  rentre le profil de son rayon en bout de balayage. Plus large que la moitié de
+  l'épaisseur du bras, il le traverse et le profil se recoupe.
+- **`croc_gorge`² > 6·`croc_r_z`·`croc_rb`.** Même raison, côté concave : un S de
+  course `croc_gorge` et de hauteur `croc_r_z` a un rayon concave minimal de
+  `croc_gorge²/(6·croc_r_z)`, et un décalage plus grand se recoupe.
+- **1,875·`croc_r_z` ≤ `croc_gorge`.** C'est le porte-à-faux : la pente maximale
+  d'un S quintique vaut 1,875 fois sa hauteur sur sa course, et cette pente est
+  l'angle depuis la verticale à l'impression. 1 = 45°.
+- **`croc_l` − `croc_nez` − `croc_gorge` ≥ `croc_col_y` + `croc_conge`.** Sinon la
+  butée et le congé de gorge se chevauchent et la vallée disparaît.
+
+Et une règle qui n'est pas une borne mais un piège : **aucun échantillon du profil
+ne doit tomber sur un plan de recoupe.** Le dos du profil déborde exprès de
+`croc_dos` = `croc_rb` + 2 derrière le mur, et l'échantillonnage du dessous démarre
+à `i = 1`. Avec un point à y = 0 pile, le plan de coupe passait par un sommet du
+maillage : 35 arêtes non-variété au pied du crochet, mesurées.
 
 ### Les deux tests permanents
 

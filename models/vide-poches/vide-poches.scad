@@ -238,25 +238,40 @@ croc_larg  = 34;   // mm — largeur de portée sous l'arceau. À 40, le crochet
                    //      droite, il laisse 18 mm d'air visible entre lui et la
                    //      partie profonde. L'arceau du XM5 fait ~32 mm de large :
                    //      30 mm de portée restent une assise pleine.
-croc_e     = 13;   // mm — épaisseur du bras. Épais comme les parois galbées
-                   //      du panier : un bras mince se lisait comme une pièce
-                   //      rapportée, d'un autre vocabulaire.
+croc_e     = 14;   // mm — épaisseur du bras au droit du mur. Épais comme les
+                   //      parois galbées du panier : un bras mince se lisait
+                   //      comme une pièce rapportée, d'un autre vocabulaire.
 croc_bas   = 4;    // mm — Z du dessous du bras. Laisse 4 mm d'air sous lui, pour
                    //      qu'il se lise comme suspendu et non comme un bloc posé
                    //      dans le prolongement du fond.
 croc_l     = 70;   // mm — longueur du bras
-croc_ame   = 14;   // mm — épaisseur de l'âme qui relie le bras au dos
 croc_col_y = 22;   // mm — profondeur de la racine adossée au dos
-croc_rc    = 12;    // mm — congé des plis RENTRANTS. C'est lui qui fait du crochet
-                   //      un fer plié plutôt que deux pièces soudées.
-croc_rv    = 6;    // mm — arrondi des arêtes saillantes
-croc_ch    = 3;    // mm — chanfrein des arêtes de portée
-croc_r_y   = 16;   // mm — emprise de la rampe de retenue
-croc_r_z   = 12;   // mm — remontée de la rampe.
-                   //      croc_r_z < croc_r_y IMPÉRATIVEMENT : à l'impression la
-                   //      rampe est un porte-à-faux dont l'angle depuis la
-                   //      verticale vaut atan(croc_r_z / croc_r_y). 14/16 = 41°,
-                   //      sous la limite de 45°. Au-delà, il faut des supports.
+
+// Le galbe du crochet. Rien ici n'est un pli : le profil est une suite d'arcs et
+// de S qui se rejoignent tangentiellement, comme le dessous du panier rejoint son
+// socle. Les quatre valeurs qui suivent décrivent chacune une portion de courbe.
+croc_relev = 4;    // mm — de combien le dessous du bras remonte vers la pointe.
+                   //      Un S tangent aux deux bouts : le bras s'affine en
+                   //      s'éloignant du mur au lieu de filer droit.
+croc_r_z   = 10;   // mm — hauteur de la butée au-dessus du fond de gorge
+croc_gorge = 24;   // mm — longueur sur laquelle la butée se relève.
+                   //      C'est elle qui fixe le porte-à-faux : un S de course
+                   //      `croc_gorge` et de hauteur `croc_r_z` a pour pente
+                   //      maximale 1,875·croc_r_z/croc_gorge, et cette pente est
+                   //      l'angle depuis la verticale à l'impression. Assertion
+                   //      plus bas : elle doit rester sous 45°.
+croc_conge = 12;   // mm — rayon du quart de cercle qui relève le fond de gorge
+                   //      vers la colonne. Remplace le congé de pli : la gorge
+                   //      où l'arceau se pose est une vallée continue, d'un bord
+                   //      à l'autre, sans un seul segment droit de plus de 2 mm.
+croc_rb    = 4;    // mm — galbe latéral, sur TOUT le pourtour du profil.
+                   //      Le bac s'arrondit de `r_av_bac` sur sa face avant ; le
+                   //      crochet s'arrondit de même sur ses flancs. Remplace les
+                   //      chanfreins à 45°, qui étaient la dernière arête vive de
+                   //      la pièce. Borné par deux choses, toutes deux vérifiées
+                   //      par assertion : la moitié de l'épaisseur la plus faible
+                   //      du bras, et le rayon concave le plus serré du profil.
+n_croc     = 16;   // échantillons par portion de courbe
 
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
@@ -753,37 +768,88 @@ module insert() {
 
 croc_x = 66;      // mm — centré sous la partie plate du dessous, à l'écart du
                   //      galbe, qui se termine vers x = 45
-croc_z = croc_bas;                    // 4
-// Passage libre pour l'arceau, entre le dessus du bras et le dessous de la coque.
-croc_jour = marche - croc_z - croc_e; // 32
 
-// Le crochet, d'UN SEUL PROFIL plié.
+croc_z     = croc_bas;                //  4 — dessous du bras au droit du mur
+croc_creux = croc_z + croc_e;         // 18 — fond de gorge, où porte l'arceau
+croc_som   = croc_creux + croc_r_z;   // 28 — sommet de la butée
+croc_nez   = (croc_som - croc_z - croc_relev) / 2;  // 10 — rayon du demi-rond
+croc_haut  = marche + 15;             // 61 — la racine remonte dans la coque
+croc_dos   = croc_rb + 2;             //  6 — débord du profil DERRIÈRE le mur
+
+// Passage libre pour l'arceau, entre le fond de gorge et le dessous de la coque.
+croc_jour  = marche - croc_creux;     // 28
+
+// Épaisseur du bras à son point le plus fin : juste avant que la butée ne se
+// relève, là où le dessous a déjà pris ses `croc_relev`.
+croc_mince = croc_creux - croc_z - croc_relev;   // 10
+
+assert(croc_mince > 2 * croc_rb + 1,
+       "le bras du crochet est trop fin pour son galbe latéral : baisser croc_rb ou croc_relev, ou épaissir croc_e");
+assert(croc_gorge * croc_gorge > 6 * croc_r_z * croc_rb,
+       "la butée se relève trop vite pour le galbe latéral : allonger croc_gorge ou baisser croc_r_z");
+assert(1.875 * croc_r_z <= croc_gorge,
+       "la butée du crochet dépasse 45° de porte-à-faux : allonger croc_gorge ou baisser croc_r_z");
+assert(croc_conge > croc_rb,
+       "le congé de gorge est plus serré que le galbe latéral : offset_sweep se recoupera");
+assert(croc_l - croc_nez - croc_gorge >= croc_col_y + croc_conge,
+       "la butée et le congé de gorge se chevauchent : raccourcir croc_gorge ou croc_conge");
+
+// Le profil du crochet, dans le plan (y, z) — QUE des courbes tangentes.
 //
-// Une version antérieure l'assemblait en deux morceaux : un bras extrudé dans un
-// sens, un col extrudé dans l'autre, qui se rencontraient en T sans le moindre
-// congé. Ça se voyait, et ça concentrait la contrainte exactement là où le
-// casque tire. Ici c'est une seule section, du dos jusqu'à la butée, avec des
-// congés rentrants à chaque pli — comme un fer plié, pas comme deux pièces
-// soudées.
-module crochet() {
-    profil = [
-        [0,                 marche + 15],              // adossé au dos, noyé dedans
-        [0,                 croc_z],                   // descend le long du bois
-        [croc_l,            croc_z],                   // file vers l'avant
-        [croc_l,            croc_z + croc_e + croc_r_z],  // remonte : la butée
-        [croc_l - croc_r_y, croc_z + croc_e],          // redescend le long de la rampe
-        [croc_col_y,        croc_z + croc_e],          // le dessus du bras
-        [croc_col_y,        marche + 15],              // et remonte au dos
-    ];
+// Trois générations : deux morceaux extrudés qui se rencontraient en T sans le
+// moindre congé ; puis un fer plié, d'un seul tenant mais à angles filetés de
+// congés ; celle-ci n'a plus de pli du tout. Chaque portion arrive tangente à la
+// suivante, si bien qu'il ne reste aucun angle à arrondir après coup — le galbe
+// est dans la courbe elle-même, pas dans un raccord posé dessus.
+function chemin_croc() = concat(
+    // Le dos. Il déborde DERRIÈRE le plan du mur ; crochet() recoupe.
+    [[-croc_dos, croc_haut], [-croc_dos, croc_z]],
+    // Dessous du bras : un S qui le relève doucement vers la pointe, tangent à
+    // l'horizontale aux deux bouts. Le bras s'affine en s'éloignant du mur.
+    //
+    // L'échantillonnage démarre à i = 1, PAS à 0 : le point t = 0 tomberait à
+    // y = 0 pile, c'est-à-dire exactement sur le plan de recoupe du dos. Un plan
+    // de coupe qui passe par un sommet du profil, ce sont 35 arêtes non-variété
+    // au pied du crochet — mesurées. Entre y = 0 et le premier échantillon le S
+    // ne monte que de 9 µm : la droite qui vient du dos y est indiscernable.
+    [for (i = [1 : n_croc]) let (t = i / n_croc)
+        [(croc_l - croc_nez) * t, croc_z + croc_relev * liss5(t)]],
+    // Le nez : un demi-rond franc, tangent au dessous en bas et à la butée en
+    // haut. La pointe du crochet n'a donc aucune arête, dans aucun plan.
+    [for (i = [1 : n_croc - 1]) let (a = 180 * i / n_croc)
+        [croc_l - croc_nez + croc_nez * sin(a),
+         croc_z + croc_relev + croc_nez * (1 - cos(a))]],
+    // La butée redescend en S vers le fond de gorge.
+    [for (i = [0 : n_croc]) let (u = i / n_croc)
+        [croc_l - croc_nez - croc_gorge * u, croc_som - croc_r_z * liss5(u)]],
+    // Le quart de cercle qui relève le fond de gorge vers la colonne. Là aussi
+    // on saute le point u = 0 : il est quasi aligné avec la fin de la butée, et
+    // trois points alignés dans un balayage décalé donnent des éclats.
+    [for (i = [1 : n_croc]) let (u = i / n_croc)
+        [croc_col_y + croc_conge * (1 - sin(90 * u)),
+         croc_creux + croc_conge * (1 - cos(90 * u))]],
+    // La colonne remonte dans la coque.
+    [[croc_col_y, croc_haut]]);
 
+module crochet() {
     difference() {
+        // Balayé selon X et galbé sur ses DEUX flancs, comme le bac l'est sur sa
+        // face avant. C'est ce qui remplace les chanfreins à 45°.
         translate([croc_x, 0, 0])
             rotate([90, 0, 90])
                 translate([0, 0, -croc_larg / 2])
-                    linear_extrude(croc_larg)
-                        offset(r = -croc_rc) offset(r = croc_rc)   // plis rentrants
-                            offset(r = croc_rv) offset(r = -croc_rv)  // arêtes vives
-                                polygon(profil);
+                    offset_sweep(chemin_croc(), height = croc_larg,
+                                 bottom = os_circle(r = croc_rb),
+                                 top    = os_circle(r = croc_rb),
+                                 steps = 12, check_valid = true);
+
+        // Le profil déborde de `croc_dos` derrière le plan du mur, et on recoupe
+        // ici. Sans ce débord, le galbe latéral ramènerait le dos du profil
+        // EXACTEMENT sur y = 0 en bout de balayage : le solide serait tangent à
+        // son propre plan de coupe, et une tangence donne des éclats. Le dos doit
+        // par ailleurs rester plat — c'est la face qui porte contre le bois, et
+        // c'est elle qui repose sur le plateau d'impression.
+        translate([-BIG / 2, -BIG, -BIG / 2]) cube(BIG);
 
         // La racine est noyée de 15 mm dans la coque pour que la jonction soit
         // franche. Ce qui dépasserait au-dessus du dessous de la coque — près du
@@ -796,14 +862,6 @@ module crochet() {
             translate([-BIG / 2, -BIG / 2, marche]) cube(BIG);
             en_travers(-1, prof + 2) offset(r = EPS) silhouette_bac_2d();
         }
-
-        // arêtes de portée chanfreinées : une arête vive marque la mousse de
-        // l'arceau à la longue. Verticales à l'impression, donc gratuites.
-        for (s = [-1, 1])
-            translate([croc_x + s * croc_larg / 2, croc_l / 2, croc_z + croc_e])
-                rotate([0, 45, 0])
-                    cube([croc_ch * sqrt(2), croc_l + 20, croc_ch * sqrt(2)],
-                         center = true);
     }
 }
 
