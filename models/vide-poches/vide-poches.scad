@@ -138,8 +138,25 @@ bac_int  = 78;    // mm — profondeur intérieure utile. Gagne 8 mm sur la vers
                   //      partout.
 paroi    = 2.4;   // mm — 6 périmètres à 0,4
 cloison  = 2.4;   // mm
-fond     = 2.4;   // mm
+fond     = 2.8;   // mm — VOLONTAIREMENT différent de `paroi`. Les deux niveaux
+                  //      de plancher valent `fond` et `marche + fond` ; le dessous
+                  //      de l'enveloppe intérieure, lui, vaut `paroi` et
+                  //      `marche + paroi`. Les faire coïncider posait le fond des
+                  //      compartiments EXACTEMENT sur la peau intérieure de la
+                  //      coque : deux surfaces confondues sur toute leur étendue,
+                  //      et un galbe tangent à ce plan à son sommet. C'est ce qui
+                  //      se voyait comme un trou triangulaire là où la profondeur
+                  //      change. Les 0,4 mm d'écart rendent l'intersection franche.
 r_coin   = 4;     // mm — congé vertical des compartiments
+
+// Débord des prismes de creusement au-delà de l'enveloppe intérieure.
+//
+// Une cavité bornée PILE sur la paroi qu'elle longe donne deux faces coplanaires,
+// que CGAL rend en arêtes non-variété et l'aperçu en trous. Les prismes débordent
+// donc franchement : c'est l'enveloppe qui ferme le compartiment de ce côté, et
+// elle le fait proprement. 5 mm, pas 0,2 : un petit débord laisserait un éclat
+// rasant à la place de la face coplanaire, ce qui n'est pas mieux.
+deb      = 5;     // mm
 
 // Le galbe : de combien le dessous remonte côté peu profond, et sur quelle
 // emprise horizontale il le fait.
@@ -261,10 +278,10 @@ garde_vis = course + boss_bas;   // 20 mm — de l'arase du bac à l'axe des vis
                                  //      la casquette.
 z_haut    = bac_h;               //  95 — arase du bac
 z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
-z_top     = z_som;               // 144 — le sommet de la casquette
+z_top     = z_som;               // 128 — le sommet de la casquette
 
-fond_bas  = fond;                //  2,4 — fond côté profond  → 91 mm utiles
-fond_haut = marche + fond;       // 48,4 — fond côté peu profond → 45 mm utiles
+fond_bas  = fond;                //  2,8 — fond côté profond  → 92,2 mm utiles
+fond_haut = marche + fond;       // 48,8 — fond côté peu profond → 46,2 mm utiles
 
 z_entree  = z_vis - course;      //  95 — hauteur du trou de passage de la tête
 boss_z0   = z_entree - boss_bas; //  87
@@ -480,6 +497,7 @@ module enveloppe_int_2d(retrait = 0) { polygon(chemin_int(retrait)); }
 
 n_galbe_pts = 20;   // points sur le S du dessous
 n_cap_pts   = 24;   // points sur la casquette
+
 r_coin_haut = 6;    // mm — congé des deux coins hauts du dos. Petit PAR
                     //      NÉCESSITÉ : la casquette y arrive par des segments
                     //      courts, un congé plus large n'y tiendrait pas.
@@ -629,47 +647,26 @@ module cavites() {
         union() for (z = zones)
             translate([0, 0, z[2]])
                 linear_extrude(z_haut - z[2] + EPS)
-                    rect_2d(z[0], z[1], yi0, yi1);
+                    rect_2d(z[0] <= xi0 ? xi0 - deb : z[0],
+                            z[1] >= xi1 ? xi1 + deb : z[1],
+                            yi0 - deb, yi1);
     }
 }
 
-// Évidement sous le socle du côté peu profond : sans lui, le coin entre le galbe
-// et ce socle serait un bloc plein.
-// L'évidement DOIT être découpé dans l'enveloppe intérieure, comme les cavités.
+// Pas d'évidement sous le socle du côté peu profond : il est PLEIN.
 //
-// Il ne l'était pas : borné en plan par le contour rétréci de `paroi`, il montait
-// tout droit jusqu'à y = 80 alors que la face avant, elle, se galbe sur 15 mm. À
-// cette profondeur la peau s'est déjà retirée de 6,9 mm vers l'intérieur —
-// l'évidement la dépassait de 4,5 et débouchait, juste après le galbe. Une paroi
-// dont l'enveloppe varie en profondeur ne se borne pas par un contour plan.
-module evidement() {
-    intersection() {
-        sweep_y(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), chemin_int(0));
-        en_travers(dos_ep, prof)
-            // L'évidement s'arrête à `marche`, PAS à `fond_haut`.
-            //
-            // Entre les deux il y a les 2,4 mm de plancher du côté peu profond.
-            // En montant jusqu'à `fond_haut`, l'évidement mangeait ce plancher :
-            // partout où le galbe est encore bas, le compartiment s'ouvrait sur
-            // le creux — le fond du panier était percé.
-            //
-            // Effet de bord heureux : les deux soustractions ne se touchent plus
-            // du tout, donc plus de faces coplanaires ni d'arêtes non-variété au
-            // sommet du galbe.
-            polygon([
-                [-larg,            -20],
-                [ larg,            -20],
-                [ larg,            marche - EPS],
-                [ x_tab + cloison, marche - EPS],
-                [ x_tab + cloison, fond_bas - EPS],
-                [-larg,            fond_bas - EPS],
-            ]);
-    }
-}
-
-// Pour inspection seule : le bac creusé, sans le reste.
+// Il a été creux, et c'est ce creux qui perçait la coque — il débouchait par la
+// lèvre avant, là où la profondeur change. Refermé proprement, il devenait une
+// cavité scellée de 60 cm³ dont le plafond est la face avant : en orientation
+// d'impression — dos sur le plateau, donc la profondeur en hauteur — c'est un
+// pontage de 80 × 40 mm à 80 mm de haut, et aucun trancheur ne sait poser de
+// support à l'intérieur d'un volume fermé. Il s'affaisserait.
+//
+// Un socle plein coûte 60 cm³ de volume modèle, mais le trancheur les remplit au
+// taux qu'on lui donne : une dizaine de grammes de plastique en plus, contre un
+// pontage impossible — et la pièce est plus rigide juste au-dessus du crochet.
 module bac() {
-    difference() { bac_plein(); cavites(); evidement(); }
+    difference() { bac_plein(); cavites(); }
 }
 
 // --- Insert -------------------------------------------------------------------
@@ -865,7 +862,6 @@ module coque() {
     difference() {
         union() { dos(); bac_plein(); crochet(); }
         cavites();
-        evidement();
     }
 }
 

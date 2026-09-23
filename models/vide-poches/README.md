@@ -132,41 +132,50 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 224,7 cm³ | 175 × 83,4 × 145 mm |
-| Inserts (2) | 62,2 cm³ | |
-| **Total** | **286,8 cm³** | |
+| Coque | 268,6 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Inserts (2 corps) | 62,0 cm³ | 169,2 × 77,0 × 92,1 mm |
+| **Total** | **330,6 cm³** | |
 
-> Volume **géométrique**. Le fil consommé dépend du remplissage choisi ; seuls les
-> deux bossages de fixation et le bras du crochet sont épais, tout le reste est en
-> parois minces qui s'impriment pleines.
+> Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
+> pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
+> remplit au taux qu'on lui donne.
 
 | Cote | Valeur | Origine |
 |---|---|---|
-| Épaisseur du dos, hors fixation | 3,0 mm | `dos_ep` |
-| Épaisseur au droit des vis | 26,1 mm | `col_h + porteur + loge_e + dos_av` |
-| Hauteur du bossage | 40 mm | `boss_z1 − boss_z0` |
-| Course d'enfilage | 20 mm | `course` |
-| Plaque porteuse | 13,5 mm | `vis_l − 0,5` : toute la tige libre |
-| Dégagement devant la tête | 0,5 mm | plaque à 18,70, dessous de tête à 19,20 |
-| Entraxe des chevilles | 95 mm | libre — la 2ᵉ est à poser |
+| Épaisseur du dos, hors fixation | 2,0 mm | `dos_ep` |
+| Épaisseur au droit des vis | 9,4 mm | `col_h + porteur + loge_e + dos_av` |
+| Plaque porteuse | 2,0 mm | `vis_l − 0,5` — la tige ne dépasse que de 2,5 |
+| Course d'enfilage | 14 mm | `course` |
+| Garde sous l'axe des vis | 20 mm | `course + boss_bas` — **dérivée**, pas choisie |
+| Entraxe des chevilles | 140 mm | les renflements sont tout au bord |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 9,5 mm | `tete_d + jeu_entree` |
-| Profondeur, zone profonde | 91 mm | tabac, lunettes, stylos |
-| Profondeur, zone peu profonde | 45 mm | câbles, briquets, bricoles |
+| Logement de tête | 11,0 mm | `tete_d + jeu_tete` |
+| Profondeur, zone profonde | 92,2 mm | `bac_h − fond_bas` |
+| Profondeur, zone peu profonde | 46,2 mm | `bac_h − fond_haut` |
+| Marche entre les deux niveaux | 46 mm sur 45 de galbe | `marche`, `galbe` |
 | Galbe de la jointure avant | 15 mm | `r_av_bac` |
+| Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
+
+Contrôles topologiques sur le maillage, tous à zéro :
+
+| Pièce | Solides | Cavités scellées | Arêtes de bord | Arêtes non-variété |
+|---|---|---|---|---|
+| Coque | 1 | 0 | 0 | 0 |
+| Inserts | 2 | 0 | 0 | 0 |
 
 ## 5. Montage
 
 1. **Percer la seconde cheville** au gabarit, à la **même hauteur** que
    l'existante : c'est ce qui empêche le panier de vriller quand on le charge de
-   travers.
-2. **Présenter la coque**, les deux têtes en face des trous de passage.
-3. **Pousser contre le bois**, puis **descendre de 20 mm**. Elle vient en butée
-   toute seule.
+   travers. Entraxe 140 mm.
+2. **Présenter la coque**, les deux têtes en face des trous de passage de 9,5.
+3. **Pousser contre le bois**, puis **descendre de 14 mm** (`course`). Elle vient
+   en butée toute seule.
 4. **Poser les deux inserts**, chacun dans sa zone.
 
-Pour décrocher : remonter de 20 mm, tirer vers soi. Rien à dévisser.
+Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
 
 ## 6. Impression
 
@@ -175,9 +184,13 @@ Pour décrocher : remonter de 20 mm, tirer vers soi. Rien à dévisser.
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
   250 g de casque à 60 mm de porte-à-faux donnent **0,29 MPa** sur une section de
   30 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 70.
-- Emprise plateau : 175 × 145 mm pour la coque.
+- Emprise plateau : 175 × 128 mm pour la coque.
+- Remplissage libre : aucun volume fermé dans la pièce, donc rien que le trancheur
+  doive ponter à l'aveugle.
 
 ## 7. Contraintes à connaître avant de modifier
+
+### Géométrie interne
 
 - **Les cavités doivent être découpées dans l'enveloppe intérieure, jamais posées
   à un niveau.** Le dessous de la coque remonte vers les extrémités — coins
@@ -185,40 +198,77 @@ Pour décrocher : remonter de 20 mm, tirer vers soi. Rien à dévisser.
   cavités passaient sous la peau près des coins et **le bac débouchait par en
   dessous**, sur plusieurs millimètres, sans que rien ne le signale.
 - **C'est cette même enveloppe qui débride le galbe avant.** Tant que les cavités
-  étaient des prismes posés, `r_av_bac` était borné à l'épaisseur de paroi, 2 mm :
-  au-delà l'arrondi passait derrière elles. Depuis, la coque garde son épaisseur
-  partout et le galbe peut être aussi ample qu'on veut. Effet voulu : l'arase
-  descend de `r_av_bac` à l'approche de la face avant.
-- **L'arche doit passer au-dessus du siège de chaque vis** — assertion dans le
-  modèle. Sinon le canal débouche par le haut et la vis ne retient plus rien. Elle
-  a arrêté le rendu dès le premier essai.
-- **Le galbe ne doit pas passer sous un compartiment profond** — autre assertion.
-- **`r_galbe` doit rester petit.** L'arrondi d'un angle rentrant dilate la forme de
-  r avant de la contracter ; le creux du galbe se rétrécit vers le haut, et à
-  r = 25 la dilatation le rebouchait — le galbe ne montait plus qu'à 23 mm au lieu
-  de 46, sans la moindre erreur.
-- **L'arrondi avant se fait par marches empilées.** Deux marches par millimètre de
-  rayon : à cinq marches pour 10 mm, les gradins se voient.
+  étaient des prismes posés, `r_av_bac` était borné à l'épaisseur de paroi : au-delà
+  l'arrondi passait derrière elles. Depuis, la coque garde son épaisseur partout.
+- **Le socle du côté peu profond est PLEIN, et doit le rester.** Il a été creux ;
+  refermé proprement, ce creux devenait une cavité scellée de 60 cm³ dont le plafond
+  est la face avant. En orientation d'impression c'est un pontage de 80 × 40 mm à
+  80 mm de haut, et aucun trancheur ne sait poser de support dans un volume fermé.
+
+### Les trois pièges de coïncidence — tous vécus sur cette pièce
+
+Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme un trou.
+
+- **`fond` ne doit PAS valoir `paroi`.** Les deux niveaux de plancher valent `fond`
+  et `marche + fond` ; le dessous de l'enveloppe intérieure vaut `paroi` et
+  `marche + paroi`. Les faire coïncider posait le fond des compartiments exactement
+  sur la peau intérieure — deux surfaces confondues sur toute leur étendue, et un
+  galbe tangent à ce plan à son sommet.
+- **Un prisme de creusement ne se borne pas sur la paroi qu'il longe.** Il déborde
+  de `deb` = 5 mm : c'est l'enveloppe qui ferme le compartiment de ce côté. Et 5 mm,
+  pas 0,2 — un petit débord remplace la face coplanaire par un éclat rasant.
+- **Deux balayages concentriques affleurent à la lèvre avant.** Un arrondi
+  `offset_sweep` rentre le profil de son propre rayon : à la lèvre, le bac vaut
+  `chemin_bac − r_av_bac` et l'enveloppe intérieure `chemin_bac − paroi −
+  (r_av_bac − paroi)`. **La même courbe.** Tout ce qui se soustrait au bac doit donc
+  s'arrêter à `yi1`, jamais à `prof`. C'est ce piège qui perçait le galbe.
+
+### Bornes des paramètres
+
+- **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
+  la tête ; plus épaisse que la tige libre, elle ne passe pas, et la fente de tige ne
+  traverse même plus. C'est ce qu'a cassé le passage aux vis courtes.
+- **L'arche doit passer au-dessus du siège de chaque vis** — assertion. Sinon le
+  canal débouche par le haut et la vis ne retient plus rien.
+- **`garde_vis` est dérivée : `course + boss_bas`.** La choisir trop petite fait
+  descendre le renflement dans le bac, et le logement de tête s'ouvre dans la paroi
+  arrière — la vis se voit depuis l'intérieur.
+- **Le S du galbe est quintique (`liss5`), pas cubique.** Un décrochement de course
+  `galbe` et de hauteur `marche` a un rayon concave minimal de `galbe²/(6·marche)` :
+  7,3 mm en cubique, 17,2 en quintique. `r_av_bac` vaut 15 — il ne passait pas avec
+  le cubique, et `check_valid = true` doit rester activé pour le dire.
 - **`bac_h` est fixé par une contrainte de hauteur, pas de volume.** Le réduire fait
   ressortir les lunettes au-dessus de l'axe des colonnettes, où la limite est 35 mm.
-- **`porteur` ≤ `vis_l`.** La plaque porteuse se glisse entre le fût et la tête.
 - **Tous les compartiments au même congé.** L'insert se calcule comme *l'intérieur
   de sa zone moins les compartiments* : un compartiment plus arrondi que le pourtour
-  laisse dans le coin un fragment de matière détaché, qui sortirait de l'imprimante
-  en morceau libre.
+  laisse dans le coin un fragment détaché, qui sortirait en morceau libre.
 - **Un compartiment doit tenir entièrement dans une zone**, sinon il n'appartient à
   aucun insert et disparaît.
 - **`croc_r_z` < `croc_r_y` impérativement** : la rampe de retenue du crochet est un
   porte-à-faux dont l'angle depuis la verticale vaut `atan(croc_r_z / croc_r_y)`.
 
+### Les deux tests permanents
+
+Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pièce.
+
+| `PIECE=` | Ce qu'il vérifie | Résultat attendu |
+|---|---|---|
+| `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de la coque au-dessus de l'arase | **vide** (`Current top level object is empty`) |
+| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 691 mm³ |
+
+Un renflement mal placé rend `peau` creux ; un renflement trop gros rend `descente`
+non vide. Les deux sont muets si on ne les lance pas.
+
 ## 8. Points de vérification
 
+- [ ] **La cheville reste-t-elle en saillie du bois ?** Si oui, sa hauteur hors bois
+      doit revenir dans `col_h`, aujourd'hui à 0 — et toute la fixation se décale.
 - [ ] Vérifier que le casque passe : le jour sous le crochet, à confronter à
       l'arceau réel.
 - [ ] Le jeu de 0,5 mm au pourtour des inserts n'a pas été validé à l'impression.
-- [ ] Les lunettes debout dans une fente de 50 × 37,6 sur 91 mm : tenue à vérifier.
+- [ ] Les lunettes debout dans une fente de 50 × 37,6 sur 92,2 mm : tenue à vérifier.
 - [ ] La poche à tabac debout dans une fente de 85 × 30 : une blague souple
       tient-elle droite ? C'est elle qui commande la largeur de la zone profonde.
-- [ ] Les bossages descendent de 8 mm sous l'arase et mordent donc sur le haut des
-      compartiments arrière. L'insert leur est dégagé, mais l'encombrement réel
-      reste à juger en main.
+- [ ] Les renflements descendent sous l'arase et mordent sur le haut des
+      compartiments arrière. L'insert leur est dégagé — test `descente` — mais
+      l'encombrement réel reste à juger en main.
