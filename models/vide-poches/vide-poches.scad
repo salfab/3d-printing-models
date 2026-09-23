@@ -391,11 +391,22 @@ sil_n = 72;   // points d'échantillonnage sur la largeur
 // rejoignent en un point de raccord y arrivent à plat, donc sans arête.
 function liss(t) = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 
+// Lissage QUINTIQUE, pour le galbe du dessous. Même départ et même arrivée que
+// le cubique, mais la courbure se répartit au lieu de se concentrer aux deux
+// bouts — et c'est cela qui compte ici, pas l'allure.
+//
+// Le rayon de courbure concave MINIMAL du S borne le galbe avant : rétrécir le
+// contour de plus que ce rayon fait se replier la surface sur elle-même, et elle
+// se troue sur l'arête de la face avant. En cubique
+//     R = galbe² / (6·marche) = 45² / (6·46) = 7,3 mm
+// pour un galbe avant de 15. En quintique, R monte à 17,2 et la marge revient.
+function liss5(t) = t <= 0 ? 0 : t >= 1 ? 1 : t * t * t * (t * (6 * t - 15) + 10);
+
 // Le dessous : plat côté profond, puis un S qui remonte vers la zone peu profonde.
 function dessous(x) =
     x <= x_tab           ? 0 :
     x >= x_tab + galbe   ? marche
-                         : marche * liss((x - x_tab) / galbe);
+                         : marche * liss5((x - x_tab) / galbe);
 
 // Le dessus du dos : une casquette convexe, plate au sommet et qui plonge tard.
 // Tangente nulle au milieu comme aux deux bords : pas une arête sur tout le
@@ -476,7 +487,7 @@ r_coin_haut = 6;    // mm — congé des deux coins hauts du dos. Petit PAR
 function pts_bas() = concat(
     [[-larg / 2, 0], [x_tab, 0]],
     [for (i = [1 : n_galbe_pts - 1]) let (t = i / n_galbe_pts)
-        [x_tab + galbe * t, marche * liss(t)]],
+        [x_tab + galbe * t, marche * liss5(t)]],
     [[x_tab + galbe, marche], [larg / 2, marche]]
 );
 function ray_bas() = concat([r_ext, 0], [for (i = [1 : n_galbe_pts - 1]) 0], [0, r_ext]);
@@ -504,9 +515,13 @@ module sweep_y(y0, e, r, chemin) {
     translate([0, y0, 0])
         rotate([90, 0, 0])
             translate([0, 0, -e])
+                // check_valid ACTIVÉ. Il était désactivé « pour aller plus
+                // vite », et c'est précisément le contrôle qui repère un rayon
+                // d'arrondi supérieur au rayon de courbure concave du contour —
+                // le défaut qui avait troué l'arête de la face avant au galbe.
                 offset_sweep(chemin, height = e,
                              bottom = os_circle(r = min(r, e - 0.6)),
-                             steps = 12, check_valid = false);
+                             steps = 12, check_valid = true);
 }
 
 // --- Géométrie ----------------------------------------------------------------
@@ -620,19 +635,36 @@ module cavites() {
 
 // Évidement sous le socle du côté peu profond : sans lui, le coin entre le galbe
 // et ce socle serait un bloc plein.
+// L'évidement DOIT être découpé dans l'enveloppe intérieure, comme les cavités.
+//
+// Il ne l'était pas : borné en plan par le contour rétréci de `paroi`, il montait
+// tout droit jusqu'à y = 80 alors que la face avant, elle, se galbe sur 15 mm. À
+// cette profondeur la peau s'est déjà retirée de 6,9 mm vers l'intérieur —
+// l'évidement la dépassait de 4,5 et débouchait, juste après le galbe. Une paroi
+// dont l'enveloppe varie en profondeur ne se borne pas par un contour plan.
 module evidement() {
-    en_travers(dos_ep, prof - dos_ep - paroi)
-        intersection() {
-            offset(r = -paroi) silhouette_bac_2d();
+    intersection() {
+        sweep_y(dos_ep, prof - dos_ep, max(0.6, r_av_bac - paroi), chemin_int(0));
+        en_travers(dos_ep, prof)
+            // L'évidement s'arrête à `marche`, PAS à `fond_haut`.
+            //
+            // Entre les deux il y a les 2,4 mm de plancher du côté peu profond.
+            // En montant jusqu'à `fond_haut`, l'évidement mangeait ce plancher :
+            // partout où le galbe est encore bas, le compartiment s'ouvrait sur
+            // le creux — le fond du panier était percé.
+            //
+            // Effet de bord heureux : les deux soustractions ne se touchent plus
+            // du tout, donc plus de faces coplanaires ni d'arêtes non-variété au
+            // sommet du galbe.
             polygon([
                 [-larg,            -20],
                 [ larg,            -20],
-                [ larg,            fond_haut],
-                [ x_tab + cloison, fond_haut],
-                [ x_tab + cloison, fond_bas],
-                [-larg,            fond_bas],
+                [ larg,            marche - EPS],
+                [ x_tab + cloison, marche - EPS],
+                [ x_tab + cloison, fond_bas - EPS],
+                [-larg,            fond_bas - EPS],
             ]);
-        }
+    }
 }
 
 // Pour inspection seule : le bac creusé, sans le reste.
@@ -759,9 +791,13 @@ module crochet() {
         // La racine est noyée de 15 mm dans la coque pour que la jonction soit
         // franche. Ce qui dépasserait au-dessus du dessous de la coque — près du
         // coin arrondi, elle remonte — est retiré.
+        // La coque est GROSSIE d'EPS pour cette découpe : sans ça, le plan de
+        // coupe et le dessous de la coque sont au même niveau, et la racine du
+        // crochet se raccorde par une face coplanaire — d'où des arêtes
+        // non-variété tout autour de la jonction.
         difference() {
             translate([-BIG / 2, -BIG / 2, marche]) cube(BIG);
-            en_travers(-1, prof + 2) silhouette_bac_2d();
+            en_travers(-1, prof + 2) offset(r = EPS) silhouette_bac_2d();
         }
 
         // arêtes de portée chanfreinées : une arête vive marque la mousse de
