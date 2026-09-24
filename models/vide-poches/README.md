@@ -82,12 +82,20 @@ besoin que de 45. Entre les deux, un galbe et non une marche.
 
 | Objet | Rangé | Zone | Empreinte |
 |---|---|---|---|
-| Lunettes pliées | debout | profonde, 91 mm | 50 × 37,6 |
+| Lunettes pliées | debout | profonde, 91 mm | 50 × 41,8 |
 | Poche à tabac | debout | profonde, 91 mm | 85 × 30 |
-| Stylos, grands objets | debout | profonde, 91 mm | 32,6 × 37,6 |
-| Câbles USB | en vrac | peu profonde, 45 mm | 42,7 × 42 |
-| Briquets | en vrac | peu profonde, 45 mm | 37,7 × 42 |
-| Petites bricoles | en vrac | peu profonde, 45 mm | 82,8 × 25,6 |
+| Stylos, grands objets | debout | profonde, 91 mm | 32,6 × 41,8 |
+| **Briquets** (Bic J26, Clipper) | debout | au creux du galbe, replat à 72 mm | 17 × 37,2 |
+| Câbles USB | en vrac | peu profonde, 45 mm, galbe côté cloison | 30,5 × 37,2 |
+| Petits objets | en vrac | peu profonde, 45 mm | 30,5 × 37,2 |
+| Petites bricoles | en vrac | peu profonde, jusqu'à 90 mm au pied du galbe | 82,8 × 34,6 |
+
+**La case à briquets** occupe le creux du galbe, contre la cloison : une case
+rectangulaire comme les autres, pour garder à la grille son dessin orthogonal vue
+d'en haut. Son fond suit le galbe mais s'arrête sur un replat à `briq_prof` = 72 mm
+sous le bord, pour ne pas finir en pointe. Bic J26 : 82 × 25 × 15 mm ; Clipper
+Large : 74 mm de haut, 16 d'épaisseur — d'où 17 de large. Le Bic dépasse du bord de
+10 mm, le Clipper de 2.
 
 Le XM5 **ne se plie pas**, contrairement au XM4 : il faut une portée large sous
 l'arceau, pas une patte fine.

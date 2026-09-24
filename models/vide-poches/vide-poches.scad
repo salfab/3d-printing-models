@@ -432,15 +432,14 @@ yi0_ins = dos_e + insert_jeu + insert_paroi;   // 9,3
 x_tab = xi0 + ins_ep + 85 + ins_ep;   // cloison centrale — la fente à tabac, le
                                       // plus large des objets, fait 85 utiles
 x_lun = xi0 + ins_ep + 50;            // fente à lunettes : 50 utiles
-x_cab = x_tab + cloison + ins_ep + 42.7;   // frontière câbles / briquets
 y_tab = yi0_ins + 30;  // épaisseur d'une poche à tabac debout, depuis la paroi
                       // arrière de l'insert
 y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 
-// [x0, x1, y0, y1]
+// [x0, x1, y0, y1] ou [x0, x1, y0, y1, z du fond]
 //
-// Plus de niveau de fond par compartiment : le fond suit partout le dessous de la
-// coque, galbe compris (voir `plancher`). C'est la zone qui décide du niveau.
+// Le fond suit le dessous de la coque, galbe compris (voir `plancher`) — sauf pour
+// un compartiment qui donne son propre fond, plat, en cinquième champ.
 //
 // TOUS les compartiments au même congé r_coin, et ce n'est pas un choix
 // esthétique : l'insert se calcule comme « l'intérieur moins les compartiments ».
@@ -451,12 +450,42 @@ cx1 = xi1 - ins_ep;
 cxt = x_tab - ins_ep;              // contre la cloison centrale, côté profond
 cxc = x_tab + cloison + ins_ep;    // et côté peu profond
 cy1 = yi1 - ins_ep;                // contre la paroi avant
+
+// LA CASE À BRIQUETS, au creux du galbe. Contre la cloison, le fond du côté peu
+// profond descend presque aussi bas que la zone profonde : c'est la place d'un
+// objet haut et étroit, un briquet debout. Son fond suit le galbe, mais il est
+// ARRÊTÉ par un replat à `briq_prof` sous le bord : sans lui, la case finirait en
+// pointe au pied de la cloison, 90 mm plus bas, et un briquet y disparaîtrait.
+// Sous le replat, l'insert ne suit plus le galbe : il reste un vide entre lui et
+// la coque.
+//
+// Un fond entièrement plat a été essayé : il fallait le monter au niveau du galbe
+// au bord de la case, soit 65 mm de profondeur seulement.
+//
+// Une case rectangulaire comme les autres, pas des alvéoles à la forme du
+// briquet : vue d'en haut, la grille reste orthogonale.
+//
+// Bic J26 (Maxi) : 82 × 25 × 15 mm. Clipper Large (CP11) : 74 mm de haut, 16
+// d'épaisseur. La largeur tient le plus épais.
+briq_l = 17;                        // mm — largeur utile de la case
+briq_prof = 72;                     // mm — profondeur du replat sous le bord : le
+                                    //      Bic dépasse de 10, le Clipper de 2. À 78,
+                                    //      le Clipper disparaît sous le bord.
+x_brq  = cxc + briq_l;              // frontière briquets / câbles
+x_cab  = (x_brq + cx1) / 2;         // frontière câbles / petits objets : le reste
+                                    // du rang arrière, en deux cases égales
+
+z_brq = z_haut - briq_prof;         // 23 — le replat ; le fond de la case est le
+                                    //      plus haut du replat et du galbe (~13 mm
+                                    //      de replat, puis le galbe)
+
 cuves = [
     [cx0,             cxt,   yi0_ins,         y_tab],  // tabac, DEBOUT
     [cx0,             x_lun, y_tab + cloison, cy1  ],  // lunettes, DEBOUT
     [x_lun + cloison, cxt,   y_tab + cloison, cy1  ],  // stylos, grands objets
-    [cxc,             x_cab, yi0_ins,         y_cab],  // câbles USB
-    [x_cab + cloison, cx1,   yi0_ins,         y_cab],  // briquets
+    [cxc,             x_brq, yi0_ins,         y_cab, z_brq],  // briquets, DEBOUT
+    [x_brq + cloison, x_cab, yi0_ins,         y_cab],  // câbles USB
+    [x_cab + cloison, cx1,   yi0_ins,         y_cab],  // petits objets
     [cxc,             cx1,   y_cab + cloison, cy1  ],  // petites bricoles
 ];
 
@@ -1012,6 +1041,7 @@ module bloc_zone(z) {
 // angles extérieurs, leur coin devient concentrique à celui de l'insert, et le
 // liseré garde sa largeur dans les coins aussi.
 function zone_de(c) = zones[c[0] < x_tab ? 0 : 1];
+function bas_cuve(c) = len(c) > 4 ? c[4] : fond_bas - 1;
 function section_cuve(c, z) =
     let (y0 = c[2] - (y_ins - y_arr(z)))
     path3d(move([(c[0] + c[1]) / 2, (y0 + c[3]) / 2],
@@ -1023,10 +1053,10 @@ module cuve_3d(c) {
             linear_extrude(haut - fond_bas + 1)
                 offset(r = -(ins_ep - 0.05)) zone_2d(zone_de(c));
         if (c[2] > yi0_ins + EPS)
-            translate([0, 0, fond_bas - 1])
-                linear_extrude(haut - fond_bas + 1) rect_2d(c[0], c[1], c[2], c[3]);
+            translate([0, 0, bas_cuve(c)])
+                linear_extrude(haut - bas_cuve(c)) rect_2d(c[0], c[1], c[2], c[3]);
         else
-            skin(concat([section_cuve(c, fond_bas - 1)],
+            skin(concat([section_cuve(c, bas_cuve(c))],
                         [for (i = [0 : n_incl]) section_cuve(c, z_incl(i))],
                         [section_cuve(c, haut)]),
                  slices = 0);
@@ -1069,8 +1099,20 @@ module insert() {
                 plancher(insert_jeu + insert_fond);
                 union() for (c = cuves) cuve_3d(c);
             }
+            sous_briquets();
         }
     }
+}
+
+// Sous le replat de la case à briquets, l'insert ne descend plus vers le galbe :
+// tout ce qui est plus bas est ôté, depuis le milieu de la cloison jusqu'à la
+// face de la case côté galbe, et de l'arrière jusqu'à sa face avant. La paroi qui
+// la sépare des petites bricoles, devant, descend, elle, jusqu'au galbe : c'est le
+// fond de la case voisine.
+module sous_briquets() {
+    translate([x_tab + cloison / 2, -1, fond_bas - 5])
+        cube([x_brq - (x_tab + cloison / 2), y_cab + 1,
+              (z_brq - insert_fond) - (fond_bas - 5)]);
 }
 
 // --- Crochet ------------------------------------------------------------------
