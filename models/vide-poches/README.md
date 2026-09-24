@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 282,9 cm³ | 175,0 × 82,4 × 128,0 mm |
-| Inserts (2 corps) | 63,6 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **346,5 cm³** | |
+| Coque | 282,8 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Inserts (2 corps) | 62,7 cm³ | 169,2 × 77,0 × 92,1 mm |
+| **Total** | **345,5 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -143,11 +143,11 @@ Mesurées sur les maillages exportés.
 | Cote | Valeur | Origine |
 |---|---|---|
 | Épaisseur du dos, hors fixation | 2,0 mm | `dos_ep` |
-| Épaisseur au droit des vis | 9,4 mm | `col_h + porteur + loge_e + dos_av` |
+| Épaisseur au droit des vis | 7,6 mm | `col_h + porteur + loge_e + dos_av` |
 | Plaque porteuse | 2,0 mm | `vis_l − 0,5` — la tige ne dépasse que de 2,5 |
 | Course d'enfilage | 14 mm | `course` |
 | Garde sous l'axe des vis | 20 mm | `course + boss_bas` — **dérivée**, pas choisie |
-| Entraxe des chevilles | 140 mm | les renflements sont tout au bord |
+| Entraxe des chevilles | 124 mm | 15,5 mm entre noyau et flanc, pour que le renflement s'y éteigne |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 9,5 mm | `tete_d + jeu_entree` |
 | Logement de tête | 11,0 mm | `tete_d + jeu_tete` |
@@ -205,7 +205,7 @@ Contrôles topologiques sur le maillage, tous à zéro :
 
 1. **Percer la seconde cheville** au gabarit, à la **même hauteur** que
    l'existante : c'est ce qui empêche le panier de vriller quand on le charge de
-   travers. Entraxe 140 mm.
+   travers. Entraxe 124 mm.
 2. **Présenter la coque**, les deux têtes en face des trous de passage de 9,5.
 3. **Pousser contre le bois**, puis **descendre de 14 mm** (`course`). Elle vient
    en butée toute seule.
@@ -301,61 +301,62 @@ Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme
 
 ### Les renflements de fixation : la plaque qui gonfle
 
-Autour de chaque vis, le dos passe de `dos_ep` = 2,0 mm à `dos_e` = 9,4 mm. La façon
-dont il y passe a changé trois fois, et c'est la dernière qui compte :
+Autour de chaque vis, le dos passe de `dos_ep` = 2,0 mm à `dos_e` = 7,6 mm. La façon
+dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
 
-1. deux plaques posées sur l'arche — des mottes, arête franche tout autour ;
-2. une lentille empilée dont le rayon suivait `boss_etale · cos(90·i/n)` —
+1. **Deux plaques posées sur l'arche** — des mottes, arête franche tout autour.
+2. **Une lentille empilée** dont le rayon suivait `boss_etale · cos(90·i/n)` —
    tangente à sa crête, mais **verticale à sa base** : la dérivée du cosinus est
-   nulle en zéro, le contour ne rétrécissait presque pas en quittant la plaque, la
-   paroi en partait donc à 90°. Un quart d'ellipse — un dôme posé sur une plaque ;
-3. un **S quintique** : à une distance ρ au-delà du noyau, la surépaisseur vaut
-   `(dos_e − dos_ep) · liss5(1 − ρ/boss_etale)`. Dérivées première et seconde nulles
-   aux deux bouts : la surface quitte la plaque tangentiellement, sans rupture de
-   courbure, et arrive de même sur le plateau du noyau.
+   nulle en zéro, la paroi quittait donc la plaque à 90°. Un dôme posé sur une plaque.
+3. **Un S quintique** : surépaisseur `(dos_e − dos_ep) · liss5(1 − ρ/boss_etale)`,
+   tangente à la plaque ET au plateau. Plus d'angle à la jonction.
+4. **Un champ de hauteur qui s'éteint avant chaque bord.** Même en S, il restait
+   trois arêtes — sur le flanc, sous la casquette, et à l'arase où la cavité le
+   tranchait à plat. Il s'éteint désormais de lui-même avant chaque limite :
 
-Profil mesuré sur le maillage, à mi-hauteur du noyau droit, en s'éloignant vers le
-centre de la pièce :
+   ```
+   face avant = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette)
+   ```
 
-| x | épaisseur du dos | pente |
-|---|---|---|
-| 60,3 (bord du noyau) | 9,40 mm | 0,000 |
-| 57,3 | 9,25 mm | 0,050 |
-| 54,3 | 8,33 mm | 0,307 |
-| 48,3 | 4,53 mm | **0,684** — le maximum, 35° |
-| 42,3 | 2,08 mm | 0,265 |
-| 40,3 | 2,00 mm | 0,038 |
-| 38,3 (plaque) | 2,00 mm | 0,000 |
+   où chaque facteur est un `liss5` — un produit de fonctions lisses est lisse.
+5. **Plus bas, plus larges, vis rapprochées.** Encore trop présents : 7,4 mm de haut,
+   et une chute à 70° vers le flanc faute de place. Le jeu devant la tête passe de 2
+   à 1 mm et la peau de 2,4 à 1,6 : la surépaisseur tombe de 7,4 à **5,6 mm**.
+   L'étalement intérieur passe de 20 à 30 mm, et l'entraxe de 140 à **124** : il
+   reste 15,5 mm entre le noyau et le flanc au lieu de 7,5.
 
-La pente part de zéro et y revient : il n'y a plus de ligne où l'on puisse dire
-« ici finit la plaque, ici commence la bosse ».
+Profils mesurés sur le maillage, du noyau vers chaque bord — pente nulle aux deux
+bouts à chaque fois :
 
-**Le renflement ne rencontre jamais un bord.** Même en S, il restait trois arêtes,
-toutes de même nature : partout où il arrivait encore épais sur une limite, la
-découpe par cette limite y laissait un angle vif —
-
-- sur le **flanc** de la pièce, où il butait sur la face latérale ;
-- sur le bord de la **casquette**, où il butait sur le dessus ;
-- à l'**arase** du bac, où la cavité le tranchait à plat en z = 95, et le laissait
-  surplomber la paroi arrière de 7,4 mm.
-
-Il s'éteint donc de lui-même avant chaque limite. C'est un **champ de hauteur** :
-
-```
-face avant = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette)
-```
-
-où chaque facteur est un `liss5`. Un produit de fonctions lisses est lisse : il n'y
-a de pli nulle part. Profils mesurés sur le maillage, du noyau vers chaque bord :
-
-| vers | de → à | sur | pente max |
+| vers | de → à | pente max, avant | pente max, maintenant |
 |---|---|---|---|
-| le flanc (z = 104) | 9,40 → 2,00 mm | x 80 → 86 | 2,69 |
-| la casquette (x = 77) | 9,40 → 2,00 mm | z 112 → 119 | 1,78 |
-| l'intérieur du bac (x = 70) | 9,40 → 2,00 mm | z 95 → 87 | 1,69 |
+| l'intérieur (z = 104) | 7,60 → 2,00 mm | 0,69 (35°) | **0,35 (19°)** |
+| le flanc (z = 104) | 7,60 → 2,00 mm | 2,69 (70°) | **0,78 (38°)** |
+| l'intérieur du bac (x = 62) | 7,60 → 2,00 mm | 1,69 | **1,28** |
+| la casquette (x = 69) | 7,60 → 2,00 mm | 1,78 | 1,73 — bornée par la peau |
 
-La pente part de zéro et y revient à chaque fois. Au-delà, c'est l'arrondi normal
-de la plaque, 1,4 mm.
+Vers la casquette la pente ne bouge guère : le haut du logement de tête est à
+7,3 mm du bord, et c'est cette distance, pas l'étalement, qui la fixe.
+
+### Le filet qui relie les deux renflements
+
+Un sillon doux de 0,6 mm, 5 mm de large, qui fait des deux renflements les deux
+extrémités d'un même geste horizontal au lieu de deux accidents isolés. Il suit la
+courbe de la casquette, 12 mm sous son bord — et à cette distance il vise pile
+l'axe des vis. Il traverse la plaque, remonte sur le flanc intérieur de chaque
+renflement en gardant sa profondeur jusqu'à |x| = 36, et s'éteint à |x| = 48, avant
+le noyau qui commence à 52 : la peau au-dessus de la tête n'est jamais entamée
+(assertion).
+
+Mesuré sur le maillage : 2,00 → **1,40** → 2,00 mm en travers au centre, lèvres en
+`liss5`, donc sans arête.
+
+- **Il est en creux** : aucun effet sur la descente de l'insert, et aucun
+  porte-à-faux — un creux dans une face tournée vers le haut à l'impression.
+- **L'outil qui le creuse suit la face avant réelle**, plaque ou renflement, à
+  0,02 mm au-dessus hors du sillon : il ne touche la pièce que dans le sillon, et la
+  traverse là en biais. Aucune face confondue.
+- `filet_prof = 0` le supprime. La planche montre la coque avec et sans.
 
 Ce qu'il faut savoir avant d'y toucher :
 
@@ -467,7 +468,7 @@ Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pi
 | `PIECE=` | Ce qu'il vérifie | Résultat attendu |
 |---|---|---|
 | `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de la coque au-dessus de l'arase | **vide** (`Current top level object is empty`) |
-| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 691 mm³ |
+| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 346 mm³ |
 | `jointure` | qu'il ne reste aucun jour entre la racine du crochet et le dessous de la coque | **vide** |
 
 Un renflement mal placé rend `peau` creux ; un renflement trop gros rend `descente`

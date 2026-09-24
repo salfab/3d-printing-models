@@ -66,10 +66,15 @@ tete_h   = 3.0;   // mm — hauteur de la tête
 tete_d   = 8.0;   // mm — Ø de la tête, MAJORÉ volontairement : son logement ne
                   //      guide rien, il ne fait que dégager.
 
-entraxe  = 140;   // mm — écartement des deux chevilles. La seconde est à poser,
+entraxe  = 124;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
                   //      le vrillage, tout en laissant de la matière entre la
                   //      colonne de fixation et le bord de la pièce.
+                  //      Il a valu 140, les renflements tout au bord. Mais il ne
+                  //      restait alors que 7,5 mm entre le noyau et le flanc, et le
+                  //      renflement y roulait à 70°. À 124, il reste 15,5 mm : il
+                  //      s'y éteint à 37°. C'est ce qui le fait fondre dans la
+                  //      plaque au lieu de s'y poser.
 
 jeu_col  = 0.8;   // mm — jeu diamétral dans le canal du fût
 jeu_vis  = 0.8;   // mm — jeu diamétral dans la fente de tige
@@ -83,9 +88,14 @@ porteur  = vis_l - 0.5;                        // plaque porteuse : toute la tig
                                                // ~8,5 N sur 50 mm² de section utile,
                                                // soit 0,17 MPa. Sans commune mesure
                                                // avec ce que tient le PLA.
-loge_e   = tete_h + 2.0;                       // logement de la tête, large exprès
-dos_av   = 2.4;                                // peau avant, celle qui cache tout
-dos_e    = col_h + porteur + loge_e + dos_av;  // 8.4 avec des vis courtes
+loge_e   = tete_h + 1.0;                       // logement de la tête : 1 mm de jeu
+                                               // devant elle suffit, elle ne fait que
+                                               // glisser. Il en avait 2.
+dos_av   = 1.6;                                // peau avant, celle qui cache tout :
+                                               // quatre passes de buse de 0,4. À 2,4
+                                               // elle rendait le renflement plus haut
+                                               // d'autant, sans rien cacher de plus.
+dos_e    = col_h + porteur + loge_e + dos_av;  // 7,6 : la surépaisseur tombe de 7,4 à 5,6
 
 dos_ep   = 2.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
                   //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
@@ -102,7 +112,9 @@ boss_larg = 20;   // mm — diamètre du noyau plein autour de chaque vis. Le
 boss_bas  = 6;    // mm — de combien il descend sous le trou d'entrée
 boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
-boss_etale = 20;  // mm — sur quelle distance le renflement de fixation s'éteint
+boss_etale = 30;  // mm — sur quelle distance le renflement de fixation s'éteint.
+                  //      30 et non plus 20 : pente intérieure maximale 1,875·5,6/30,
+                  //      soit 19°, contre 35°.
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La plaque du dos doit tenir ENTIÈREMENT dans la longueur de tige libre :
@@ -690,12 +702,13 @@ boss_bord  = 1.5;   // mm — le renflement est ÉTEINT à cette distance du con
                     //      Plus que l'arrondi avant de la plaque, 1,4 : c'est là,
                     //      et là seulement, que la plaque est pleine sur toute son
                     //      épaisseur et peut avaler ce qui reste du renflement.
-boss_Dx    = 6;     // mm — longueur d'extinction vers le flanc. Le noyau finit
-                    //      à 7,5 mm du flanc : 1,5 + 6, il reste plein jusqu'au bout.
-boss_Dz    = 4.5;   // mm — longueur d'extinction vers la casquette. Bornée par la
-                    //      peau : le haut du logement de tête est à 6 mm sous le
-                    //      bord de la casquette côté droit, et 1,5 + 4,5 = 6.
-                    //      Plus long, la peau s'amincirait au-dessus de la tête.
+boss_Dx    = 14;    // mm — longueur d'extinction vers le flanc. Le noyau finit
+                    //      à 15,5 mm du flanc : 1,5 + 14, il reste plein jusqu'au bout.
+boss_Dz    = 5.5;   // mm — longueur d'extinction vers la casquette. Bornée par la
+                    //      peau : le haut du logement de tête est à 7,3 mm sous le
+                    //      bord de la casquette (distance normale à sa courbe), et
+                    //      1,5 + 5,5 = 7 laisse 0,3 de marge. Plus long, la peau
+                    //      s'amincirait au-dessus de la tête.
 boss_pas   = 0.5;   // mm — pas de la grille du champ de hauteur
 
 // Distance au noyau (stade vertical, demi-largeur boss_larg/2), en plan.
@@ -728,7 +741,7 @@ function boss_T(x, z, cx) =
 // Emprise de la grille. Elle déborde de 0,5 mm au-delà de la silhouette rentrée
 // de `boss_bord` qui la découpe : le bord de la grille et la découpe ne doivent
 // pas coïncider. Là, la surface est à 1,98 — sous la face de la plaque, cachée.
-boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 40
+boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 22
 boss_x_out = larg / 2 - boss_bord + 0.5;                     // 86,5
 boss_z_lo  = boss_z0 - boss_E_bas;                           // 87
 boss_z_hi  = dessus(boss_x_in) - boss_bord + 0.5;            // ~127
@@ -772,6 +785,54 @@ module bossages() {
     }
 }
 
+// --- Le filet qui relie les deux renflements ----------------------------------
+// Un sillon doux, creusé dans la face avant, qui fait des deux renflements les
+// deux extrémités d'un même geste horizontal au lieu de deux accidents isolés.
+// Il suit la courbe de la casquette, à `filet_decal` sous son bord — et à cette
+// distance il vise pile l'axe des vis. Il traverse la plaque au centre, remonte
+// sur le flanc intérieur de chaque renflement en s'y éteignant, et meurt AVANT le
+// noyau : la peau au-dessus de la tête n'est jamais entamée.
+//
+// En creux, donc sans effet sur la descente de l'insert, et sans porte-à-faux :
+// un creux dans une face tournée vers le haut à l'impression s'imprime tel quel.
+// Son profil en travers est un `liss5` : pas d'arête à ses lèvres non plus.
+filet_prof  = 0.6;  // mm — profondeur. 0 : pas de filet. Laisse 1,4 mm de plaque.
+filet_large = 5;    // mm — largeur entre ses deux lèvres
+filet_decal = 12;   // mm — sous le bord de la casquette
+filet_x1    = 34;   // mm — |x| où il commence à s'éteindre
+filet_x2    = 50;   // mm — |x| où il est éteint : avant le noyau, qui commence à 52
+
+assert(filet_x2 < entraxe / 2 - boss_larg / 2,
+       "le filet atteint le noyau d'un renflement : il entamerait la peau au-dessus de la tête");
+
+function face_avant(x, z) = max(dos_ep, boss_T(x, z, -entraxe / 2), boss_T(x, z, entraxe / 2));
+function filet_z(x) = dessus(x) - filet_decal;
+function filet_creux(x, z) =
+    filet_prof
+    * liss5(1 - abs(z - filet_z(x)) / (filet_large / 2))
+    * liss5((filet_x2 - abs(x)) / (filet_x2 - filet_x1));
+
+// L'outil qui creuse : un champ de hauteur dont le fond suit la face avant
+// réelle — plaque OU renflement — à 0,02 mm AU-DESSUS là où il n'y a pas de
+// sillon. Il ne touche donc la pièce que dans le sillon, et la traverse là en
+// biais : aucune face confondue.
+function filet_vnf() =
+    let (xa = -filet_x2 - 1, xb = filet_x2 + 1,
+         za = filet_z(0) - filet_large / 2 - 1.5,
+         zb = filet_z(0) + filet_large / 2 + 1.5,
+         nx = round((xb - xa) / 0.5), nz = round((zb - za) / 0.25),
+         yt = dos_e + 1,
+         xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
+    vnf_vertex_array(
+        [for (j = [0 : nz]) let (z = za + (zb - za) * j / nz)
+            concat([for (x = xs) [x, yt, z]],
+                   [for (i = [nx : -1 : 0]) let (x = xs[i])
+                        [x, face_avant(x, z) + 0.02
+                             - filet_creux(x, z) * (1 + 0.02 / max(filet_prof, 0.001)), z]])],
+        col_wrap = true, caps = true);
+
+module filet() { if (filet_prof > 0) vnf_polyhedron(filet_vnf()); }
+
 module plaque() { sweep_y(0, dos_ep, r_av_dos, chemin_dos()); }
 module canaux_tous() { for (s = [-1, 1]) canaux(s * entraxe / 2); }
 
@@ -789,6 +850,7 @@ module dos() {
     difference() {
         union() { plaque(); bossages(); }
         canaux_tous();
+        filet();
     }
 }
 
@@ -1084,7 +1146,7 @@ module descente() {
         }
 }
 
-// TEST DE PEAU — le pavé doit sortir PLEIN, soit 691 mm³.
+// TEST DE PEAU — le pavé doit sortir PLEIN, soit 346 mm³ (12 × 0,8 × 18, deux fois).
 //
 // Il prélève l'épaisseur de la peau avant, au droit de chaque vis, sur toute la
 // course du trou de serrure. S'il ressort creux, le logement de tête débouche et
@@ -1122,6 +1184,7 @@ module coque() {
             bossages();
         }
         canaux_tous();
+        filet();
     }
 }
 
