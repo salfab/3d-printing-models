@@ -1143,40 +1143,64 @@ function croc_bas_brut(y) =
 // galbé posé sur deux angles vifs à 90°, et c'est ce qui faisait lire le crochet
 // comme plus dur que la coque.
 //
-// LA DISTANCE AU FLANC SE MESURE À LA HAUTEUR OÙ LA SURFACE ARRIVE, pas à celle
-// d'où elle part. Les flancs de la vague sont très inclinés dans la hauteur du
-// bras — l'arc de `r_ext` y rentre de 0,8 mm par millimètre —, si bien qu'un
-// arrondi mesuré à plat remontait de 4 mm au-dessus d'un flanc qui, 4 mm plus
-// haut, s'était écarté de 3 : il laissait une MARCHE de 3 mm au lieu d'un congé.
-// Mesuré à la bonne hauteur, le congé est tangent au flanc quelle que soit sa
-// pente. C'est une équation implicite — la hauteur dépend de la distance, qui
-// dépend de la hauteur —, résolue par six itérations AMORTIES : sans
-// l'amortissement elles oscillent là où le flanc est presque horizontal.
-function croc_arr(d, r) = r <= 0 || d >= r ? 0 : d <= 0 ? r
-                        : r - sqrt(r * r - (r - d) * (r - d));
-function croc_d(x, z) = min(x - croc_xg(z), croc_xd(z) - x);
-function croc_it(x, z0, r, s, z) = (z + z0 + s * croc_arr(croc_d(x, z), r)) / 2;
-function croc_pf(x, z0, r, s) =
-    let (z1 = croc_it(x, z0, r, s, z0), z2 = croc_it(x, z0, r, s, z1),
-         z3 = croc_it(x, z0, r, s, z2), z4 = croc_it(x, z0, r, s, z3),
-         z5 = croc_it(x, z0, r, s, z4))
-    croc_it(x, z0, r, s, z5);
+// LE CONGÉ SE PLACE PAR SON CENTRE, et non en remontant le dessous d'une quantité
+// qui dépendrait de la distance au flanc. Les flancs de la vague sont très
+// inclinés dans la hauteur du bras — l'arc de `r_ext` y rentre de 1,4 mm par
+// millimètre —, et deux méthodes plus simples ont échoué là-dessus :
+//
+//   1. distance mesurée à plat, à la hauteur de départ : l'arrondi remontait de
+//      4 mm au-dessus d'un flanc qui, 4 mm plus haut, s'était écarté de 3. Il
+//      restait une MARCHE de 3 mm au lieu d'un congé, visible en coupe ;
+//   2. la même distance, mais mesurée à la hauteur d'arrivée : c'est une équation
+//      implicite, résolue par itérations. Elles OSCILLENT près du flanc — sauts
+//      de pente de 6 par dixième de millimètre, mesurés — et ces oscillations se
+//      lisaient comme des fissures le long du dessous du bras.
+//
+// Ici, le congé est le cercle de rayon r tangent aux DEUX faces : on résout pour
+// son centre, ce qui est exact pour un flanc droit et sans la moindre itération.
+// À distance `p` du centre, en projection, le creux vaut r − √(r² − p²).
+//
+// Il est PLAFONNÉ à sa valeur au point de tangence avec le flanc : au-delà, le
+// cercle repasserait devant le flanc et le champ de hauteur mordrait dans la
+// pièce. Plafonné, il reste en retrait, et c'est le flanc qui prend le relais.
+croc_dz = 0.05;   // mm — pas de la dérivée numérique des flancs
+croc_pmax = 4;    // pente maximale retenue : au-delà le flanc est si couché que
+                  //      le congé s'y aplatit de lui-même
+
+function croc_pd(z) = max(-croc_pmax, min(croc_pmax,
+    (croc_xd(z + croc_dz) - croc_xd(z - croc_dz)) / (2 * croc_dz)));
+function croc_pg(z) = max(-croc_pmax, min(croc_pmax,
+    (croc_xg(z + croc_dz) - croc_xg(z - croc_dz)) / (2 * croc_dz)));
+function croc_creu(u, r) = u <= 0 ? 0 : u >= r ? r : r - sqrt(r * r - u * u);
+
+// `v` = +1 pour le dessous (le congé creuse vers le haut), −1 pour le dessus.
+function croc_conge(x, z0, r, v) =
+    r <= 0 ? 0 :
+    let (p = croc_pd(z0), q = croc_pg(z0),
+         sp = sqrt(1 + p * p), sq = sqrt(1 + q * q),
+         cd = croc_xd(z0) + v * r * p - r * sp,   // centres des deux congés
+         cg = croc_xg(z0) + v * r * q + r * sq,
+         td = max(0, min(r, r - v * r * p / sp)),  // creux au point de tangence
+         tg = max(0, min(r, r + v * r * q / sq)))
+    max(min(croc_creu(x - cd, r), td), min(croc_creu(cg - x, r), tg));
 
 // Le rayon est borné par la DEMI-ÉPAISSEUR locale : au bout de la spatule la
-// section s'annule, et deux arrondis de 4 s'y traverseraient. Ainsi borné, chacun
-// ne rentre au plus que jusqu'à 0,1 mm du milieu — ils ne se rencontrent jamais.
+// section s'annule, et deux congés de 4 s'y traverseraient. Ainsi borné, chacun
+// ne creuse au plus que jusqu'à 0,1 mm du milieu — ils ne se rencontrent jamais.
 function croc_rloc(x, y) = min(croc_rb, (croc_haut_brut(x, y) - croc_bas_brut(y)) / 2 - 0.1);
 
 // Le dessus s'arrondit PARTOUT SAUF là où il est encore collé au dessous du
 // panier : l'arrondi y creuserait une rainure entre les deux. L'extinction porte
-// sur le RAYON, et non sur le déplacement : un rayon qui décroît reste un congé,
-// un déplacement rogné ne l'est plus.
+// sur le RAYON, et non sur le creux : un rayon qui décroît reste un congé, un
+// creux rogné ne l'est plus.
 function croc_haut(x, y) =
     let (z0 = croc_haut_brut(x, y),
          f = liss5((croc_dessous(x) - z0) / croc_rb))
-    croc_pf(x, z0, croc_rloc(x, y) * f, -1);
+    z0 - croc_conge(x, z0, croc_rloc(x, y) * f, -1);
 
-function croc_bas_y(x, y) = croc_pf(x, croc_bas_brut(y), croc_rloc(x, y), 1);
+function croc_bas_y(x, y) =
+    let (z0 = croc_bas_brut(y))
+    z0 + croc_conge(x, z0, croc_rloc(x, y), 1);
 
 // Le crochet est l'INTERSECTION de deux formes : ce champ de hauteur, qui porte le
 // profil de côté, et le prisme de la vague, qui porte la vue de face.

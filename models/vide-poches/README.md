@@ -242,13 +242,25 @@ et du prisme de la vague, qui porte la vue de face.
   vifs à 90°, et c'est ce qui faisait lire le crochet comme plus dur que la coque.
 - **Le rayon est borné par la demi-épaisseur locale.** Au bout de la spatule la
   section s'annule, et deux arrondis de 4 s'y traverseraient.
-- **La distance au flanc se mesure à la hauteur où la surface arrive**, pas à celle
-  d'où elle part. Les flancs de la vague sont très inclinés dans la hauteur du bras
-  — l'arc de 20 y rentre de 0,8 mm par millimètre —, si bien qu'un arrondi mesuré à
-  plat remontait de 4 mm au-dessus d'un flanc qui, 4 mm plus haut, s'était écarté
-  de 3 : il laissait une **marche de 3 mm** au lieu d'un congé, mesurée sur la
-  coupe. C'est une équation implicite, résolue par six itérations amorties —
-  sans l'amortissement elles oscillent là où le flanc est presque horizontal.
+- **Le congé se place par son CENTRE**, et non en remontant le dessous d'une
+  quantité qui dépendrait de la distance au flanc. Les flancs de la vague sont
+  très inclinés dans la hauteur du bras — l'arc de 20 y rentre de 1,4 mm par
+  millimètre —, et deux méthodes plus simples y ont échoué :
+  1. *distance mesurée à plat, à la hauteur de départ* : l'arrondi remontait de
+     4 mm au-dessus d'un flanc qui, 4 mm plus haut, s'était écarté de 3. Il restait
+     une **marche de 3 mm** au lieu d'un congé, visible en coupe ;
+  2. *la même distance, mesurée à la hauteur d'arrivée* : c'est une équation
+     implicite, résolue par itérations. Elles **oscillent** près du flanc — sauts
+     de pente de 6 par dixième de millimètre, mesurés — et ces oscillations se
+     lisaient comme des **fissures le long du dessous du bras**, bien visibles sur
+     un rendu de dessous.
+
+  Le congé est maintenant le cercle de rayon `croc_rb` tangent aux deux faces : on
+  résout pour son centre. Exact pour un flanc droit, sans itération, et les sauts
+  de pente tombent de 6 à moins de 0,11.
+- **Il est plafonné à sa valeur au point de tangence** avec le flanc : au-delà, le
+  cercle repasserait devant le flanc et le champ de hauteur mordrait dans la pièce.
+  Plafonné, il reste en retrait, et c'est le flanc qui prend le relais.
 - **L'extinction porte sur le RAYON, pas sur le déplacement** : un rayon qui décroît
   reste un congé, un déplacement rogné ne l'est plus.
 - **L'arrondi du dessus s'éteint là où il est encore collé au panier** : il y
