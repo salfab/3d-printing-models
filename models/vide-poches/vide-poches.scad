@@ -110,11 +110,15 @@ boss_larg = 20;   // mm — diamètre du noyau plein autour de chaque vis. Le
                   //      renflement s'étale au-delà, mais pas trop : c'est son
                   //      emprise qui décide du couloir à tailler dans l'insert.
 boss_bas  = 6;    // mm — de combien il descend sous le trou d'entrée
-boss_haut = 12;   // mm — et de combien il monte au-dessus du siège
+boss_haut = 9;    // mm — et de combien il monte au-dessus du siège. 9 suffit :
+                  //      le haut du logement de tête est à 5,5 au-dessus de l'axe.
+                  //      Chaque millimètre gagné ici fait redescendre la pièce.
+boss_Dhaut = 5;   // mm — extinction du renflement au-dessus du noyau, vers l'arase
+boss_Dbas  = 5;   // mm — et au-dessous, vers le fond
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
-boss_etale = 30;  // mm — sur quelle distance le renflement de fixation s'éteint.
-                  //      30 et non plus 20 : pente intérieure maximale 1,875·5,6/30,
-                  //      soit 19°, contre 35°.
+boss_etale = 12;  // mm — sur quelle distance le renflement de fixation s'éteint.
+                  //      Court : dans le bac, tout ce qu'il étale est pris sur les
+                  //      compartiments arrière, et sur la largeur de l'insert.
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La plaque du dos doit tenir ENTIÈREMENT dans la longueur de tige libre :
@@ -138,12 +142,10 @@ larg     = 175;   // mm — largeur hors tout. La zone profonde vaut 85, imposé
                   //      profonde. À 135 elle ne faisait que 47 mm, le crochet en
                   //      prenait 30 et frôlait le galbe. À 175 elle en fait 83 :
                   //      le galbe court sur 45 et le crochet se pose sur le plat.
-bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Commandée par une
-                  //      contrainte de hauteur, pas de volume : le haut des
-                  //      lunettes doit rester à moins de 35 mm au-dessus de l'axe
-                  //      des colonnettes. Debout elles font 145 et posent sur le
-                  //      fond de l'insert, d'où
-                  //          145 - (bac_h - fond - insert_fond) - garde_vis = 34
+bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Fixée d'abord par la
+                  //      règle « lunettes à moins de 35 mm au-dessus des vis »,
+                  //      gardée depuis pour les proportions. Cette règle est
+                  //      abandonnée : voir `z_vis`.
 bac_int  = 78;    // mm — profondeur intérieure utile. Gagne 8 mm sur la version
                   //      à dos plein, alors que la pièce en perd 15 hors tout :
                   //      c'est l'épaisseur de fixation qu'on ne traîne plus
@@ -344,31 +346,35 @@ n_croc     = 16;   // échantillons par portion de courbe
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-garde_vis = course + boss_bas;   // 20 mm — de l'arase du bac à l'axe des vis.
-                                 //      DÉDUITE, pas choisie : c'est la valeur
-                                 //      qui pose la base du renflement exactement
-                                 //      sur l'arase. En dessous, le renflement
-                                 //      descend dans le bac, la cavité le tranche,
-                                 //      et le logement de tête débouche dans la
-                                 //      paroi arrière — on voit la vis de
-                                 //      l'intérieur.
-                                 //      Elle valait 28 pour que le renflement ne
-                                 //      descende jamais sous l'arase. C'était un
-                                 //      reste de l'époque où le dos faisait 26 mm :
-                                 //      à 8,4, ce qu'il en déborde ne coûte qu'un
-                                 //      copeau de 5 mm dans l'insert. Et cette
-                                 //      garde commandait directement la hauteur de
-                                 //      la casquette.
+// LA FIXATION EST DANS LE BAC, sous l'arase. Les renflements qui l'entourent
+// sont cachés derrière la paroi arrière des compartiments, et la casquette
+// au-dessus n'est plus qu'une plaque nette, purement décorative.
+//
+// L'axe des vis se déduit donc de l'arase, PAR LE HAUT : le renflement — noyau
+// ET extinction — doit s'arrêter sous elle, avec `arase_marge` de garde. Plus
+// haut, il reparaîtrait sur la casquette, et c'est tout ce qu'on voulait éviter.
+//
+// PRIX ACCEPTÉ, par choix explicite : la règle des 35 mm est abandonnée. Les vis
+// sont fixes sur le meuble ; descendre les trous de serrure dans la pièce fait
+// donc monter toute la pièce d'autant, 37 mm. Les lunettes debout dépassent
+// désormais l'axe des vis de 71 mm, au lieu de 34.
+arase_marge = 3;                 // mm — garde entre le haut du renflement et l'arase
 z_haut    = bac_h;               //  95 — arase du bac
-z_vis     = z_haut + garde_vis;  // 115 — axe des chevilles, en butée haute
+z_vis     = z_haut - arase_marge - boss_Dhaut - boss_haut;  // 78 — axe des chevilles
+garde_vis = z_vis - z_haut;      // −17 : les vis sont SOUS l'arase
 z_top     = z_som;               // 128 — le sommet de la casquette
 
 fond_bas  = fond;                //  2,8 — fond côté profond  → 92,2 mm utiles
 fond_haut = marche + fond;       // 48,8 — fond côté peu profond → 46,2 mm utiles
 
-z_entree  = z_vis - course;      //  95 — hauteur du trou de passage de la tête
-boss_z0   = z_entree - boss_bas; //  95 — pile à l'arase
-boss_z1   = z_vis + boss_haut;   // 127 — le bossage ne fait que 40 mm de haut
+z_entree  = z_vis - course;      //  64 — hauteur du trou de passage de la tête
+boss_z0   = z_entree - boss_bas; //  58 — bas du noyau
+boss_z1   = z_vis + boss_haut;   //  87 — haut du noyau
+
+assert(boss_z1 + boss_Dhaut <= z_haut - arase_marge + 0.001,
+       "le renflement dépasse l'arase : il reparaîtrait sur la casquette");
+assert(boss_z0 - boss_Dbas >= fond_haut + 2,
+       "le renflement droit descend jusqu'au fond du côté peu profond");
 
 // --- Compartiments ------------------------------------------------------------
 // Dictés par les objets, pas par une grille régulière.
@@ -381,7 +387,9 @@ yi1 = prof - paroi;
 x_tab = xi0 + 85;     // largeur de la fente à tabac — le plus large des objets
 x_lun = xi0 + 50;     // largeur de la fente à lunettes
 x_cab = x_tab + cloison + 42.7;   // frontière câbles / briquets
-y_tab = yi0 + 30;     // épaisseur d'une poche à tabac debout
+y_tab = yi0 + 30 + (dos_e - dos_ep);  // poche à tabac debout, 30 mm — PLUS la
+                      // surépaisseur du renflement gauche, qui mord sur le fond
+                      // de la fente depuis qu'il est dans le bac
 y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 
 // [x0, x1, y0, y1, z du fond]
@@ -516,15 +524,9 @@ function dessus(x) =
          zb = x < 0 ? z_fin_g : z_fin_d)
     zb + (z_som - zb) * liss(1 - pow(u, dessus_p));
 
-// L'arche est libre de sa forme SAUF au droit des vis : il faut de la matière
-// au-dessus du siège, sinon le canal débouche par le haut et la vis ne porte
-// plus. Rien dans la géométrie ne le signalerait — d'où l'assertion.
-assert(dessus( entraxe / 2) >= z_vis + 10,
-       "la casquette passe sous le siège de la vis droite : monter z_som, z_fin_d
-        ou l'exposant dessus_p");
-assert(dessus(-entraxe / 2) >= z_vis + 10,
-       "la casquette passe sous le siège de la vis gauche : monter z_som, z_fin_g
-        ou l'exposant dessus_p");
+// L'arche est entièrement libre de sa forme : depuis que la fixation est sous
+// l'arase, la casquette ne porte plus rien. Elle a longtemps été contrainte à
+// passer 10 mm au-dessus du siège de chaque vis.
 
 // Le galbe ne doit pas passer sous un compartiment profond : il en crèverait le
 // fond, et la cavité déboucherait à l'air libre.
@@ -670,21 +672,18 @@ module canaux(xc) {
 // plus de ligne où l'œil puisse dire « ici finit la plaque, ici commence la
 // bosse ». Pente maximale : 1,875·7,4/20 = 0,69, soit 35°.
 //
-// LE RENFLEMENT NE RENCONTRE JAMAIS UN BORD. C'est la règle qui efface les
-// dernières arêtes. Il y en avait trois, toutes de même nature : partout où le
-// renflement arrivait encore épais sur une limite, la découpe par cette limite y
-// laissait un angle vif —
-//   - sur le FLANC de la pièce, où il butait sur la face latérale ;
-//   - sur le bord de la CASQUETTE, où il butait sur le dessus ;
-//   - à l'ARASE du bac, où la cavité le tranchait à plat en z = 95 et le laissait
-//     surplomber la paroi arrière de 7,4 mm.
-// Il n'est donc plus découpé nulle part où il est épais : il s'éteint de lui-même
-// avant chaque limite. C'est un CHAMP DE HAUTEUR,
-//     épaisseur = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette),
+// IL EST DANS LE BAC. Posé sur la plaque au-dessus de l'arase, il se voyait
+// toujours, quelle que soit sa forme — cinq versions l'ont montré. Il vit
+// désormais sous l'arase, sur la paroi arrière des compartiments, où les objets le
+// cachent. La casquette au-dessus n'est plus qu'une plaque nette.
+//
+// Il reste construit pour ne rencontrer aucune limite en étant encore épais : il
+// s'éteint de lui-même, tangent, avant la paroi latérale du bac, avant l'arase et
+// avant le bas. C'est un CHAMP DE HAUTEUR,
+//     épaisseur = plaque + surépaisseur × S(ρ) × W(paroi) × W(arase) × W(bas),
 // où chaque facteur est un `liss5` — un produit de fonctions lisses est lisse, il
-// n'y a donc de pli nulle part. Sous l'arase il n'est plus retranché par la cavité
-// (voir coque()) : il plonge dans le bac et s'y fond dans la paroi arrière, comme
-// il se fond dans la plaque partout ailleurs.
+// n'y a de pli nulle part. Il n'est pas retranché par la cavité (voir coque()) :
+// il est ajouté après, et se fond dans la paroi arrière.
 //
 // DEUX noyaux distincts, un par vis, et surtout pas leur enveloppe convexe : en
 // les reliant, le renflement devenait une seule bosse en travers de toute la
@@ -694,21 +693,13 @@ boss_deb   = 0.02;  // mm — la surface part SOUS la face de la plaque.
                     //      Partie pile dessus, elle y coucherait des sommets — la
                     //      famille de coïncidences qui a coûté 35 arêtes au
                     //      crochet. Enfoncée de 0,02 mm, elle la traverse à 2,4°.
-boss_E_bas = 8;     // mm — étalement SOUS le noyau, dans le bac. Plus court que
-                    //      `boss_etale` : ce qui plonge dans le bac prend sur la
-                    //      profondeur des compartiments arrière. À 8, le lobe
-                    //      s'éteint à z = 87, dans les 8 mm du haut.
 boss_bord  = 1.5;   // mm — le renflement est ÉTEINT à cette distance du contour.
                     //      Plus que l'arrondi avant de la plaque, 1,4 : c'est là,
                     //      et là seulement, que la plaque est pleine sur toute son
                     //      épaisseur et peut avaler ce qui reste du renflement.
-boss_Dx    = 14;    // mm — longueur d'extinction vers le flanc. Le noyau finit
-                    //      à 15,5 mm du flanc : 1,5 + 14, il reste plein jusqu'au bout.
-boss_Dz    = 5.5;   // mm — longueur d'extinction vers la casquette. Bornée par la
-                    //      peau : le haut du logement de tête est à 7,3 mm sous le
-                    //      bord de la casquette (distance normale à sa courbe), et
-                    //      1,5 + 5,5 = 7 laisse 0,3 de marge. Plus long, la peau
-                    //      s'amincirait au-dessus de la tête.
+boss_Dx    = 12;    // mm — extinction vers la paroi latérale du bac. Le noyau
+                    //      finit à 13,1 mm de sa face intérieure : 0,5 + 12, il
+                    //      reste plein jusqu'au bout.
 boss_pas   = 0.5;   // mm — pas de la grille du champ de hauteur
 
 // Distance au noyau (stade vertical, demi-largeur boss_larg/2), en plan.
@@ -718,24 +709,19 @@ function boss_dist(x, z, cx) =
          v  = z < zb ? zb - z : z > zh ? z - zh : 0)
     max(0, sqrt((x - cx) * (x - cx) + v * v) - boss_larg / 2);
 
-// Étalement effectif : `boss_E_bas` sous le noyau, `boss_etale` partout ailleurs,
-// raccordés en douceur sur la hauteur du demi-cercle inférieur du noyau.
-function boss_E(z) = boss_E_bas + (boss_etale - boss_E_bas)
-                                  * liss5((z - boss_z0) / (boss_larg / 2));
 
-function dessus_pente(x) = (dessus(x + 0.05) - dessus(x - 0.05)) / 0.1;
 
 // Pondération d'extinction vers les deux bords : flanc, et casquette mesurée
 // NORMALEMENT à sa courbe — pas verticalement, sinon là où elle plonge le
 // renflement arriverait encore épais sur le bord.
 function boss_W(x, z) =
-    let (dx = larg / 2 - abs(x),
-         dz = (dessus(x) - z) / sqrt(1 + dessus_pente(x) * dessus_pente(x)))
-    liss5((dx - boss_bord) / boss_Dx) * liss5((dz - boss_bord) / boss_Dz);
+    liss5((xi1 - abs(x) - 0.5) / boss_Dx)                       // paroi latérale
+  * liss5((boss_z1 + boss_Dhaut - z) / boss_Dhaut)              // arase, au-dessus
+  * liss5((z - (boss_z0 - boss_Dbas)) / boss_Dbas);             // et au-dessous
 
 // Face avant du dos au point (x, z), pour le renflement centré en cx.
 function boss_T(x, z, cx) =
-    let (q = boss_dist(x, z, cx) / boss_E(z))
+    let (q = boss_dist(x, z, cx) / boss_etale)
     (dos_ep - boss_deb) + (dos_e - dos_ep + boss_deb) * liss5(1 - q) * boss_W(x, z);
 
 // Emprise de la grille. Elle déborde de 0,5 mm au-delà de la silhouette rentrée
@@ -743,8 +729,8 @@ function boss_T(x, z, cx) =
 // pas coïncider. Là, la surface est à 1,98 — sous la face de la plaque, cachée.
 boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 22
 boss_x_out = larg / 2 - boss_bord + 0.5;                     // 86,5
-boss_z_lo  = boss_z0 - boss_E_bas;                           // 87
-boss_z_hi  = dessus(boss_x_in) - boss_bord + 0.5;            // ~127
+boss_z_lo  = boss_z0 - boss_Dbas - 0.5;                      // 52,5
+boss_z_hi  = boss_z1 + boss_Dhaut + 0.5;                     // 92,5
 
 function boss_vnf(s) =
     let (nx = round((boss_x_out - boss_x_in) / boss_pas),
@@ -762,17 +748,6 @@ function boss_vnf(s) =
 
 module renflement(s) { vnf_polyhedron(boss_vnf(s)); }
 
-// Inverse de `liss5` sur [0, 1], par dichotomie — pour le couloir de l'insert.
-function liss5_inv(t, a = 0, b = 1, n = 40) =
-    n == 0 ? (a + b) / 2 :
-    let (m = (a + b) / 2)
-    liss5(m) < t ? liss5_inv(t, m, b, n - 1) : liss5_inv(t, a, m, n - 1);
-
-// Étalement du renflement au-delà du noyau, à la profondeur `y`.
-function boss_rho(y) =
-    let (h = dos_e - dos_ep + boss_deb,
-         t = max(0, min(1, (y - (dos_ep - boss_deb)) / h)))
-    boss_etale * (1 - liss5_inv(t));
 
 // La découpe par la silhouette RENTRÉE de `boss_bord` ne tombe que là où le
 // renflement est déjà éteint à 1,98, sous la face de la plaque : elle est cachée
@@ -785,53 +760,6 @@ module bossages() {
     }
 }
 
-// --- Le filet qui relie les deux renflements ----------------------------------
-// Un sillon doux, creusé dans la face avant, qui fait des deux renflements les
-// deux extrémités d'un même geste horizontal au lieu de deux accidents isolés.
-// Il suit la courbe de la casquette, à `filet_decal` sous son bord — et à cette
-// distance il vise pile l'axe des vis. Il traverse la plaque au centre, remonte
-// sur le flanc intérieur de chaque renflement en s'y éteignant, et meurt AVANT le
-// noyau : la peau au-dessus de la tête n'est jamais entamée.
-//
-// En creux, donc sans effet sur la descente de l'insert, et sans porte-à-faux :
-// un creux dans une face tournée vers le haut à l'impression s'imprime tel quel.
-// Son profil en travers est un `liss5` : pas d'arête à ses lèvres non plus.
-filet_prof  = 0.6;  // mm — profondeur. 0 : pas de filet. Laisse 1,4 mm de plaque.
-filet_large = 5;    // mm — largeur entre ses deux lèvres
-filet_decal = 12;   // mm — sous le bord de la casquette
-filet_x1    = 34;   // mm — |x| où il commence à s'éteindre
-filet_x2    = 50;   // mm — |x| où il est éteint : avant le noyau, qui commence à 52
-
-assert(filet_x2 < entraxe / 2 - boss_larg / 2,
-       "le filet atteint le noyau d'un renflement : il entamerait la peau au-dessus de la tête");
-
-function face_avant(x, z) = max(dos_ep, boss_T(x, z, -entraxe / 2), boss_T(x, z, entraxe / 2));
-function filet_z(x) = dessus(x) - filet_decal;
-function filet_creux(x, z) =
-    filet_prof
-    * liss5(1 - abs(z - filet_z(x)) / (filet_large / 2))
-    * liss5((filet_x2 - abs(x)) / (filet_x2 - filet_x1));
-
-// L'outil qui creuse : un champ de hauteur dont le fond suit la face avant
-// réelle — plaque OU renflement — à 0,02 mm AU-DESSUS là où il n'y a pas de
-// sillon. Il ne touche donc la pièce que dans le sillon, et la traverse là en
-// biais : aucune face confondue.
-function filet_vnf() =
-    let (xa = -filet_x2 - 1, xb = filet_x2 + 1,
-         za = filet_z(0) - filet_large / 2 - 1.5,
-         zb = filet_z(0) + filet_large / 2 + 1.5,
-         nx = round((xb - xa) / 0.5), nz = round((zb - za) / 0.25),
-         yt = dos_e + 1,
-         xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
-    vnf_vertex_array(
-        [for (j = [0 : nz]) let (z = za + (zb - za) * j / nz)
-            concat([for (x = xs) [x, yt, z]],
-                   [for (i = [nx : -1 : 0]) let (x = xs[i])
-                        [x, face_avant(x, z) + 0.02
-                             - filet_creux(x, z) * (1 + 0.02 / max(filet_prof, 0.001)), z]])],
-        col_wrap = true, caps = true);
-
-module filet() { if (filet_prof > 0) vnf_polyhedron(filet_vnf()); }
 
 module plaque() { sweep_y(0, dos_ep, r_av_dos, chemin_dos()); }
 module canaux_tous() { for (s = [-1, 1]) canaux(s * entraxe / 2); }
@@ -850,7 +778,6 @@ module dos() {
     difference() {
         union() { plaque(); bossages(); }
         canaux_tous();
-        filet();
     }
 }
 
@@ -952,20 +879,38 @@ module insert_zone(z) {
 // des renflements, il faut dégager toute la colonne au-dessous, sinon il bute
 // en cours de descente. Chaque tranche du renflement impose sa propre largeur,
 // et le couloir est leur empilement.
+// Le couloir que l'insert laisse aux renflements : leur empreinte EXACTE en plan,
+// élargie du jeu et extrudée sur toute la hauteur — puisque l'insert descend
+// verticalement, tout point à l'aplomb d'un renflement buterait en chemin.
+//
+// C'est la même empreinte que regarde le test `descente` : il ne peut donc pas
+// échouer tant que ce couloir est taillé. Il remplace un escalier de boîtes, une
+// par tranche de profondeur, calé sur une loi approchée du renflement. Avec les
+// renflements rétrécis, deux marches voisines y isolaient un îlot du rebord de
+// l'insert : deux éclats libres de 2 mm³ à x = ±80, que seul le compte de solides
+// a vus. Une empreinte lisse ne peut pas en isoler.
+//
+// S'y ajoute, de l'axe de chaque vis jusqu'au bord, une bande qui tranche le
+// rebord arrière de l'insert sur toute son épaisseur. Sans elle, le renflement
+// s'éteignant avant la paroi latérale, le couloir laissait au coin arrière un
+// tronçon de rebord pris entre lui et l'arrondi d'angle du bac — que l'insert
+// épouse — et ce tronçon était LIBRE : deux éclats de 11 mm³, vus par le compte de
+// solides, pas à l'œil. Contre la paroi de la coque, ce bout de rebord ne retenait
+// de toute façon rien.
 module couloir_insert(marge) {
-    n = 20;
-    for (i = [0 : n - 1]) {
-        y0 = dos_ep + (dos_e - dos_ep) * i / n;
-        y1 = dos_ep + (dos_e - dos_ep) * (i + 1) / n;
-        // Le rayon est pris en y0, le bas de la tranche : c'est là que le
-        // renflement est le plus large, donc la boîte le contient toujours.
-        // Même fonction que le renflement lui-même — si l'un change sans
-        // l'autre, `descente` le dira.
-        d  = boss_rho(y0) + boss_larg / 2 + marge;
-        for (s = [-1, 1])
-            translate([s * entraxe / 2 - d, y0 - marge, -20])
-                cube([2 * d, y1 - y0 + 2 * marge, z_haut + 40]);
-    }
+    translate([0, 0, -20])
+        linear_extrude(z_haut + 40) {
+            offset(r = marge)
+                projection()
+                    intersection() {
+                        bossages();
+                        translate([-BIG / 2, dos_ep + 0.05, -BIG / 2]) cube(BIG);
+                    }
+            for (s = [-1, 1])
+                translate([s > 0 ? entraxe / 2 : -larg / 2 - 5, dos_ep - marge])
+                    square([larg / 2 + 5 - entraxe / 2,
+                            insert_jeu + insert_paroi + marge + 1]);
+        }
 }
 
 module insert() {
@@ -1139,9 +1084,15 @@ module descente() {
     linear_extrude(1)
         intersection() {
             projection() insert();
-            projection() intersection() {
-                coque();
-                translate([-BIG / 2, -BIG / 2, z_haut]) cube(BIG);
+            projection() union() {
+                intersection() {                       // au-dessus de l'arase
+                    coque();
+                    translate([-BIG / 2, -BIG / 2, z_haut]) cube(BIG);
+                }
+                intersection() {                       // les renflements, dans le bac
+                    bossages();
+                    translate([-BIG / 2, dos_ep + 0.05, -BIG / 2]) cube(BIG);
+                }
             }
         }
 }
@@ -1184,7 +1135,6 @@ module coque() {
             bossages();
         }
         canaux_tous();
-        filet();
     }
 }
 

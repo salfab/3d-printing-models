@@ -58,14 +58,15 @@ profondeur hors tout tout en gagnant 8 mm de rangement.
 **Le rangement debout.** Les lunettes pliées passent de 150 × 46 au sol à 50 × 37,
 la poche à tabac de 105 × 30 à 85 × 30.
 
-**La hauteur des lunettes.** Debout elles font 145 mm et leur sommet doit rester à
-moins de 35 mm au-dessus de l'axe des colonnettes. D'où
+**La hauteur des lunettes — règle abandonnée.** Debout elles font 145 mm, et la
+règle de départ voulait leur sommet à moins de 35 mm au-dessus de l'axe des
+colonnettes. C'est elle qui a fixé `bac_h` à 95.
 
-```
-dépassement = 145 − (bac_h − fond − insert_fond) − garde_vis = 34 mm
-```
-
-C'est cette inégalité, et non un besoin de volume, qui fixe `bac_h` à 95.
+Elle a été **levée par choix**, pour cacher la fixation dans le bac (voir §7). Les
+vis étant fixes sur le meuble, descendre les trous de serrure dans la pièce fait
+monter toute la pièce d'autant : **37 mm**. Les lunettes dépassent désormais l'axe
+des vis de **71 mm** au lieu de 34, et le haut de la casquette est à 50 mm au-dessus
+des vis au lieu de 13. `bac_h` est resté à 95 pour garder les proportions.
 
 **Le fond à deux niveaux.** Un bac uniformément profond serait un puits où il
 faudrait pêcher un briquet. Le fond plonge à gauche, où les lunettes et le tabac
@@ -132,9 +133,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 282,8 cm³ | 175,0 × 82,4 × 128,0 mm |
-| Inserts (2 corps) | 62,7 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **345,5 cm³** | |
+| Coque | 281,1 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Inserts (2 corps) | 62,3 cm³ | 169,2 × 77,0 × 92,1 mm |
+| **Total** | **343,4 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -146,7 +147,7 @@ Mesurées sur les maillages exportés.
 | Épaisseur au droit des vis | 7,6 mm | `col_h + porteur + loge_e + dos_av` |
 | Plaque porteuse | 2,0 mm | `vis_l − 0,5` — la tige ne dépasse que de 2,5 |
 | Course d'enfilage | 14 mm | `course` |
-| Garde sous l'axe des vis | 20 mm | `course + boss_bas` — **dérivée**, pas choisie |
+| Axe des vis | z = 78, **17 mm sous l'arase** | déduit de l'arase : renflement + `arase_marge` |
 | Entraxe des chevilles | 124 mm | 15,5 mm entre noyau et flanc, pour que le renflement s'y éteigne |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 9,5 mm | `tete_d + jeu_entree` |
@@ -319,59 +320,48 @@ dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
    ```
 
    où chaque facteur est un `liss5` — un produit de fonctions lisses est lisse.
-5. **Plus bas, plus larges, vis rapprochées.** Encore trop présents : 7,4 mm de haut,
-   et une chute à 70° vers le flanc faute de place. Le jeu devant la tête passe de 2
-   à 1 mm et la peau de 2,4 à 1,6 : la surépaisseur tombe de 7,4 à **5,6 mm**.
-   L'étalement intérieur passe de 20 à 30 mm, et l'entraxe de 140 à **124** : il
-   reste 15,5 mm entre le noyau et le flanc au lieu de 7,5.
+5. **Plus bas, plus larges, vis rapprochées.** La surépaisseur tombe de 7,4 à
+   **5,6 mm** (jeu devant la tête 2 → 1 mm, peau 2,4 → 1,6), et l'entraxe passe de 140
+   à **124**.
+6. **Dans le bac.** Posé sur la plaque au-dessus de l'arase, il se voyait toujours,
+   quelle que soit sa forme — les cinq versions précédentes l'ont montré. Il vit
+   désormais **sous l'arase**, sur la paroi arrière des compartiments, où les objets
+   le cachent. La casquette n'est plus qu'une plaque nette. L'axe des vis descend de
+   z = 115 à z = 78.
 
-Profils mesurés sur le maillage, du noyau vers chaque bord — pente nulle aux deux
-bouts à chaque fois :
+Il reste construit pour ne rencontrer aucune limite en étant encore épais : il
+s'éteint, tangent, avant la paroi latérale du bac, avant l'arase et avant le bas.
 
-| vers | de → à | pente max, avant | pente max, maintenant |
-|---|---|---|---|
-| l'intérieur (z = 104) | 7,60 → 2,00 mm | 0,69 (35°) | **0,35 (19°)** |
-| le flanc (z = 104) | 7,60 → 2,00 mm | 2,69 (70°) | **0,78 (38°)** |
-| l'intérieur du bac (x = 62) | 7,60 → 2,00 mm | 1,69 | **1,28** |
-| la casquette (x = 69) | 7,60 → 2,00 mm | 1,78 | 1,73 — bornée par la peau |
+```
+face avant = plaque + surépaisseur × S(ρ) × W(paroi) × W(arase) × W(bas)
+```
 
-Vers la casquette la pente ne bouge guère : le haut du logement de tête est à
-7,3 mm du bord, et c'est cette distance, pas l'étalement, qui la fixe.
+Profils mesurés sur le maillage, pente nulle aux deux bouts à chaque fois :
 
-### Le filet qui relie les deux renflements
+| vers | de → à | pente max |
+|---|---|---|
+| l'intérieur (z = 72) | 7,60 → 2,00 mm | 0,87 |
+| la paroi latérale du bac | 7,60 → 2,00 mm | 1,11 |
+| l'arase, au-dessus | 7,60 → 2,00 mm | 1,87 |
+| le bas | 7,60 → 2,00 mm | 2,09 |
 
-Un sillon doux de 0,6 mm, 5 mm de large, qui fait des deux renflements les deux
-extrémités d'un même geste horizontal au lieu de deux accidents isolés. Il suit la
-courbe de la casquette, 12 mm sous son bord — et à cette distance il vise pile
-l'axe des vis. Il traverse la plaque, remonte sur le flanc intérieur de chaque
-renflement en gardant sa profondeur jusqu'à |x| = 36, et s'éteint à |x| = 48, avant
-le noyau qui commence à 52 : la peau au-dessus de la tête n'est jamais entamée
-(assertion).
-
-Mesuré sur le maillage : 2,00 → **1,40** → 2,00 mm en travers au centre, lèvres en
-`liss5`, donc sans arête.
-
-- **Il est en creux** : aucun effet sur la descente de l'insert, et aucun
-  porte-à-faux — un creux dans une face tournée vers le haut à l'impression.
-- **L'outil qui le creuse suit la face avant réelle**, plaque ou renflement, à
-  0,02 mm au-dessus hors du sillon : il ne touche la pièce que dans le sillon, et la
-  traverse là en biais. Aucune face confondue.
-- `filet_prof = 0` le supprime. La planche montre la coque avec et sans.
+Les pentes sont plus raides qu'au-dessus de l'arase, et c'est voulu : dans le bac,
+tout ce que le renflement étale est pris sur les compartiments. `boss_etale` est
+revenu à 12.
 
 Ce qu'il faut savoir avant d'y toucher :
 
-- **Sous l'arase, il n'est plus retranché par la cavité** : `coque()` l'ajoute
-  APRÈS le creusement. Il plonge dans le bac sur `boss_E_bas` = 8 mm et s'y fond
-  dans la paroi arrière. Coût : un lobe dans le haut des compartiments arrière
-  (poche à tabac à gauche, briquets à droite), 7 mm d'épaisseur juste sous l'arase,
-  éteint 8 mm plus bas. L'insert n'en souffre pas, son couloir est taillé sur toute
-  la hauteur.
-- **L'extinction vers la casquette est bornée par la peau.** Le haut du logement de
-  tête est à 6 mm sous le bord de la casquette côté droit : `boss_bord` +
-  `boss_Dz` = 1,5 + 4,5 = 6. Plus long, la peau s'amincirait au-dessus de la tête.
-  La distance y est prise **normalement** à la courbe de la casquette, pas
-  verticalement : là où elle plonge, une distance verticale laisserait le
-  renflement arriver épais sur le bord.
+- **Il n'est pas retranché par la cavité** : `coque()` l'ajoute APRÈS le
+  creusement. Retranché avec le reste, il disparaîtrait — il est tout entier dans
+  le volume des compartiments.
+- **Il prend de la place dans les compartiments arrière** : 5,6 mm au plus, entre
+  z = 54 et z = 91, sur une largeur d'environ 45 mm de chaque côté. La fente à
+  tabac a été élargie d'autant (`y_tab`) pour que la poche garde ses 30 mm là où le
+  renflement gauche mord ; la fente à lunettes, derrière, garde 40 mm pour 37,6.
+- **Sa hauteur est bornée des deux côtés.** Par l'arase au-dessus — sinon il
+  reparaît sur la casquette (assertion) — et par le fond du côté peu profond
+  au-dessous, pour le renflement droit (assertion). C'est pour tenir entre les deux
+  que `boss_haut` est passé de 12 à 9.
 - **La seule découpe restante tombe là où le renflement est éteint.** Elle suit la
   silhouette rentrée de `boss_bord` = 1,5 mm, où la surface est à 1,98 mm — sous la
   face de la plaque, dans une zone où la plaque est pleine sur toute son épaisseur.
@@ -380,10 +370,18 @@ Ce qu'il faut savoir avant d'y toucher :
 - **La surface part 0,02 mm SOUS la plaque** (`boss_deb`). Partie pile dessus, elle
   y coucherait des sommets — la famille de coïncidences qui avait coûté 35 arêtes au
   crochet. Elle la traverse à 2,4°.
-- **Le couloir de l'insert** se calcule par `boss_rho(y)`, qui suppose l'ancien
-  étalement isotrope de 20 mm : il enveloppe largement le renflement actuel, plus
-  étroit sous le noyau et éteint vers les bords. Si l'on élargit un jour le
-  renflement, `descente` le dira.
+- **Le couloir de l'insert est l'empreinte exacte des renflements**, projetée en
+  plan, élargie du jeu et extrudée sur toute la hauteur : tout point de l'insert à
+  l'aplomb d'un renflement buterait en descendant. Le test `descente` regarde la
+  même empreinte — il voit désormais les renflements dans le bac, et plus seulement
+  ce qui dépasse de l'arase.
+- **Le rebord arrière de l'insert est coupé de l'axe de chaque vis jusqu'au bord.**
+  Le renflement s'éteignant avant la paroi latérale, son couloir laissait au coin
+  arrière un tronçon de rebord pris entre lui et l'arrondi d'angle du bac : un
+  morceau **libre**, 11 mm³ de chaque côté, que seul le compte de solides a vu. Un
+  escalier de boîtes, remplacé par l'empreinte exacte, n'y était pour rien — la
+  première hypothèse était fausse. Contre la paroi de la coque, ce bout de rebord ne
+  retenait de toute façon rien.
 
 Un piège de mesure, au passage : un lancer de rayon qui tombe **pile sur une arête**
 de la triangulation, avec un test d'appartenance strict, rate les deux triangles
@@ -395,18 +393,16 @@ et coordonnées décalées : la face était bien là.
 - **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
   la tête ; plus épaisse que la tige libre, elle ne passe pas, et la fente de tige ne
   traverse même plus. C'est ce qu'a cassé le passage aux vis courtes.
-- **L'arche doit passer au-dessus du siège de chaque vis** — assertion. Sinon le
-  canal débouche par le haut et la vis ne retient plus rien.
-- **`garde_vis` est dérivée : `course + boss_bas`.** La choisir trop petite fait
-  descendre le renflement dans le bac, et le logement de tête s'ouvre dans la paroi
-  arrière — la vis se voit depuis l'intérieur.
+- **`z_vis` est déduit de l'arase, par le haut** :
+  `z_haut − arase_marge − boss_Dhaut − boss_haut`. Ce n'est plus la casquette qui
+  porte la fixation ; elle est libre de sa forme.
 - **Le S du galbe est quintique (`liss5`), pas cubique.** Un décrochement de course
   `galbe` et de hauteur `marche` a un rayon concave minimal de `galbe²/(6·marche)` :
   7,3 mm en cubique, 17,2 en quintique. `r_av_bac` a valu 15 — il ne passait pas
   avec le cubique — et vaut 8 aujourd'hui, pour l'arase. `check_valid = true` doit
   rester activé pour le dire.
-- **`bac_h` est fixé par une contrainte de hauteur, pas de volume.** Le réduire fait
-  ressortir les lunettes au-dessus de l'axe des colonnettes, où la limite est 35 mm.
+- **`bac_h` n'est plus contraint par les lunettes** : la règle des 35 mm est levée.
+  Le changer déplace l'arase, donc les vis avec elle.
 - **Tous les compartiments au même congé.** L'insert se calcule comme *l'intérieur
   de sa zone moins les compartiments* : un compartiment plus arrondi que le pourtour
   laisse dans le coin un fragment détaché, qui sortirait en morceau libre.
@@ -467,7 +463,7 @@ Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pi
 
 | `PIECE=` | Ce qu'il vérifie | Résultat attendu |
 |---|---|---|
-| `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de la coque au-dessus de l'arase | **vide** (`Current top level object is empty`) |
+| `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de ce qui dépasse de l'arase OU de la paroi arrière | **vide** (`Current top level object is empty`) |
 | `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 346 mm³ |
 | `jointure` | qu'il ne reste aucun jour entre la racine du crochet et le dessous de la coque | **vide** |
 
@@ -476,6 +472,8 @@ non vide. Les deux sont muets si on ne les lance pas.
 
 ## 8. Points de vérification
 
+- [ ] **La pièce pend 37 mm plus haut** qu'avant par rapport aux vis : le haut de
+      la casquette est à 50 mm au-dessus d'elles. Vérifier qu'il n'y a rien au-dessus.
 - [ ] **La cheville reste-t-elle en saillie du bois ?** Si oui, sa hauteur hors bois
       doit revenir dans `col_h`, aujourd'hui à 0 — et toute la fixation se décale.
 - [ ] **Mesurer la sangle du XM5 au réglet**, dans le sens avant-arrière. C'est la
