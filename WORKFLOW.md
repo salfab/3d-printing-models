@@ -25,8 +25,9 @@ avec son unité et la raison de sa valeur. Un modèle où l'on change le diamèt
 l'objet visé et où tout suit vaut infiniment mieux qu'un modèle juste une fois.
 
 **Rendre vite pour itérer.** `--fast` produit un aperçu en quelques dixièmes de
-seconde là où le rendu CGAL complet prend plusieurs minutes. On itère sur la forme en
-mode rapide, on ne passe au rendu complet que pour les livrables.
+seconde. Le rendu complet, avec le moteur Manifold, ne prend plus que quelques
+secondes par pièce — il en fallait plusieurs minutes avec CGAL : on peut désormais
+itérer sur le rendu complet, qui seul montre ce que les booléens produisent vraiment.
 
 **Regarder.** C'est l'étape qu'on saute et qu'il ne faut jamais sauter. Un rendu qu'on
 n'a pas ouvert ne prouve rien. Deux exemples vécus : une bride entièrement disparue
@@ -44,7 +45,7 @@ lisent le maillage exporté.
 |---|---|
 | `scripts/scad.py` | pilote OpenSCAD : rendus, coupes, tranches, dessins, STL, encombrement, contrôle de péremption |
 | `lib/std.scad` | `section()`, `quarter_cut()`, `slice_2d()`, `view_2d()`, et la résolution des courbes |
-| `scripts/setup_libs.py` | installe les bibliothèques tierces dans `vendor/`, exclu du dépôt |
+| `scripts/setup_libs.py` | installe les bibliothèques tierces et OpenSCAD de développement dans `vendor/`, exclu du dépôt |
 | skill `scad-preview` | publie un aperçu web : viewer 3D interactif et planche de rendus |
 
 Passer par `scad.py` plutôt que par `openscad` en direct : les caméras normalisées et
@@ -59,7 +60,25 @@ python scripts/scad.py drawing <slug>                 # dessins techniques cotab
 python scripts/scad.py info    <slug>                 # encombrement mesuré
 python scripts/scad.py stl     <slug> --binaire
 python scripts/scad.py check   <slug>                 # les sorties sont-elles à jour ?
+python scripts/scad.py stl     <slug> --cgal          # contre-vérification, ancien moteur
 ```
+
+**Le moteur : Manifold par défaut, CGAL en contre-vérification.** Sur le vide-poches,
+la coque s'exporte en 5 s au lieu de 2 min 30, et la régénération complète de
+l'aperçu tombe de plus d'une demi-heure à 4 minutes. Les deux moteurs rendent le
+même volume au dixième de cm³ près. Ils ne tranchent pas pareil les cas limites :
+
+- **Manifold ne recolle pas deux corps qui se touchent par une face.** CGAL, en
+  arithmétique exacte, fusionnait la plaque et le bac, extrudés bout à bout sur le
+  même contour ; Manifold y a laissé 129 arêtes pincées. Idem pour un encorbellement
+  dont le pied se couchait sur la face d'une paroi : 8 arêtes. Chaque fois, le
+  remède est celui de toutes les coïncidences — un seul corps, ou un recouvrement
+  franc — et il rend le modèle plus sain pour les deux moteurs.
+- **`use <>` n'importe pas les variables globales**, et BOSL2 en initialise
+  (`$tags_shown`…). La 2021.01 laissait passer ; les versions récentes refusent. Les
+  enrobages de `scad.py` incluent donc BOSL2 eux-mêmes quand le modèle s'en sert.
+- **Valider sur le moteur qui produit le STL.** Tests permanents et contrôles de
+  maillage n'ont de sens que sur le fichier qui part à l'imprimante.
 
 `-D CLE=VALEUR` surcharge n'importe quelle variable du modèle. C'est ainsi qu'un même
 fichier produit plusieurs pièces — `-D PIECE=avant`, `-D PIECE=guide` — sans duplication,

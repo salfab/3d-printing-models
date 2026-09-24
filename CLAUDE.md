@@ -73,7 +73,10 @@ python scripts/scad.py stl     <slug> --binaire                # export STL (bin
 python scripts/scad.py all     <slug>                          # vues + dessins + encombrement
 ```
 
-- `--fast` : preview au lieu du rendu CGAL complet, pour itérer vite.
+- `--fast` : preview au lieu du rendu complet, pour itérer vite.
+- `--cgal` : ancien moteur CGAL, exact mais 10 à 30 fois plus lent. Par défaut,
+  c'est **Manifold** : quelques secondes par pièce au lieu de minutes. Garder CGAL
+  pour une contre-vérification avant une impression importante.
 - `--views iso front right top bottom left back` pour choisir les angles.
 - Les commandes 2D produisent **SVG + PNG** : le SVG pour la CAO/l'impression papier,
   le PNG pour pouvoir le regarder.
@@ -158,9 +161,14 @@ Contreparties, à peser avant de l'inclure :
 
 ## Environnement
 
-- OpenSCAD doit être installé et accessible : `winget install OpenSCAD.OpenSCAD`.
-  Le script cherche `openscad.com`/`openscad.exe` dans le `PATH`, puis dans
-  `C:\Program Files\OpenSCAD\`, sinon la variable d'environnement `OPENSCAD`.
+- **OpenSCAD de développement, dans le dépôt.** `python scripts/setup_libs.py`
+  l'installe en archive portable dans `vendor/openscad-nightly/` (SHA-256 vérifié) :
+  c'est lui qui a le moteur Manifold, et `scripts/scad.py` le préfère à tout autre.
+  Les versions de développement sont retirées du serveur au bout de quelques
+  semaines ; le script prend alors la plus récente. Rien n'est installé sur le
+  système. À défaut, le script cherche la variable d'environnement `OPENSCAD`, puis
+  `openscad.com`/`openscad.exe` dans le `PATH` et `C:\Program Files\OpenSCAD\`
+  (la 2021.01 de `winget install OpenSCAD.OpenSCAD`, CGAL seulement).
 - Aucun MCP ni skill OpenSCAD publique n'existe : passer par `scripts/scad.py`, pas par
   des appels `openscad` improvisés (les caméras et l'enrobage `use <>` sont non triviaux).
 - `.claude/launch.json` déclare un serveur statique (`preview`, port 8765) pour tester

@@ -199,7 +199,15 @@ r_ext    = 20;    // mm — arrondi des angles BAS de la silhouette.
                   //      contre 15 il effaçait purement et simplement les coins
                   //      — d'où les ruptures de continuité en haut et en bas du
                   //      panier.
-r_coin_bac = 6;   // mm — arrondi des DEUX angles HAUTS du bac, et rien d'autre.
+r_coin_bac = 8;   // mm — arrondi des DEUX angles HAUTS du bac, et rien d'autre.
+                  //
+                  //      ÉGAL à `r_av_bac`, et ce n'est pas du goût. L'arrondi
+                  //      avant rétrécit le contour de 8 mm en approchant de la
+                  //      face avant ; un angle de rayon 6 y tombait à ZÉRO avant
+                  //      d'arriver : angle vif sur la face avant, raccord gauche
+                  //      entre les deux arrondis. À rayons égaux, l'angle devient
+                  //      un coin sphérique, et le bord a le même profil sur les
+                  //      flancs qu'à l'avant — le liseré aussi.
                   //
                   //      Il valait `r_ext`, soit 20, et c'était un piège. Le
                   //      contour intérieur, lui, est bâti sur
@@ -772,9 +780,17 @@ module dos() {
     }
 }
 
-// Le bac, plein — sa cavité est retirée plus haut, au niveau de la coque.
+// Le bac, plein, DOS COMPRIS — sa cavité est retirée plus haut, au niveau de la
+// coque.
+//
+// Un seul balayage depuis le mur, et non la plaque (y de 0 à dos_ep) plus un bac
+// balayé à partir de dos_ep. Depuis que la casquette est partie, les deux ont
+// EXACTEMENT le même contour, et leur union recollait bout à bout deux prismes à
+// faces latérales coplanaires, tout le long du pourtour arrière. CGAL, en
+// arithmétique exacte, les fusionnait ; Manifold, en flottants, y laissait 129
+// arêtes pincées. Un seul corps, pas de raccord.
 module bac_plein() {
-    sweep_y(dos_ep, prof - dos_ep, r_av_bac, chemin_bac(z_haut));
+    sweep_y(0, prof, r_av_bac, chemin_bac(z_haut));
 }
 
 // Les cavités de rangement, découpées dans l'enveloppe intérieure de la coque.
@@ -794,9 +810,31 @@ module cavites() {
         union() for (z = zones)
             translate([0, 0, z[2]])
                 linear_extrude(z_haut - z[2] + EPS)
-                    rect_2d(z[0] <= xi0 ? xi0 - deb : z[0],
-                            z[1] >= xi1 ? xi1 + deb : z[1],
-                            yi0 - deb, yi1);
+                    zone_2d(z);
+    }
+}
+
+// L'emprise d'une zone en plan, commune à la cavité et, rentrée du jeu, à
+// l'insert : leurs coins sont donc concentriques.
+//
+// Coins ARRIÈRE arrondis de `r_arr` = 5,6 : c'est le rayon qu'ont déjà les coins
+// avant de la cavité, où l'arrondi extérieur de 8 moins la paroi de 2,4 laisse
+// un quart de cercle de 5,6 à l'intérieur. Ils étaient vifs — le prisme passait
+// 5 mm derrière la plaque —, et l'insert, arrondi en face d'un coin vif, y aurait
+// laissé un vide. Coins avant : `r_coin`, là où c'est le prisme qui les fait (à
+// la cloison) ; aux flancs, c'est l'arrondi du balayage, plus ample, qui l'emporte.
+//
+// Le prisme ne dépasse la paroi que de `zone_deb` : assez pour ne pas coïncider
+// avec elle, assez peu pour que le congé tombe bien dans le coin.
+r_arr    = r_av_bac - paroi;   // 5,6
+zone_deb = 0.05;               // mm
+module zone_2d(z) {
+    x0 = z[0] <= xi0 ? xi0 - zone_deb : z[0];
+    x1 = z[1] >= xi1 ? xi1 + zone_deb : z[1];
+    y0 = yi0 - zone_deb;
+    hull() {
+        for (x = [x0 + r_arr, x1 - r_arr])   translate([x, y0 + r_arr])    circle(r = r_arr);
+        for (x = [x0 + r_coin, x1 - r_coin]) translate([x, yi1 - r_coin]) circle(r = r_coin);
     }
 }
 
@@ -819,8 +857,16 @@ module bac() {
 // --- Insert -------------------------------------------------------------------
 
 // Le contour d'un insert : l'intérieur de sa zone, rétréci du jeu de montage.
+//
+// Coins arrière : ceux de `zone_2d`, concentriques à la cavité. Le corps commence
+// à `y_ins`, au-delà de leur arrondi ; c'est le bandeau, au-dessus, qui les
+// épouse. Des coins de corps arrondis pour leur compte laissaient contre le flanc,
+// juste sous le bandeau, une encoche que l'on voyait d'en haut.
 module contour_2d(z) {
-    offset(r = -insert_jeu) rect_2d(z[0], z[1], dos_e, yi1);
+    intersection() {
+        offset(r = -insert_jeu) zone_2d(z);
+        translate([-BIG / 2, y_ins]) square(BIG);
+    }
 }
 
 // L'insert d'une zone, en bloc : son contour sur toute la hauteur, plus le
@@ -836,11 +882,10 @@ module bloc_zone(z) {
         linear_extrude(z_haut - z[2] + 1) contour_2d(z);
     intersection() {
         bandeau();
-        // limité à la zone en largeur ; ses coins arrière restent VIFS, comme
-        // ceux de la cavité, dont le prisme passe derrière la plaque
+        // limité à la zone ; ses coins arrière épousent ceux de la cavité
         translate([0, 0, z_b45 - 1])
             linear_extrude(z_haut - z_b45 + 3)
-                offset(r = -insert_jeu) rect_2d(z[0], z[1], dos_ep - deb, yi1);
+                offset(r = -insert_jeu) zone_2d(z);
     }
 }
 
@@ -872,13 +917,17 @@ function boss_Tmax(x, z) = max(boss_T(x, z, -entraxe / 2), boss_T(x, z, entraxe 
 function ombre(x, z) =
     max([for (k = [0 : round((y_ins - y_bnd) / cadre_pas)])
             boss_Tmax(x, z - k * cadre_pas) + insert_jeu - k * cadre_pas]);
+// Le champ commence 0,3 mm SOUS le pied de la droite à 45°, et il est borné à
+// 0,1 mm dans la paroi : sa première rangée est noyée dans la paroi, et la face à
+// 45° coupe franchement le plan arrière du corps. Partie pile à `z_b45`, elle s'y
+// couchait sur la face arrière du corps — 8 arêtes non-variété aux coins.
 function bandeau_y(x, z) =
-    min(y_ins, max(y_ins - (z - z_b45), y_bnd, ombre(x, z)));
+    min(y_ins + 0.1, max(y_ins - (z - z_b45), y_bnd, ombre(x, z)));
 
 function bandeau_vnf() =
     let (xa = xi0 - 1, xb = xi1 + 1,
          nx = round((xb - xa) / boss_pas),
-         za = z_b45, zb = z_haut + 1,
+         za = z_b45 - 0.3, zb = z_haut + 1,   // pied noyé dans la paroi
          nz = round((zb - za) / cadre_pas),
          yf = y_ins + insert_paroi / 2,        // face avant, noyée dans la paroi
          xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
@@ -1207,7 +1256,7 @@ module coque() {
     difference() {
         union() {
             difference() {
-                union() { plaque(); bac_plein(); crochet(); }
+                union() { bac_plein(); crochet(); }   // le dos est dans bac_plein
                 cavites();
             }
             bossages();

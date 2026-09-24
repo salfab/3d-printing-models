@@ -138,9 +138,12 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 282,2 cm³ | 182,0 × 85,8 × 95,0 mm |
-| Inserts (2 corps) | 116,3 cm³ (75,0 + 41,3) | 176,2 × 80,4 × 92,1 mm |
-| **Total** | **398,5 cm³** | |
+| Coque | 283,2 cm³ | 182,0 × 85,8 × 95,0 mm |
+| Inserts (2 corps) | 116,7 cm³ (75,3 + 41,4) | 176,2 × 80,4 × 92,1 mm |
+| **Total** | **399,9 cm³** | |
+
+Exportés avec le moteur **Manifold** ; un export `--cgal` rend le même volume au
+dixième de cm³.
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -161,7 +164,7 @@ Mesurées sur les maillages exportés.
 | Profondeur, zone peu profonde | 46,2 mm | `bac_h − fond_haut` |
 | Marche entre les deux niveaux | 46 mm sur 45 de galbe | `marche`, `galbe` |
 | Galbe de la jointure avant | 8 mm | `r_av_bac` — borné par l'arase, voir §7 |
-| Angles hauts du bac | 6 mm | `r_coin_bac`, découplé de `r_ext` |
+| Angles hauts du bac | 8 mm | `r_coin_bac` = `r_av_bac` : à 6, l'angle devenait vif sur la face avant |
 | Arase, paroi pleine jusqu'à | z = 88 | puis extinction sur 4 mm |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` — c'est aussi le filet qui sépare les deux couleurs |
@@ -267,6 +270,12 @@ couteau en haut du panier.
   extérieur. Au-dessus de z = 84,5 **les côtés du panier n'existaient plus du
   tout** — la tranche à z = 86 ne contenait que la cloison. D'où `r_coin_bac`,
   découplé de `r_ext` et ramené à 6, qui est aussi le rayon des angles hauts du dos.
+- **`r_coin_bac` ne doit pas descendre sous `r_av_bac`.** Ramené à 6, il avait
+  réglé les angles en lame de couteau mais en créait un autre défaut : l'arrondi
+  avant rétrécit le contour de 8 mm vers la face avant, et un angle de 6 y tombait
+  à zéro — angle vif sur la face avant, raccord maladroit entre deux arrondis. À 8,
+  les deux rayons sont égaux et l'angle devient un coin sphérique. Le haut des
+  parois s'amincit alors sur les 8 derniers millimètres au lieu de 6.
 - **Les deux arrondis avant doivent avoir le MÊME rayon.** L'intérieur valait
   `r_av_bac − paroi` — le réflexe pour un offset 3D, et l'erreur. Ce qui compte à
   l'impression est la distance dans le **plan du lit**, couche par couche, et elle
@@ -422,6 +431,20 @@ galbe, en deux couleurs, coupé par le jeu de 0,5 mm.
   `larg` et `bac_int` qui ont grandi : garder la poche à tabac à 85 coûte 1,7 mm
   à chaque paroi que l'insert double.
 
+### Les coins arrière : concentriques, en coque comme en insert
+
+La cavité avait des coins arrière vifs : son prisme passait 5 mm derrière la plaque.
+Ils sont arrondis de `r_arr` = 5,6 mm, le rayon qu'ont déjà ses coins avant (8 mm
+d'arrondi extérieur moins la paroi), et l'insert les suit à 5,1, rentré du jeu. Les
+deux se calculent depuis le même profil, `zone_2d`. Un insert arrondi en face d'un
+coin vif y aurait laissé un vide visible d'en haut.
+
+- **Le prisme ne dépasse la paroi que de `zone_deb` = 0,05 mm** : assez pour ne pas
+  coïncider avec elle, assez peu pour que le congé tombe dans le coin. À 5 mm, il
+  tombait dehors.
+- **Le corps de l'insert commence à 8,1**, au-delà de l'arrondi (qui finit à 7,6) :
+  il reste droit, et c'est le bandeau qui épouse les coins.
+
 ### Le bandeau arrière : au-dessus des renflements, jamais plus plat que 45°
 
 Il couvre la fente derrière le corps de l'insert, de 8,1 à 2,5 mm du mur, sur
@@ -440,6 +463,9 @@ ne font que s'amincir en montant — un point qui les surplombe à sa hauteur le
 surplombe pendant toute la descente. Au droit d'une vis, la coupe montre
 l'encorbellement à 0,5 mm du renflement sur toute sa pente.
 
+- **Le pied de l'encorbellement est noyé dans la paroi** : le champ commence 0,3 mm
+  sous la droite à 45°. Parti pile à son pied, il se couchait sur la face arrière du
+  corps — Manifold y voyait 8 arêtes non-variété, CGAL les fusionnait.
 - **Le test `descente` ne peut plus être une simple projection** : le bandeau
   surplombe les renflements, légitimement. Il est testé par niveaux — ce qui est
   sous `zk` contre ce qui est au-dessus.

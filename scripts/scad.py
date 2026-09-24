@@ -12,6 +12,12 @@ Exemples :
     python scripts/scad.py stl     boitier
     python scripts/scad.py info    boitier
     python scripts/scad.py all     boitier
+    python scripts/scad.py stl     boitier --cgal     # contre-verification, ancien moteur
+
+MOTEUR. Par defaut, la version de developpement d'OpenSCAD installee dans
+vendor/openscad-nightly/ (python scripts/setup_libs.py), avec le moteur Manifold :
+10 a 30 fois plus rapide que CGAL sur les pieces de ce depot. --cgal repasse a
+l'ancien moteur, exact mais lent, pour contre-verifier une piece avant impression.
 """
 from __future__ import annotations
 
@@ -19,6 +25,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import struct
 import subprocess
@@ -51,6 +58,11 @@ def find_openscad() -> str:
     env = os.environ.get("OPENSCAD")
     if env and Path(env).exists():
         return env
+    # La version de developpement du depot passe avant celle du systeme : c'est elle
+    # qui a le moteur Manifold. La plus recente si plusieurs coexistent.
+    nightly = sorted((ROOT / "vendor" / "openscad-nightly").glob("OpenSCAD-*/openscad.com"))
+    if nightly:
+        return str(nightly[-1])
     # Sous Windows, openscad.com est la variante console (sortie/exit code corrects).
     for name in ("openscad.com", "openscad", "openscad.exe"):
         p = shutil.which(name)
@@ -64,9 +76,43 @@ def find_openscad() -> str:
         if p.exists():
             return str(p)
     sys.exit(
-        "OpenSCAD introuvable. Installe-le (winget install OpenSCAD.OpenSCAD) "
+        "OpenSCAD introuvable. Lance python scripts/setup_libs.py (version de "
+        "developpement, dans vendor/), installe-le (winget install OpenSCAD.OpenSCAD) "
         "ou definis la variable d'environnement OPENSCAD."
     )
+
+
+_VERSION: dict[str, tuple[int, ...]] = {}
+
+
+def version_openscad(exe: str) -> tuple[int, ...]:
+    """(annee, mois, ...) de l'executable. 2021.01 ne connait pas --backend."""
+    if exe not in _VERSION:
+        r = subprocess.run([exe, "--version"], capture_output=True, text=True)
+        m = re.search(r"version\s+(\d+)\.(\d+)", (r.stdout or "") + (r.stderr or ""))
+        _VERSION[exe] = tuple(int(x) for x in m.groups()) if m else (0, 0)
+    return _VERSION[exe]
+
+
+MOTEUR = {"cgal": False}   # fixe par --cgal au lancement
+
+
+def moteur() -> list[str]:
+    """Option de moteur a passer a OpenSCAD, selon la version disponible."""
+    exe = find_openscad()
+    if version_openscad(exe) < (2024, 1):
+        if not MOTEUR["cgal"]:
+            print("  (OpenSCAD", ".".join(map(str, version_openscad(exe))),
+                  ": pas de Manifold, rendu CGAL — python scripts/setup_libs.py)")
+        return []
+    return ["--backend=CGAL" if MOTEUR["cgal"] else "--backend=Manifold"]
+
+
+def nom_moteur() -> str:
+    exe = find_openscad()
+    if MOTEUR["cgal"] or version_openscad(exe) < (2024, 1):
+        return "CGAL"
+    return "Manifold"
 
 
 def model_paths(slug: str) -> tuple[Path, Path]:
@@ -103,10 +149,19 @@ def run(cmd: list[str]) -> None:
 
 
 def wrapper(scad: Path, body: str) -> Path:
-    """Ecrit un .scad temporaire qui `use` le modele et applique `body`."""
+    """Ecrit un .scad temporaire qui `use` le modele et applique `body`.
+
+    `use` n'importe que les modules et fonctions du modele, pas ses variables
+    globales. Or BOSL2 initialise au niveau global des variables speciales
+    ($tags_shown, $transform...) que ses modules exigent : les versions recentes
+    d'OpenSCAD refusent de les trouver indefinies. Si le modele inclut BOSL2,
+    l'enrobage l'inclut donc aussi.
+    """
+    bosl2 = "include <BOSL2/std.scad>\n" if "BOSL2/" in scad.read_text(encoding="utf-8") else ""
     src = (
         f"use <{scad.as_posix()}>\n"
         f"include <{(ROOT / 'lib' / 'std.scad').as_posix()}>\n"
+        f"{bosl2}"
         f"{body}\n"
     )
     f = tempfile.NamedTemporaryFile("w", suffix=".scad", delete=False, encoding="utf-8")
@@ -143,7 +198,7 @@ def render_png(scad_file: Path, out: Path, view: str = "iso", fast: bool = False
         f"--camera=0,0,0,{rx},{ry},{rz},0",
         "--viewall", "--autocenter",
         f"--colorscheme={COLORSCHEME}",
-    ]
+    ] + moteur()
     if not fast:
         cmd.append("--render")
     cmd += (extra or [])
@@ -152,7 +207,7 @@ def render_png(scad_file: Path, out: Path, view: str = "iso", fast: bool = False
 
 
 def export(scad_file: Path, out: Path, extra: list[str] | None = None) -> None:
-    run([find_openscad(), "-o", str(out)] + (extra or []) + [str(scad_file)])
+    run([find_openscad(), "-o", str(out)] + moteur() + (extra or []) + [str(scad_file)])
     # OpenSCAD rend 0 meme quand il n'a rien ecrit : un nom de fichier invalide
     # (des guillemets passes en trop dans un -D, par exemple) donne un export
     # silencieusement vide. Sans ce controle, on mesure ensuite le fichier de la
@@ -237,6 +292,7 @@ def consigner(slug: str, dst: Path, a) -> None:
     data[dst.name] = {
         "source": empreinte(slug),
         "defines": sorted(getattr(a, "define", None) or []),
+        "moteur": nom_moteur(),
         "date": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
     man.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
@@ -286,7 +342,7 @@ def cmd_stl(a) -> Path:
     print(f"[stl] {dst}")
     export(scad, dst, defines(a))
     if getattr(a, "binaire", False):
-        # OpenSCAD 2021.01 n'exporte qu'en ASCII ; le binaire est ~6x plus compact
+        # OpenSCAD exporte ici en ASCII ; le binaire est ~6x plus compact
         # et se charge bien plus vite dans un trancheur.
         avant = dst.stat().st_size
         brut = stl_binary(dst)
@@ -400,7 +456,9 @@ def main() -> None:
         sp.add_argument("slug", help="nom du sous-repertoire sous models/")
         sp.add_argument("--views", nargs="+", help="vues a rendre")
         sp.add_argument("--fast", action="store_true",
-                        help="preview au lieu du rendu CGAL complet")
+                        help="preview au lieu du rendu complet")
+        sp.add_argument("--cgal", action="store_true",
+                        help="ancien moteur CGAL (exact, lent) au lieu de Manifold")
         sp.add_argument("-D", "--define", action="append", metavar="CLE=VALEUR",
                         help="surcharge une variable du modele (repetable)")
         return sp
@@ -431,6 +489,7 @@ def main() -> None:
     common(sub.add_parser("all", help="vues 3D + dessins + encombrement")).set_defaults(fn=cmd_all)
 
     a = p.parse_args()
+    MOTEUR["cgal"] = getattr(a, "cgal", False)
     a.fn(a)
 
 
