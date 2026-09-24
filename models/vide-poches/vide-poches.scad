@@ -355,7 +355,7 @@ fond_bas  = fond;                //  2,8 — fond côté profond  → 92,2 mm ut
 fond_haut = marche + fond;       // 48,8 — fond côté peu profond → 46,2 mm utiles
 
 z_entree  = z_vis - course;      //  95 — hauteur du trou de passage de la tête
-boss_z0   = z_entree - boss_bas; //  87
+boss_z0   = z_entree - boss_bas; //  95 — pile à l'arase
 boss_z1   = z_vis + boss_haut;   // 127 — le bossage ne fait que 40 mm de haut
 
 // --- Compartiments ------------------------------------------------------------
@@ -658,26 +658,96 @@ module canaux(xc) {
 // plus de ligne où l'œil puisse dire « ici finit la plaque, ici commence la
 // bosse ». Pente maximale : 1,875·7,4/20 = 0,69, soit 35°.
 //
-// Balayé par `offset_sweep` et un `os_profile`, pas empilé en tranches : un
-// empilement laissait des gradins de 0,37 mm, là où justement la surface doit
-// être la plus douce.
+// LE RENFLEMENT NE RENCONTRE JAMAIS UN BORD. C'est la règle qui efface les
+// dernières arêtes. Il y en avait trois, toutes de même nature : partout où le
+// renflement arrivait encore épais sur une limite, la découpe par cette limite y
+// laissait un angle vif —
+//   - sur le FLANC de la pièce, où il butait sur la face latérale ;
+//   - sur le bord de la CASQUETTE, où il butait sur le dessus ;
+//   - à l'ARASE du bac, où la cavité le tranchait à plat en z = 95 et le laissait
+//     surplomber la paroi arrière de 7,4 mm.
+// Il n'est donc plus découpé nulle part où il est épais : il s'éteint de lui-même
+// avant chaque limite. C'est un CHAMP DE HAUTEUR,
+//     épaisseur = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette),
+// où chaque facteur est un `liss5` — un produit de fonctions lisses est lisse, il
+// n'y a donc de pli nulle part. Sous l'arase il n'est plus retranché par la cavité
+// (voir coque()) : il plonge dans le bac et s'y fond dans la paroi arrière, comme
+// il se fond dans la plaque partout ailleurs.
 //
 // DEUX noyaux distincts, un par vis, et surtout pas leur enveloppe convexe : en
 // les reliant, le renflement devenait une seule bosse en travers de toute la
 // largeur, et une casquette au-dessus du bac.
 
-n_boss   = 40;    // points du profil en S
-boss_deb = 0.02;  // mm — le profil démarre SOUS la face de la plaque.
-                  //      Démarré pile dessus, son premier anneau de sommets serait
-                  //      couché dans le plan de la plaque — la famille de
-                  //      coïncidences qui a déjà coûté 35 arêtes non-variété au
-                  //      crochet. Enfoncé de 0,02 mm, il la traverse à 2,4° : un
-                  //      angle qu'aucune imprimante ne rendra.
+boss_deb   = 0.02;  // mm — la surface part SOUS la face de la plaque.
+                    //      Partie pile dessus, elle y coucherait des sommets — la
+                    //      famille de coïncidences qui a coûté 35 arêtes au
+                    //      crochet. Enfoncée de 0,02 mm, elle la traverse à 2,4°.
+boss_E_bas = 8;     // mm — étalement SOUS le noyau, dans le bac. Plus court que
+                    //      `boss_etale` : ce qui plonge dans le bac prend sur la
+                    //      profondeur des compartiments arrière. À 8, le lobe
+                    //      s'éteint à z = 87, dans les 8 mm du haut.
+boss_bord  = 1.5;   // mm — le renflement est ÉTEINT à cette distance du contour.
+                    //      Plus que l'arrondi avant de la plaque, 1,4 : c'est là,
+                    //      et là seulement, que la plaque est pleine sur toute son
+                    //      épaisseur et peut avaler ce qui reste du renflement.
+boss_Dx    = 6;     // mm — longueur d'extinction vers le flanc. Le noyau finit
+                    //      à 7,5 mm du flanc : 1,5 + 6, il reste plein jusqu'au bout.
+boss_Dz    = 4.5;   // mm — longueur d'extinction vers la casquette. Bornée par la
+                    //      peau : le haut du logement de tête est à 6 mm sous le
+                    //      bord de la casquette côté droit, et 1,5 + 4,5 = 6.
+                    //      Plus long, la peau s'amincirait au-dessus de la tête.
+boss_pas   = 0.5;   // mm — pas de la grille du champ de hauteur
 
-// Le noyau et son étalement en plan : un stade vertical, demi-largeur `r`.
-function stade(cx, z0, z1, r, n = 24) = concat(
-    [for (i = [0 : n]) let (a = 180 * i / n)       [cx + r * cos(a), z1 - r + r * sin(a)]],
-    [for (i = [0 : n]) let (a = 180 + 180 * i / n) [cx + r * cos(a), z0 + r + r * sin(a)]]);
+// Distance au noyau (stade vertical, demi-largeur boss_larg/2), en plan.
+function boss_dist(x, z, cx) =
+    let (zb = boss_z0 + boss_larg / 2,
+         zh = boss_z1 - boss_larg / 2,
+         v  = z < zb ? zb - z : z > zh ? z - zh : 0)
+    max(0, sqrt((x - cx) * (x - cx) + v * v) - boss_larg / 2);
+
+// Étalement effectif : `boss_E_bas` sous le noyau, `boss_etale` partout ailleurs,
+// raccordés en douceur sur la hauteur du demi-cercle inférieur du noyau.
+function boss_E(z) = boss_E_bas + (boss_etale - boss_E_bas)
+                                  * liss5((z - boss_z0) / (boss_larg / 2));
+
+function dessus_pente(x) = (dessus(x + 0.05) - dessus(x - 0.05)) / 0.1;
+
+// Pondération d'extinction vers les deux bords : flanc, et casquette mesurée
+// NORMALEMENT à sa courbe — pas verticalement, sinon là où elle plonge le
+// renflement arriverait encore épais sur le bord.
+function boss_W(x, z) =
+    let (dx = larg / 2 - abs(x),
+         dz = (dessus(x) - z) / sqrt(1 + dessus_pente(x) * dessus_pente(x)))
+    liss5((dx - boss_bord) / boss_Dx) * liss5((dz - boss_bord) / boss_Dz);
+
+// Face avant du dos au point (x, z), pour le renflement centré en cx.
+function boss_T(x, z, cx) =
+    let (q = boss_dist(x, z, cx) / boss_E(z))
+    (dos_ep - boss_deb) + (dos_e - dos_ep + boss_deb) * liss5(1 - q) * boss_W(x, z);
+
+// Emprise de la grille. Elle déborde de 0,5 mm au-delà de la silhouette rentrée
+// de `boss_bord` qui la découpe : le bord de la grille et la découpe ne doivent
+// pas coïncider. Là, la surface est à 1,98 — sous la face de la plaque, cachée.
+boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 40
+boss_x_out = larg / 2 - boss_bord + 0.5;                     // 86,5
+boss_z_lo  = boss_z0 - boss_E_bas;                           // 87
+boss_z_hi  = dessus(boss_x_in) - boss_bord + 0.5;            // ~127
+
+function boss_vnf(s) =
+    let (nx = round((boss_x_out - boss_x_in) / boss_pas),
+         nz = round((boss_z_hi - boss_z_lo) / boss_pas),
+         xa = s > 0 ? boss_x_in : -boss_x_out,
+         xb = s > 0 ? boss_x_out : -boss_x_in,
+         cx = s * entraxe / 2,
+         yb = dos_ep - boss_deb - 0.5,        // fond de la grille, noyé dans la plaque
+         xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
+    vnf_vertex_array(
+        [for (j = [0 : nz]) let (z = boss_z_lo + (boss_z_hi - boss_z_lo) * j / nz)
+            concat([for (x = xs) [x, boss_T(x, z, cx), z]],
+                   [for (i = [nx : -1 : 0]) [xs[i], yb, z]])],
+        col_wrap = true, caps = true);
+
+module renflement(s) { vnf_polyhedron(boss_vnf(s)); }
 
 // Inverse de `liss5` sur [0, 1], par dichotomie — pour le couloir de l'insert.
 function liss5_inv(t, a = 0, b = 1, n = 40) =
@@ -691,30 +761,19 @@ function boss_rho(y) =
          t = max(0, min(1, (y - (dos_ep - boss_deb)) / h)))
     boss_etale * (1 - liss5_inv(t));
 
-module renflement(s) {
-    h = dos_e - dos_ep + boss_deb;       // montée du S
-    e = h + 0.5;                         // + 0,5 mm de fût droit, noyé dans la plaque
-    translate([0, dos_e - e, 0]) rotate([90, 0, 0]) translate([0, 0, -e])
-        offset_sweep(
-            stade(s * entraxe / 2, boss_z0 - boss_etale, boss_z1 + boss_etale,
-                  boss_larg / 2 + boss_etale),
-            height = e,
-            // `bottom` tombe à l'AVANT dans ce repère (voir sweep_y) : le S part
-            // de la plaque, sans retrait, et finit sur le noyau, rentré de
-            // `boss_etale`.
-            bottom = os_profile(points = [for (k = [0 : n_boss]) let (u = k / n_boss)
-                                          [boss_etale * u, h * liss5(u)]]),
-            check_valid = true);
-}
-
+// La découpe par la silhouette RENTRÉE de `boss_bord` ne tombe que là où le
+// renflement est déjà éteint à 1,98, sous la face de la plaque : elle est cachée
+// dans la plaque, qui y est pleine sur toute son épaisseur. Aucune arête visible.
 module bossages() {
     intersection() {
         union() for (s = [-1, 1]) renflement(s);
-        // La silhouette dépasse d'1 mm devant le plateau : leurs deux faces avant
-        // ne doivent pas coïncider.
-        sweep_y(0, dos_e + 1, r_av_dos, chemin_dos());
+        en_travers(dos_ep - boss_deb - 1, dos_e + 2)
+            offset(r = -boss_bord) silhouette_dos_2d();
     }
 }
+
+module plaque() { sweep_y(0, dos_ep, r_av_dos, chemin_dos()); }
+module canaux_tous() { for (s = [-1, 1]) canaux(s * entraxe / 2); }
 
 // Le dos : la plaque qui porte contre le bois et qui reçoit la fixation.
 //
@@ -728,11 +787,8 @@ module bossages() {
 // franchement le fil consommé, puisque toute cette épaisseur sera remplie.
 module dos() {
     difference() {
-        union() {
-            sweep_y(0, dos_ep, r_av_dos, chemin_dos());
-            bossages();
-        }
-        for (s = [-1, 1]) canaux(s * entraxe / 2);
+        union() { plaque(); bossages(); }
+        canaux_tous();
     }
 }
 
@@ -1050,10 +1106,22 @@ module peau() {
         }
 }
 
+// Les renflements sont ajoutés APRÈS le creusement des cavités, et c'est voulu.
+// Retranchés avec le reste, ils étaient tranchés à plat à l'arase et
+// surplombaient la paroi arrière du bac : une arête vive et un surplomb. Ajoutés
+// après, ils plongent dans le bac et s'y fondent dans la paroi arrière. L'insert
+// n'en souffre pas : son couloir est taillé sur toute la hauteur.
+// Les canaux, eux, viennent en tout dernier : ils traversent plaque ET renflement.
 module coque() {
     difference() {
-        union() { dos(); bac_plein(); crochet(); }
-        cavites();
+        union() {
+            difference() {
+                union() { plaque(); bac_plein(); crochet(); }
+                cavites();
+            }
+            bossages();
+        }
+        canaux_tous();
     }
 }
 

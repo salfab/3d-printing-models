@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 285,6 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Coque | 282,9 cm³ | 175,0 × 82,4 × 128,0 mm |
 | Inserts (2 corps) | 63,6 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **349,2 cm³** | |
+| **Total** | **346,5 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -330,19 +330,64 @@ centre de la pièce :
 La pente part de zéro et y revient : il n'y a plus de ligne où l'on puisse dire
 « ici finit la plaque, ici commence la bosse ».
 
-Trois choses à savoir avant d'y toucher :
+**Le renflement ne rencontre jamais un bord.** Même en S, il restait trois arêtes,
+toutes de même nature : partout où il arrivait encore épais sur une limite, la
+découpe par cette limite y laissait un angle vif —
 
-- **Il est balayé, pas empilé.** `offset_sweep` avec un `os_profile` : l'empilement
-  de tranches laissait des gradins de 0,37 mm, justement là où la surface doit être
-  la plus douce. `os_profile` prend des couples `[retrait, montée]`, le premier à
-  `[0, 0]`, et dans le repère de `sweep_y` c'est `bottom` qui tombe à l'avant.
-- **Le profil démarre 0,02 mm SOUS la plaque** (`boss_deb`). Démarré pile dessus,
-  son premier anneau de sommets serait couché dans le plan de la plaque — la même
-  famille de coïncidences que celle qui avait coûté 35 arêtes au crochet. Il la
-  traverse à 2,4°, ce qu'aucune imprimante ne rendra.
-- **Le couloir de l'insert suit la même fonction**, `boss_rho(y)`, prise au bas de
-  chaque tranche pour rester enveloppante. Si l'un change sans l'autre, `descente`
-  le dira.
+- sur le **flanc** de la pièce, où il butait sur la face latérale ;
+- sur le bord de la **casquette**, où il butait sur le dessus ;
+- à l'**arase** du bac, où la cavité le tranchait à plat en z = 95, et le laissait
+  surplomber la paroi arrière de 7,4 mm.
+
+Il s'éteint donc de lui-même avant chaque limite. C'est un **champ de hauteur** :
+
+```
+face avant = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette)
+```
+
+où chaque facteur est un `liss5`. Un produit de fonctions lisses est lisse : il n'y
+a de pli nulle part. Profils mesurés sur le maillage, du noyau vers chaque bord :
+
+| vers | de → à | sur | pente max |
+|---|---|---|---|
+| le flanc (z = 104) | 9,40 → 2,00 mm | x 80 → 86 | 2,69 |
+| la casquette (x = 77) | 9,40 → 2,00 mm | z 112 → 119 | 1,78 |
+| l'intérieur du bac (x = 70) | 9,40 → 2,00 mm | z 95 → 87 | 1,69 |
+
+La pente part de zéro et y revient à chaque fois. Au-delà, c'est l'arrondi normal
+de la plaque, 1,4 mm.
+
+Ce qu'il faut savoir avant d'y toucher :
+
+- **Sous l'arase, il n'est plus retranché par la cavité** : `coque()` l'ajoute
+  APRÈS le creusement. Il plonge dans le bac sur `boss_E_bas` = 8 mm et s'y fond
+  dans la paroi arrière. Coût : un lobe dans le haut des compartiments arrière
+  (poche à tabac à gauche, briquets à droite), 7 mm d'épaisseur juste sous l'arase,
+  éteint 8 mm plus bas. L'insert n'en souffre pas, son couloir est taillé sur toute
+  la hauteur.
+- **L'extinction vers la casquette est bornée par la peau.** Le haut du logement de
+  tête est à 6 mm sous le bord de la casquette côté droit : `boss_bord` +
+  `boss_Dz` = 1,5 + 4,5 = 6. Plus long, la peau s'amincirait au-dessus de la tête.
+  La distance y est prise **normalement** à la courbe de la casquette, pas
+  verticalement : là où elle plonge, une distance verticale laisserait le
+  renflement arriver épais sur le bord.
+- **La seule découpe restante tombe là où le renflement est éteint.** Elle suit la
+  silhouette rentrée de `boss_bord` = 1,5 mm, où la surface est à 1,98 mm — sous la
+  face de la plaque, dans une zone où la plaque est pleine sur toute son épaisseur.
+  Elle est donc invisible. `boss_bord` doit rester supérieur à l'arrondi avant de
+  la plaque (1,4), sinon cette découpe ressortirait dans l'arrondi.
+- **La surface part 0,02 mm SOUS la plaque** (`boss_deb`). Partie pile dessus, elle
+  y coucherait des sommets — la famille de coïncidences qui avait coûté 35 arêtes au
+  crochet. Elle la traverse à 2,4°.
+- **Le couloir de l'insert** se calcule par `boss_rho(y)`, qui suppose l'ancien
+  étalement isotrope de 20 mm : il enveloppe largement le renflement actuel, plus
+  étroit sous le noyau et éteint vers les bords. Si l'on élargit un jour le
+  renflement, `descente` le dira.
+
+Un piège de mesure, au passage : un lancer de rayon qui tombe **pile sur une arête**
+de la triangulation, avec un test d'appartenance strict, rate les deux triangles
+voisins. Plusieurs sondes à « ,3 » annonçaient 0 mm en plein noyau. Test inclusif
+et coordonnées décalées : la face était bien là.
 
 ### Bornes des paramètres
 
