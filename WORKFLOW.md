@@ -169,6 +169,14 @@ Le diagnostic qui a marché : compter les arêtes du maillage par nombre de face
 par axe ne disent rien ; les coordonnées brutes, elles, tombent pile sur les valeurs
 nommées du source — `±xi0`, `dos_ep`, `fond_haut` — et nomment le coupable.
 
+**Le compteur d'arêtes a lui-même une tolérance, et elle peut mentir.** Pour
+compter les arêtes on soude les sommets par position arrondie. À 3 décimales, deux
+sommets distincts distants de 0,002 mm — là où un profil en S effleure une surface
+presque plate — étaient fusionnés, et le compteur annonçait 2 arêtes non-variété
+qui n'existaient pas. Relancé à 2, 3, 4, 5 et 6 décimales : 17, 2, 0, 0, 0. Un
+compte qui dépend de la tolérance est un artefact ; un vrai défaut persiste à toutes
+les précisions. Souder à 5 décimales, et en cas de doute faire varier.
+
 **Zéro arête de bord ne veut pas dire zéro trou.** Une soustraction qui débouche là où
 elle ne devrait pas produit une forme parfaitement fermée : le maillage est sain, la
 pièce est percée. C'est le volume et les composantes qu'il faut regarder, pas l'étanchéité.

@@ -641,38 +641,78 @@ module canaux(xc) {
     }
 }
 
-// Les deux bossages qui portent la fixation. `marge` les grossit, pour dégager
-// l'insert qui doit passer devant.
-// Le renflement qui porte la fixation.
+// Le renflement qui porte la fixation : la plaque qui GONFLE, pas un dôme posé
+// dessus.
 //
-// Ce n'était d'abord que deux plaques posées sur l'arche : des mottes, avec une
-// arête franche tout autour. Ici l'épaisseur du dos passe de `dos_ep` au bord à
-// `dos_e` au droit des vis, par une lentille qui s'éteint sur `boss_etale`. Le
-// rayon de dilatation suit un cosinus : large en bas, NUL au sommet, donc la
-// lentille arrive tangente à sa propre crête au lieu de finir par une marche.
+// Trois générations. D'abord deux plaques posées sur l'arche — des mottes, arête
+// franche tout autour. Puis une lentille dont le rayon suivait un cosinus :
+// tangente à sa crête, mais VERTICALE à sa base, puisque la dérivée du cosinus est
+// nulle en zéro. Le contour ne rétrécissait presque pas en quittant la plaque, la
+// paroi en partait donc à 90° : un quart d'ellipse, exactement un dôme posé sur
+// une plaque, avec l'angle franc qui va avec.
 //
-// `marge` > 0 donne la forme de dégagement pour l'insert, un peu plus grosse.
+// Ici le profil est un S quintique : à une distance `ρ` au-delà du noyau, la
+// surépaisseur vaut (dos_e − dos_ep)·liss5(1 − ρ/boss_etale). Dérivée première ET
+// seconde nulles aux deux bouts : la surface quitte la plaque tangentiellement,
+// sans rupture de courbure, et arrive de même sur le plateau du noyau. Il n'y a
+// plus de ligne où l'œil puisse dire « ici finit la plaque, ici commence la
+// bosse ». Pente maximale : 1,875·7,4/20 = 0,69, soit 35°.
+//
+// Balayé par `offset_sweep` et un `os_profile`, pas empilé en tranches : un
+// empilement laissait des gradins de 0,37 mm, là où justement la surface doit
+// être la plus douce.
+//
 // DEUX noyaux distincts, un par vis, et surtout pas leur enveloppe convexe : en
 // les reliant, le renflement devenait une seule bosse en travers de toute la
 // largeur, et une casquette au-dessus du bac.
-module noyau_2d() {
-    for (s = [-1, 1]) hull() {
-        translate([s * entraxe / 2, boss_z0 + boss_larg / 2]) circle(d = boss_larg);
-        translate([s * entraxe / 2, boss_z1 - boss_larg / 2]) circle(d = boss_larg);
-    }
+
+n_boss   = 40;    // points du profil en S
+boss_deb = 0.02;  // mm — le profil démarre SOUS la face de la plaque.
+                  //      Démarré pile dessus, son premier anneau de sommets serait
+                  //      couché dans le plan de la plaque — la famille de
+                  //      coïncidences qui a déjà coûté 35 arêtes non-variété au
+                  //      crochet. Enfoncé de 0,02 mm, il la traverse à 2,4° : un
+                  //      angle qu'aucune imprimante ne rendra.
+
+// Le noyau et son étalement en plan : un stade vertical, demi-largeur `r`.
+function stade(cx, z0, z1, r, n = 24) = concat(
+    [for (i = [0 : n]) let (a = 180 * i / n)       [cx + r * cos(a), z1 - r + r * sin(a)]],
+    [for (i = [0 : n]) let (a = 180 + 180 * i / n) [cx + r * cos(a), z0 + r + r * sin(a)]]);
+
+// Inverse de `liss5` sur [0, 1], par dichotomie — pour le couloir de l'insert.
+function liss5_inv(t, a = 0, b = 1, n = 40) =
+    n == 0 ? (a + b) / 2 :
+    let (m = (a + b) / 2)
+    liss5(m) < t ? liss5_inv(t, m, b, n - 1) : liss5_inv(t, a, m, n - 1);
+
+// Étalement du renflement au-delà du noyau, à la profondeur `y`.
+function boss_rho(y) =
+    let (h = dos_e - dos_ep + boss_deb,
+         t = max(0, min(1, (y - (dos_ep - boss_deb)) / h)))
+    boss_etale * (1 - liss5_inv(t));
+
+module renflement(s) {
+    h = dos_e - dos_ep + boss_deb;       // montée du S
+    e = h + 0.5;                         // + 0,5 mm de fût droit, noyé dans la plaque
+    translate([0, dos_e - e, 0]) rotate([90, 0, 0]) translate([0, 0, -e])
+        offset_sweep(
+            stade(s * entraxe / 2, boss_z0 - boss_etale, boss_z1 + boss_etale,
+                  boss_larg / 2 + boss_etale),
+            height = e,
+            // `bottom` tombe à l'AVANT dans ce repère (voir sweep_y) : le S part
+            // de la plaque, sans retrait, et finit sur le noyau, rentré de
+            // `boss_etale`.
+            bottom = os_profile(points = [for (k = [0 : n_boss]) let (u = k / n_boss)
+                                          [boss_etale * u, h * liss5(u)]]),
+            check_valid = true);
 }
 
-module bossages(marge = 0) {
-    n = 20;
+module bossages() {
     intersection() {
-        union() for (i = [0 : n - 1]) {
-            y0 = dos_ep + (dos_e - dos_ep) * i / n;
-            y1 = dos_ep + (dos_e - dos_ep) * (i + 1) / n;
-            en_travers(y0, y1 - y0 + EPS)
-                offset(r = boss_etale * cos(90 * i / n) + marge)
-                    noyau_2d();
-        }
-        sweep_y(0, dos_e + marge, r_av_dos, chemin_dos());
+        union() for (s = [-1, 1]) renflement(s);
+        // La silhouette dépasse d'1 mm devant le plateau : leurs deux faces avant
+        // ne doivent pas coïncider.
+        sweep_y(0, dos_e + 1, r_av_dos, chemin_dos());
     }
 }
 
@@ -799,7 +839,11 @@ module couloir_insert(marge) {
     for (i = [0 : n - 1]) {
         y0 = dos_ep + (dos_e - dos_ep) * i / n;
         y1 = dos_ep + (dos_e - dos_ep) * (i + 1) / n;
-        d  = boss_etale * cos(90 * i / n) + boss_larg / 2 + marge;
+        // Le rayon est pris en y0, le bas de la tranche : c'est là que le
+        // renflement est le plus large, donc la boîte le contient toujours.
+        // Même fonction que le renflement lui-même — si l'un change sans
+        // l'autre, `descente` le dira.
+        d  = boss_rho(y0) + boss_larg / 2 + marge;
         for (s = [-1, 1])
             translate([s * entraxe / 2 - d, y0 - marge, -20])
                 cube([2 * d, y1 - y0 + 2 * marge, z_haut + 40]);

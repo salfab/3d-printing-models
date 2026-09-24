@@ -132,9 +132,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 287,1 cm³ | 175,0 × 82,4 × 128,0 mm |
-| Inserts (2 corps) | 63,2 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **350,3 cm³** | |
+| Coque | 285,6 cm³ | 175,0 × 82,4 × 128,0 mm |
+| Inserts (2 corps) | 63,6 cm³ | 169,2 × 77,0 × 92,1 mm |
+| **Total** | **349,2 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -299,6 +299,51 @@ Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme
   (r_av_bac − paroi)`. **La même courbe.** Tout ce qui se soustrait au bac doit donc
   s'arrêter à `yi1`, jamais à `prof`. C'est ce piège qui perçait le galbe.
 
+### Les renflements de fixation : la plaque qui gonfle
+
+Autour de chaque vis, le dos passe de `dos_ep` = 2,0 mm à `dos_e` = 9,4 mm. La façon
+dont il y passe a changé trois fois, et c'est la dernière qui compte :
+
+1. deux plaques posées sur l'arche — des mottes, arête franche tout autour ;
+2. une lentille empilée dont le rayon suivait `boss_etale · cos(90·i/n)` —
+   tangente à sa crête, mais **verticale à sa base** : la dérivée du cosinus est
+   nulle en zéro, le contour ne rétrécissait presque pas en quittant la plaque, la
+   paroi en partait donc à 90°. Un quart d'ellipse — un dôme posé sur une plaque ;
+3. un **S quintique** : à une distance ρ au-delà du noyau, la surépaisseur vaut
+   `(dos_e − dos_ep) · liss5(1 − ρ/boss_etale)`. Dérivées première et seconde nulles
+   aux deux bouts : la surface quitte la plaque tangentiellement, sans rupture de
+   courbure, et arrive de même sur le plateau du noyau.
+
+Profil mesuré sur le maillage, à mi-hauteur du noyau droit, en s'éloignant vers le
+centre de la pièce :
+
+| x | épaisseur du dos | pente |
+|---|---|---|
+| 60,3 (bord du noyau) | 9,40 mm | 0,000 |
+| 57,3 | 9,25 mm | 0,050 |
+| 54,3 | 8,33 mm | 0,307 |
+| 48,3 | 4,53 mm | **0,684** — le maximum, 35° |
+| 42,3 | 2,08 mm | 0,265 |
+| 40,3 | 2,00 mm | 0,038 |
+| 38,3 (plaque) | 2,00 mm | 0,000 |
+
+La pente part de zéro et y revient : il n'y a plus de ligne où l'on puisse dire
+« ici finit la plaque, ici commence la bosse ».
+
+Trois choses à savoir avant d'y toucher :
+
+- **Il est balayé, pas empilé.** `offset_sweep` avec un `os_profile` : l'empilement
+  de tranches laissait des gradins de 0,37 mm, justement là où la surface doit être
+  la plus douce. `os_profile` prend des couples `[retrait, montée]`, le premier à
+  `[0, 0]`, et dans le repère de `sweep_y` c'est `bottom` qui tombe à l'avant.
+- **Le profil démarre 0,02 mm SOUS la plaque** (`boss_deb`). Démarré pile dessus,
+  son premier anneau de sommets serait couché dans le plan de la plaque — la même
+  famille de coïncidences que celle qui avait coûté 35 arêtes au crochet. Il la
+  traverse à 2,4°, ce qu'aucune imprimante ne rendra.
+- **Le couloir de l'insert suit la même fonction**, `boss_rho(y)`, prise au bas de
+  chaque tranche pour rester enveloppante. Si l'un change sans l'autre, `descente`
+  le dira.
+
 ### Bornes des paramètres
 
 - **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
@@ -311,8 +356,9 @@ Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme
   arrière — la vis se voit depuis l'intérieur.
 - **Le S du galbe est quintique (`liss5`), pas cubique.** Un décrochement de course
   `galbe` et de hauteur `marche` a un rayon concave minimal de `galbe²/(6·marche)` :
-  7,3 mm en cubique, 17,2 en quintique. `r_av_bac` vaut 15 — il ne passait pas avec
-  le cubique, et `check_valid = true` doit rester activé pour le dire.
+  7,3 mm en cubique, 17,2 en quintique. `r_av_bac` a valu 15 — il ne passait pas
+  avec le cubique — et vaut 8 aujourd'hui, pour l'arase. `check_valid = true` doit
+  rester activé pour le dire.
 - **`bac_h` est fixé par une contrainte de hauteur, pas de volume.** Le réduire fait
   ressortir les lunettes au-dessus de l'axe des colonnettes, où la limite est 35 mm.
 - **Tous les compartiments au même congé.** L'insert se calcule comme *l'intérieur
