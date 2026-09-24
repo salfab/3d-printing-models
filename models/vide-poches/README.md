@@ -191,42 +191,57 @@ dixième de cm³.
 | Jeu insert / coque | 0,3 mm par côté | `insert_jeu` — c'est aussi le filet entre les deux couleurs ; à valider sur `essai` |
 | Paroi d'insert | 1,2 mm, pleine hauteur | `insert_paroi` — 3 périmètres ; elle porte le liseré |
 | Largeur hors tout | 181 mm | `larg` passé de 175 à 181 : 4 × 1,5 de parois d'insert, les compartiments gardent leur largeur |
-| Portée du crochet | 84 mm | `croc_l` — pointe à 0,9 de la face avant |
-| Raccord crochet / panier | congé 8 mm, 6,1 côté flanc | `croc_raccord`, `croc_raccord_ext` |
+| Portée du crochet | 84 mm | `croc_l` — bout à 0,9 de la face avant |
+| Racine du crochet | S de 26 mm, tangent au dessous du panier | `croc_racine` |
 | Profondeur hors tout | 84,9 mm | `bac_int` = 80,5, fixé par la portée du crochet (84) ; la fente à lunettes a 41,8 |
-| Largeur du crochet | 34 mm | `croc_larg`, mesurée le long de l'ARC du casque |
-| **Vallée de l'arceau** | **42 mm** | `croc_vallee` — la cote qui compte, voir ci-dessous |
-| Passage libre sous la coque | 28 mm | `marche − croc_creux` |
-| Bras au plus fin | 10 mm | `croc_creux − croc_z − croc_relev` |
-| Nez du crochet | demi-rond Ø 20 | `croc_nez`, déduit du profil |
-| Galbe latéral du crochet | 4 mm | `croc_rb` |
+| Crochet, vu de face | la vague : 42,7 mm en haut, ~32,5 au creux, au nu du flanc droit | `croc_v0`, `croc_v1`, `croc_rv`, `r_ext` |
+| **Creux de l'arceau** | **~50 mm** à mi-hauteur de la butée, 33 de fond plat | `croc_vallee` |
+| Passage libre sous la coque | 28 mm | `croc_jour` = `marche − croc_creux` |
+| Bras au plus fin | 10 mm | `croc_mince` |
+| Butée | 10 mm, spatule relevée sur 20 | `croc_r_z`, `croc_gorge` |
+| Bout du crochet | arrondi R5 | `croc_bout` |
+| Arrondi des arêtes du dessus | 4 mm | `croc_rb` |
 
 ### Le crochet et le Sony WH-1000XM5
 
-Une seule cote du crochet dépend vraiment du casque, et ce n'est pas celle qu'on
-croit. **Le bras enfourche l'arceau** : `croc_larg` se mesure donc le long de l'arc
-du casque — c'est la longueur sur laquelle le poids se répartit, 34 mm, assez pour
-ne pas marquer la mousse. La **sangle**, elle, se couche selon Y, et c'est la
-longueur de la vallée qui décide si le casque s'assoit ou se perche.
-
-Assise mesurée sur le maillage exporté, en posant une sangle plate sur le profil :
-
-| Largeur de sangle | S'assoit à | Au-dessus du fond de gorge | Butée restante devant |
-|---|---|---|---|
-| 30 mm | z 18,8 | 0,8 mm | 9,2 mm |
-| 34 mm | z 20,2 | 2,2 mm | 7,8 mm |
-| 38 mm | z 22,1 | 4,1 mm | 5,9 mm |
-| 42 mm | — | ne s'assoit pas | — |
+**Le bras enfourche l'arceau** : l'arceau se couche en travers du bras, sur ~32 mm
+de large au creux, et sa **sangle** se couche selon Y, dans le creux entre la
+racine et la spatule. C'est la longueur de ce creux qui décide si le casque
+s'assoit ou se perche : ~50 mm à mi-hauteur de la butée, 33 de fond plat.
 
 Le XM5 pèse **250 g** (spécification Sony) et **ne se plie pas** — il ne fait que
 pivoter à plat, donc on le pend tel quel. Sa sangle fait de l'ordre de 38 mm ; c'est
 la seule cote que Sony ne publie pas, et elle mérite un coup de réglet avant
-impression. Le crochet accepte jusqu'à ~40 mm.
+impression.
 
-À `croc_l` = 70, la vallée ne faisait que 26 mm : une sangle de 38 mm reposait sur
-les deux épaules, 11 mm au-dessus du fond, et la butée ne retenait plus rien. C'est
-pour ça que la portée est passée à 82 — qui aligne au passage la pointe sur la face
-avant du panier, à 82,4.
+### Le crochet, troisième dessin : une vague de face, un S de côté
+
+Il détonnait : un bloc de 34 mm aux coins de 4, rapporté sous le plateau, une
+colonne droite, un bras plat et un gros nez rond — des droites et un bouton sous
+une coque qui ne parle qu'en grandes courbes. Il reprend désormais les deux gestes
+de la coque :
+
+- **De face, la vague.** Son flanc droit est celui de la coque, prolongé jusqu'en
+  bas et arrondi de `r_ext` = 20 comme le coin bas gauche de la pièce ; son flanc
+  gauche descend en S, en écho au galbe.
+- **De côté, un S puis une spatule.** La racine part tangente au dessous du panier
+  et descend en S jusqu'au creux — le dessous se prolonge dans le crochet comme il
+  se prolonge dans le galbe. Le bras, de 10 à 12 mm, se relève au bout comme une
+  spatule et finit par un arrondi de 5.
+
+Construction : l'INTERSECTION d'un champ de hauteur, qui porte le profil de côté,
+et du prisme de la vague, qui porte la vue de face.
+
+- **Le dessus de la racine suit le dessous réel du panier**, plat puis l'arc du coin
+  bas droit : contre le mur, la racine comble le dessous de cet arc et le flanc du
+  crochet continue celui de la coque. `jointure` le vérifie.
+- **Il en part 0,3 mm plus haut**, dans la coque : parti pile sur le dessous, le S
+  lui serait tangent sur toute une bande — la famille de coïncidences de ce modèle.
+- **L'arrondi des arêtes s'éteint là où le dessus est encore collé au panier** : il
+  y creuserait une rainure entre les deux.
+- **Aucun porte-à-faux au-delà de 45°** à l'impression : la racine et le dessous ne
+  font que rétrécir à chaque couche, et la spatule monte à 43° au plus
+  (1,875 × 10 / 20). Assertion dans le modèle.
 
 Contrôles topologiques sur le maillage, tous à zéro :
 
@@ -266,9 +281,9 @@ Pour décrocher : remonter de 8 mm, tirer vers soi. Rien à dévisser.
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
   250 g de casque à 60 mm de porte-à-faux donnent **0,26 MPa** sur sa section la
   plus faible, 34 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 77.
-- Le crochet n'a **aucun porte-à-faux au-delà de 45°** : la butée est le seul
+- Le crochet n'a **aucun porte-à-faux au-delà de 45°** : la spatule est le seul
   élément qui s'écarte de la verticale à l'impression, et son S atteint au plus
-  1,875·`croc_r_z`/`croc_gorge` = 0,78, soit 38°. Assertion dans le modèle.
+  1,875·`croc_r_z`/`croc_gorge` = 0,94, soit 43°. Assertion dans le modèle.
 - Emprise plateau : 181 × 95 mm pour la coque ; 181 × 176 mm pour la pièce d'essai,
   à couper en deux lancers si le plateau est plus petit.
 - Remplissage libre : aucun volume fermé dans la pièce, donc rien que le trancheur
@@ -550,56 +565,21 @@ Trois versions l'ont précédé :
   laisse dans le coin un fragment détaché, qui sortirait en morceau libre.
 - **Un compartiment doit tenir entièrement dans une zone**, sinon il n'appartient à
   aucun insert et disparaît.
-### Le crochet — quatre bornes, toutes sous assertion
+### Le crochet — bornes sous assertion
 
-Son profil n'a plus un seul pli : chaque portion arrive tangente à la suivante, et
-le galbe est dans la courbe, pas dans un congé posé dessus. En échange, le galbe
-latéral `croc_rb` est contraint de quatre côtés.
+- **1,875·`croc_r_z` ≤ `croc_gorge`** : le porte-à-faux de la spatule à
+  l'impression. La pente maximale d'un S quintique vaut 1,875 fois sa hauteur sur
+  sa course, et cette pente est l'angle depuis la verticale. 1 = 45°.
+- **La racine et la spatule ne se chevauchent pas**, avec 20 mm de creux entre les
+  deux au moins.
+- **`croc_vallee` ≥ 40 mm**, sinon la sangle se perche au lieu de s'asseoir.
+- **`croc_l` ≤ `prof`**, sinon le bout dépasse la face avant du panier.
+- **Le bras reste plus épais que son bout rond.**
 
-- **`croc_mince` > 2·`croc_rb` + 1.** Le galbe latéral est un `offset_sweep`, qui
-  rentre le profil de son rayon en bout de balayage. Plus large que la moitié de
-  l'épaisseur du bras, il le traverse et le profil se recoupe.
-- **`croc_gorge`² > 6·`croc_r_z`·`croc_rb`.** Même raison, côté concave : un S de
-  course `croc_gorge` et de hauteur `croc_r_z` a un rayon concave minimal de
-  `croc_gorge²/(6·croc_r_z)`, et un décalage plus grand se recoupe.
-- **1,875·`croc_r_z` ≤ `croc_gorge`.** C'est le porte-à-faux : la pente maximale
-  d'un S quintique vaut 1,875 fois sa hauteur sur sa course, et cette pente est
-  l'angle depuis la verticale à l'impression. 1 = 45°.
-- **`croc_l` − `croc_nez` − `croc_gorge` ≥ `croc_col_y` + `croc_conge`.** Sinon la
-  butée et le congé de gorge se chevauchent et la vallée disparaît.
-
-Deux bornes de plus, qui viennent du casque et non de la géométrie :
-
-- **`croc_vallee` ≥ 40 mm**, sinon la sangle se perche au lieu de s'asseoir. Voir §4.
-- **`croc_l` ≤ `prof`**, sinon la pointe dépasse la face avant du panier.
-
-Et une règle qui n'est pas une borne mais un piège : **aucun échantillon du profil
-ne doit tomber sur un plan de recoupe.** Le dos du profil déborde exprès de
-`croc_dos` = `croc_rb` + 2 derrière le mur, et l'échantillonnage du dessous démarre
-à `i = 1`. Avec un point à y = 0 pile, le plan de coupe passait par un sommet du
-maillage : 35 arêtes non-variété au pied du crochet, mesurées.
-
-### La racine du crochet : ni recoupée à plat, ni plantée à angle droit
-
-Il y a eu une recoupe « tout ce qui dépasse au-dessus de `marche` et hors de la
-silhouette ». Elle coupait **à plat**, alors que le dessous suit l'arc de `r_ext` : le
-coin bas-droit est arrondi de 20 mm, et le crochet (x = 49 → 83) traverse cet arc. La
-recoupe lui taillait un croissant — jusqu'à **5,5 mm de jour à x = 81**, mesuré. Sans
-recoupe, la colonne monte à `croc_haut` et rencontre le dessous réel de la coque.
-
-Restait l'angle droit entre la colonne et le dessous : le seul angle vif entre deux
-pièces dont tout le reste est galbé. Il est remplacé par un **congé concave**, en
-quart de cercle, tangent à la colonne et au dessous. C'est un champ de hauteur en z :
-à une distance `d` de la colonne, en plan, il descend du dessous du panier de
-`R − √(R² − (R − d)²)`. Il épouse le dessous tel qu'il est, plat puis remontant le
-long de l'arc, et la colonne avec ses coins avant arrondis.
-
-- `R` vaut 8, comme l'arrondi avant du bac, et tombe à 6,1 côté flanc : il ne reste
-  là que 6,1 mm jusqu'au bord de la pièce, et le congé doit s'y éteindre tangent
-  plutôt que d'y être recoupé.
-- Mesuré sur le maillage devant la colonne, il suit le quart de cercle théorique à
-  0,02 mm près.
-- Il s'imprime sans support : à chaque couche il ne fait que rétrécir.
+Deux pièges évités par construction : le champ de hauteur déborde de 3 mm derrière
+le mur, pour que la recoupe au plan du mur ne passe par aucun de ses sommets ; et
+il est parcouru dans le même sens que les renflements — parcouru à l'envers, il
+sortait retourné, volume négatif.
 
 ### Les deux tests permanents
 
