@@ -146,7 +146,11 @@ bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Fixée d'abord 
                   //      règle « lunettes à moins de 35 mm au-dessus des vis »,
                   //      gardée depuis pour les proportions. Cette règle est
                   //      abandonnée : voir `z_vis`.
-bac_int  = 78;    // mm — profondeur intérieure utile. Gagne 8 mm sur la version
+bac_int  = 80.5;  // mm — profondeur intérieure utile. 80,5 et non 78 : la paroi
+                  //      arrière de l'insert, qui cache les renflements, prend
+                  //      8,1 mm au fond ; 2,5 de plus rendent 40 mm à la fente à
+                  //      lunettes, pour des lunettes de 37,6.
+                  //      Historique : Gagne 8 mm sur la version
                   //      à dos plein, alors que la pièce en perd 15 hors tout :
                   //      c'est l'épaisseur de fixation qu'on ne traîne plus
                   //      partout.
@@ -213,10 +217,6 @@ r_coin_bac = 6;   // mm — arrondi des DEUX angles HAUTS du bac, et rien d'autr
                   //      les mêmes angles hauts, concentriques. Il y faut un contour
                   //      ouvert par le haut MAIS congé à la bonne hauteur, ce qu'un
                   //      simple offset du contour surélevé ne sait pas produire.
-r_av_dos = 3.5;   // mm — arrondi de l'arête avant du dos. Il valait 10 quand le
-                  //      dos faisait 26 mm ; à 9,4 c'était plus que l'épaisseur
-                  //      elle-même. `extrude_arrondi` le borne désormais, mais
-                  //      autant le régler juste.
 r_av_bac = 8;     // mm — galbe de la jointure entre les faces perpendiculaires
                   //      au mur et la face avant.
                   //
@@ -252,24 +252,10 @@ r_av_bac = 8;     // mm — galbe de la jointure entre les faces perpendiculaire
                   //      de la face avant. Le bord du bac n'est plus une ligne
                   //      droite mais une courbe.
 
-// Le dessus du dos : une CASQUETTE, convexe, qui culmine au milieu.
-//
-// Une version antérieure portait deux épaules à l'aplomb des vis avec un creux
-// entre elles. Structurellement c'était plus honnête — la matière là où l'effort
-// passe — mais le profil concave se lit comme deux oreilles. La casquette gagne.
-//
-// Difficulté : les vis sont à ±70, près des bords, et une casquette y redescend.
-// D'où un exposant élevé sur la retombée — la courbe reste haute jusqu'à 80 % de
-// la demi-largeur puis plonge sur les derniers millimètres. C'est `dessus_p` qui
-// règle ça, et l'assertion plus bas qui le vérifie.
-z_som    = 128;   // mm — sommet de la casquette, au milieu. 33 mm au-dessus de
-                  //      l'arase : une petite casquette, bornée par le bas par
-                  //      l'assertion qui la veut au-dessus du siège des vis.
-dessus_p = 8;     // exposant de la retombée. Plus il est grand, plus la casquette
-                  //      reste plate longtemps avant de tomber. À 3, elle passait
-                  //      sous le siège des vis et l'assertion se déclenchait.
-z_fin_g  = 116;   // mm — hauteur au bord gauche
-z_fin_d  = 108;   // mm
+// Le dessus du dos : il n'y en a plus. Le dos s'arrête à l'arase, comme le bac :
+// un seul bord, au même niveau sur tout le pourtour, avec les mêmes congés. Il a
+// porté une casquette — deux épaules d'abord, puis une arche convexe — tant que la
+// fixation vivait au-dessus de l'arase ; elle est descendue dans le bac.
 
 insert_fond = 1.6;   // mm — fond propre de l'insert. Mince car il ne travaille
                      //      pas : il repose à plat sur celui de la coque.
@@ -303,7 +289,7 @@ croc_e     = 14;   // mm — épaisseur du bras au droit du mur. Épais comme le
 croc_bas   = 4;    // mm — Z du dessous du bras. Laisse 4 mm d'air sous lui, pour
                    //      qu'il se lise comme suspendu et non comme un bloc posé
                    //      dans le prolongement du fond.
-croc_l     = 82;   // mm — longueur du bras. C'est elle qui décide si le casque
+croc_l     = 84;   // mm — longueur du bras. C'est elle qui décide si le casque
                    //      s'assoit ou se perche, et rien d'autre : l'arceau se
                    //      couche en travers du bras, sa SANGLE le long de Y. Le
                    //      XM5 a une sangle d'environ 38 mm. À 70 mm de bras la
@@ -362,7 +348,7 @@ arase_marge = 3;                 // mm — garde entre le haut du renflement et 
 z_haut    = bac_h;               //  95 — arase du bac
 z_vis     = z_haut - arase_marge - boss_Dhaut - boss_haut;  // 78 — axe des chevilles
 garde_vis = z_vis - z_haut;      // −17 : les vis sont SOUS l'arase
-z_top     = z_som;               // 128 — le sommet de la casquette
+z_top     = z_haut;               // 128 — le sommet de la casquette
 
 fond_bas  = fond;                //  2,8 — fond côté profond  → 92,2 mm utiles
 fond_haut = marche + fond;       // 48,8 — fond côté peu profond → 46,2 mm utiles
@@ -384,12 +370,16 @@ xi1 =  larg / 2 - paroi;
 yi0 = dos_ep;
 yi1 = prof - paroi;
 
+// L'insert est un petit bac : sa paroi arrière passe DEVANT les renflements de
+// fixation et les cache. Il commence donc à `dos_e` + jeu, là où s'arrête le plus
+// épais des renflements, et ses compartiments arrière une paroi plus loin.
+yi0_ins = dos_e + insert_jeu + insert_paroi;   // 10,1
+
 x_tab = xi0 + 85;     // largeur de la fente à tabac — le plus large des objets
 x_lun = xi0 + 50;     // largeur de la fente à lunettes
 x_cab = x_tab + cloison + 42.7;   // frontière câbles / briquets
-y_tab = yi0 + 30 + (dos_e - dos_ep);  // poche à tabac debout, 30 mm — PLUS la
-                      // surépaisseur du renflement gauche, qui mord sur le fond
-                      // de la fente depuis qu'il est dans le bac
+y_tab = yi0_ins + 30;  // épaisseur d'une poche à tabac debout, depuis la paroi
+                      // arrière de l'insert
 y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 
 // [x0, x1, y0, y1, z du fond]
@@ -403,11 +393,11 @@ y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 // Un compartiment plus arrondi que le pourtour laisse dans le coin un fragment de
 // matière détaché du reste, qui sortirait de l'imprimante en morceau libre.
 cuves = [
-    [xi0,             x_tab, yi0,             y_tab, fond_bas ],  // tabac, DEBOUT
+    [xi0,             x_tab, yi0_ins,         y_tab, fond_bas ],  // tabac, DEBOUT
     [xi0,             x_lun, y_tab + cloison, yi1,   fond_bas ],  // lunettes, DEBOUT
     [x_lun + cloison, x_tab, y_tab + cloison, yi1,   fond_bas ],  // stylos, grands objets
-    [x_tab + cloison, x_cab, yi0,             y_cab, fond_haut],  // câbles USB
-    [x_cab + cloison, xi1,   yi0,             y_cab, fond_haut],  // briquets
+    [x_tab + cloison, x_cab, yi0_ins,         y_cab, fond_haut],  // câbles USB
+    [x_cab + cloison, xi1,   yi0_ins,         y_cab, fond_haut],  // briquets
     [x_tab + cloison, xi1,   y_cab + cloison, yi1,   fond_haut],  // petites bricoles
 ];
 
@@ -516,17 +506,7 @@ function dessous(x) =
     x >= x_tab + galbe   ? marche
                          : marche * liss5((x - x_tab) / galbe);
 
-// Le dessus du dos : une casquette convexe, plate au sommet et qui plonge tard.
-// Tangente nulle au milieu comme aux deux bords : pas une arête sur tout le
-// profil, et les deux bords peuvent être à des hauteurs différentes.
-function dessus(x) =
-    let (u  = abs(x) / (larg / 2),
-         zb = x < 0 ? z_fin_g : z_fin_d)
-    zb + (z_som - zb) * liss(1 - pow(u, dessus_p));
 
-// L'arche est entièrement libre de sa forme : depuis que la fixation est sous
-// l'arase, la casquette ne porte plus rien. Elle a longtemps été contrainte à
-// passer 10 mm au-dessus du siège de chaque vis.
 
 // Le galbe ne doit pas passer sous un compartiment profond : il en crèverait le
 // fond, et la cavité déboucherait à l'air libre.
@@ -581,11 +561,7 @@ module enveloppe_int_2d(retrait = 0) { polygon(chemin_int(retrait)); }
 // l'écart entre les deux méthodes.
 
 n_galbe_pts = 20;   // points sur le S du dessous
-n_cap_pts   = 24;   // points sur la casquette
 
-r_coin_haut = 6;    // mm — congé des deux coins hauts du dos. Petit PAR
-                    //      NÉCESSITÉ : la casquette y arrive par des segments
-                    //      courts, un congé plus large n'y tiendrait pas.
 
 function pts_bas() = concat(
     [[-larg / 2, 0], [x_tab, 0]],
@@ -599,16 +575,9 @@ function chemin_bac(ztop) =
     round_corners(concat(pts_bas(), [[larg / 2, ztop], [-larg / 2, ztop]]),
                   r = concat(ray_bas(), [r_coin_bac, r_coin_bac]), closed = true);
 
-function chemin_dos() =
-    round_corners(
-        concat(pts_bas(),
-               [[larg / 2, dessus(larg / 2)]],
-               [for (i = [n_cap_pts - 1 : -1 : 1])
-                   let (x = -larg / 2 + larg * i / n_cap_pts) [x, dessus(x)]],
-               [[-larg / 2, dessus(-larg / 2)]]),
-        r = concat(ray_bas(), [r_coin_haut],
-                   [for (i = [n_cap_pts - 1 : -1 : 1]) 0], [r_coin_haut]),
-        closed = true);
+// Le dos a désormais la silhouette du bac, exactement : c'est ce qui met le bord
+// au même niveau tout autour.
+function chemin_dos() = chemin_bac(z_haut);
 
 function chemin_int(retrait) =
     offset(chemin_bac(z_haut + 60), r = -(paroi + retrait), closed = true);
@@ -761,7 +730,11 @@ module bossages() {
 }
 
 
-module plaque() { sweep_y(0, dos_ep, r_av_dos, chemin_dos()); }
+// La plaque est une extrusion DROITE. Elle a eu son propre arrondi avant ; mais
+// sa face avant est collée au bac, et partout où leurs contours coïncident — les
+// flancs, le dessous, et désormais le haut — cet arrondi creusait entre eux une
+// rainure de 1,4 mm le long de tout le pourtour arrière.
+module plaque() { en_travers(0, dos_ep) silhouette_dos_2d(); }
 module canaux_tous() { for (s = [-1, 1]) canaux(s * entraxe / 2); }
 
 // Le dos : la plaque qui porte contre le bois et qui reçoit la fixation.
@@ -829,7 +802,7 @@ module bac() {
 
 // Le contour d'un insert : l'intérieur de sa zone, rétréci du jeu de montage.
 module contour_2d(z) {
-    offset(r = -insert_jeu) rect_2d(z[0], z[1], yi0, yi1);
+    offset(r = -insert_jeu) rect_2d(z[0], z[1], dos_e, yi1);
 }
 
 // La bande périphérique dont est fait le rebord.
@@ -865,7 +838,7 @@ module insert_zone(z) {
         linear_extrude(z_haut - z[2])
             intersection() {
                 difference() {
-                    rect_2d(z[0], z[1], yi0, yi1);
+                    rect_2d(z[0], z[1], dos_e, yi1);
                     for (c = miennes) rect_2d(c[0], c[1], c[2], c[3]);
                 }
                 contour_2d(z);
@@ -879,39 +852,6 @@ module insert_zone(z) {
 // des renflements, il faut dégager toute la colonne au-dessous, sinon il bute
 // en cours de descente. Chaque tranche du renflement impose sa propre largeur,
 // et le couloir est leur empilement.
-// Le couloir que l'insert laisse aux renflements : leur empreinte EXACTE en plan,
-// élargie du jeu et extrudée sur toute la hauteur — puisque l'insert descend
-// verticalement, tout point à l'aplomb d'un renflement buterait en chemin.
-//
-// C'est la même empreinte que regarde le test `descente` : il ne peut donc pas
-// échouer tant que ce couloir est taillé. Il remplace un escalier de boîtes, une
-// par tranche de profondeur, calé sur une loi approchée du renflement. Avec les
-// renflements rétrécis, deux marches voisines y isolaient un îlot du rebord de
-// l'insert : deux éclats libres de 2 mm³ à x = ±80, que seul le compte de solides
-// a vus. Une empreinte lisse ne peut pas en isoler.
-//
-// S'y ajoute, de l'axe de chaque vis jusqu'au bord, une bande qui tranche le
-// rebord arrière de l'insert sur toute son épaisseur. Sans elle, le renflement
-// s'éteignant avant la paroi latérale, le couloir laissait au coin arrière un
-// tronçon de rebord pris entre lui et l'arrondi d'angle du bac — que l'insert
-// épouse — et ce tronçon était LIBRE : deux éclats de 11 mm³, vus par le compte de
-// solides, pas à l'œil. Contre la paroi de la coque, ce bout de rebord ne retenait
-// de toute façon rien.
-module couloir_insert(marge) {
-    translate([0, 0, -20])
-        linear_extrude(z_haut + 40) {
-            offset(r = marge)
-                projection()
-                    intersection() {
-                        bossages();
-                        translate([-BIG / 2, dos_ep + 0.05, -BIG / 2]) cube(BIG);
-                    }
-            for (s = [-1, 1])
-                translate([s > 0 ? entraxe / 2 : -larg / 2 - 5, dos_ep - marge])
-                    square([larg / 2 + 5 - entraxe / 2,
-                            insert_jeu + insert_paroi + marge + 1]);
-        }
-}
 
 module insert() {
     difference() {
@@ -923,7 +863,6 @@ module insert() {
                 enveloppe_int_2d(insert_jeu);
             union() for (z = zones) insert_zone(z);
         }
-        couloir_insert(insert_jeu);
     }
 }
 
@@ -1003,17 +942,76 @@ function chemin_croc() = concat(
     // La colonne remonte dans la coque.
     [[croc_col_y, croc_haut]]);
 
+// Le RACCORD entre la colonne du crochet et le dessous du panier : un congé
+// concave, en quart de cercle, tangent à la colonne et tangent au dessous. Sans
+// lui la colonne s'y plantait en angle droit — le seul angle vif qui restait entre
+// deux pièces dont tout le reste est galbé.
+//
+// C'est un champ de hauteur en z : à une distance `d` de la colonne, en plan, il
+// descend du dessous du panier de R − √(R² − (R − d)²). Il épouse le dessous tel
+// qu'il est, plat puis remontant le long de l'arc du coin bas-droit, et il épouse
+// la colonne avec ses deux coins avant arrondis. Son rayon vaut 8 — l'arrondi avant
+// du bac — et tombe à `croc_raccord_ext` côté flanc : il ne reste là que 4,5 mm
+// jusqu'au bord de la pièce, et le congé doit s'y éteindre, tangent, sans y être
+// recoupé.
+//
+// Il s'imprime sans support : à chaque couche il ne fait que rétrécir.
+croc_raccord     = 8;                                          // mm
+croc_raccord_ext = larg / 2 - (croc_x + croc_larg / 2);        // 4,5 mm
+
+function croc_dessous(x) =
+    let (xc = larg / 2 - r_ext)
+    x > xc ? marche + r_ext - sqrt(max(0, r_ext * r_ext - (x - xc) * (x - xc)))
+           : dessous(x);
+
+function croc_R(x) =
+    croc_raccord + (croc_raccord_ext - croc_raccord)
+                   * liss5((x - (croc_x + croc_larg / 2 - 12)) / 12);
+
+// Distance signée, en plan, au pied de la colonne : un rectangle dont les deux
+// coins AVANT sont arrondis de `croc_rb`, comme le galbe latéral du crochet. Le
+// dos, lui, est le mur.
+function croc_d(x, y) =
+    let (xa = croc_x - croc_larg / 2, xb = croc_x + croc_larg / 2,
+         qx = max(xa - x, x - xb) + croc_rb,
+         qy = y - croc_col_y + croc_rb)
+    sqrt(max(qx, 0) * max(qx, 0) + max(qy, 0) * max(qy, 0))
+        + min(max(qx, qy), 0) - croc_rb;
+
+function croc_h(d, R) = d <= 0 ? R : d >= R ? 0 : R - sqrt(R * R - (R - d) * (R - d));
+
+// Fond du champ à 0,02 AU-DESSUS du dessous là où le congé est nul : il n'y
+// touche la pièce que dans le congé, et la traverse là en biais.
+function raccord_vnf() =
+    let (xa = croc_x - croc_larg / 2 - croc_raccord - 0.5,
+         xb = larg / 2 - 0.2,
+         ya = -1, yb = croc_col_y + croc_raccord + 0.5,
+         nx = round((xb - xa) / 0.4), ny = round((yb - ya) / 0.4),
+         xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
+    vnf_vertex_array(
+        [for (j = [0 : ny]) let (y = ya + (yb - ya) * j / ny)
+            concat([for (x = xs) let (R = croc_R(x))
+                        [x, y, croc_dessous(x) + 0.02
+                               - croc_h(croc_d(x, y), R) * (1 + 0.02 / R)]],
+                   [for (i = [nx : -1 : 0]) [xs[i], y, croc_dessous(xs[i]) + 1]])],
+        col_wrap = true, caps = true);
+
+module raccord_croc() { vnf_polyhedron(raccord_vnf()); }
+
 module crochet() {
     difference() {
         // Balayé selon X et galbé sur ses DEUX flancs, comme le bac l'est sur sa
         // face avant. C'est ce qui remplace les chanfreins à 45°.
-        translate([croc_x, 0, 0])
-            rotate([90, 0, 90])
-                translate([0, 0, -croc_larg / 2])
-                    offset_sweep(chemin_croc(), height = croc_larg,
-                                 bottom = os_circle(r = croc_rb),
-                                 top    = os_circle(r = croc_rb),
-                                 steps = 12, check_valid = true);
+        union() {
+            translate([croc_x, 0, 0])
+                rotate([90, 0, 90])
+                    translate([0, 0, -croc_larg / 2])
+                        offset_sweep(chemin_croc(), height = croc_larg,
+                                     bottom = os_circle(r = croc_rb),
+                                     top    = os_circle(r = croc_rb),
+                                     steps = 12, check_valid = true);
+            raccord_croc();
+        }
 
         // Le profil déborde de `croc_dos` derrière le plan du mur, et on recoupe
         // ici. Sans ce débord, le galbe latéral ramènerait le dos du profil
@@ -1184,6 +1182,7 @@ module main() {
     else if (PIECE == "dos")     dos();
     else if (PIECE == "bac")     bac();
     else if (PIECE == "crochet") crochet();
+    else if (PIECE == "raccord") raccord_croc();
     else if (PIECE == "descente") descente();
     else if (PIECE == "peau")     peau();
     else if (PIECE == "jointure") jointure();

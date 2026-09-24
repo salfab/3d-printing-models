@@ -65,8 +65,9 @@ colonnettes. C'est elle qui a fixé `bac_h` à 95.
 Elle a été **levée par choix**, pour cacher la fixation dans le bac (voir §7). Les
 vis étant fixes sur le meuble, descendre les trous de serrure dans la pièce fait
 monter toute la pièce d'autant : **37 mm**. Les lunettes dépassent désormais l'axe
-des vis de **71 mm** au lieu de 34, et le haut de la casquette est à 50 mm au-dessus
-des vis au lieu de 13. `bac_h` est resté à 95 pour garder les proportions.
+des vis de **71 mm** au lieu de 34. Le haut de la pièce, lui, n'est qu'à 17 mm
+au-dessus des vis : la casquette, qui montait à 50, a été retirée. `bac_h` est resté
+à 95 pour garder les proportions.
 
 **Le fond à deux niveaux.** Un bac uniformément profond serait un puits où il
 faudrait pêcher un briquet. Le fond plonge à gauche, où les lunettes et le tabac
@@ -133,9 +134,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 281,1 cm³ | 175,0 × 82,4 × 128,0 mm |
-| Inserts (2 corps) | 62,3 cm³ | 169,2 × 77,0 × 92,1 mm |
-| **Total** | **343,4 cm³** | |
+| Coque | 276,7 cm³ | 175,0 × 84,9 × 95,0 mm |
+| Inserts (2 corps) | 83,0 cm³ | 169,2 × 73,9 × 92,1 mm |
+| **Total** | **359,7 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -160,7 +161,9 @@ Mesurées sur les maillages exportés.
 | Arase, paroi pleine jusqu'à | z = 88 | puis extinction sur 4 mm |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
-| Portée du crochet | 82 mm | `croc_l` — pointe alignée sur la face avant |
+| Portée du crochet | 84 mm | `croc_l` — pointe à 0,9 de la face avant |
+| Raccord crochet / panier | congé 8 mm, 4,5 côté flanc | `croc_raccord`, `croc_raccord_ext` |
+| Profondeur hors tout | 84,9 mm | `bac_int` passé de 78 à 80,5 pour la paroi arrière de l'insert |
 | Largeur du crochet | 34 mm | `croc_larg`, mesurée le long de l'ARC du casque |
 | **Vallée de l'arceau** | **42 mm** | `croc_vallee` — la cote qui compte, voir ci-dessous |
 | Passage libre sous la coque | 28 mm | `marche − croc_creux` |
@@ -316,7 +319,7 @@ dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
    tranchait à plat. Il s'éteint désormais de lui-même avant chaque limite :
 
    ```
-   face avant = plaque + surépaisseur × S(ρ) × W(flanc) × W(casquette)
+   face avant = plaque + surépaisseur × S(ρ) × W(flanc) × W(bord haut)
    ```
 
    où chaque facteur est un `liss5` — un produit de fonctions lisses est lisse.
@@ -326,7 +329,7 @@ dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
 6. **Dans le bac.** Posé sur la plaque au-dessus de l'arase, il se voyait toujours,
    quelle que soit sa forme — les cinq versions précédentes l'ont montré. Il vit
    désormais **sous l'arase**, sur la paroi arrière des compartiments, où les objets
-   le cachent. La casquette n'est plus qu'une plaque nette. L'axe des vis descend de
+   le cachent. La casquette, devenue inutile, a été retirée. L'axe des vis descend de
    z = 115 à z = 78.
 
 Il reste construit pour ne rencontrer aucune limite en étant encore épais : il
@@ -354,12 +357,16 @@ Ce qu'il faut savoir avant d'y toucher :
 - **Il n'est pas retranché par la cavité** : `coque()` l'ajoute APRÈS le
   creusement. Retranché avec le reste, il disparaîtrait — il est tout entier dans
   le volume des compartiments.
-- **Il prend de la place dans les compartiments arrière** : 5,6 mm au plus, entre
-  z = 54 et z = 91, sur une largeur d'environ 45 mm de chaque côté. La fente à
-  tabac a été élargie d'autant (`y_tab`) pour que la poche garde ses 30 mm là où le
-  renflement gauche mord ; la fente à lunettes, derrière, garde 40 mm pour 37,6.
+- **L'insert les cache : c'est un petit bac.** Sa paroi arrière passe DEVANT les
+  renflements, à `dos_e` + jeu = 8,1 mm du mur, et ses compartiments arrière
+  commencent une paroi plus loin (`yi0_ins` = 10,1). Il reste entre le fond du bac et
+  l'insert une fente de 6 mm sur toute la largeur : c'est là que vivent les
+  renflements. L'insert n'est plus entaillé nulle part, et `descente` le vérifie.
+- **Ça coûte 8,1 mm au fond de chaque compartiment arrière.** `bac_int` est passé de
+  78 à 80,5 : la pièce gagne 2,5 mm de profondeur, et la fente à lunettes retrouve
+  40 mm pour 37,6.
 - **Sa hauteur est bornée des deux côtés.** Par l'arase au-dessus — sinon il
-  reparaît sur la casquette (assertion) — et par le fond du côté peu profond
+  dépasse du bord (assertion) — et par le fond du côté peu profond
   au-dessous, pour le renflement droit (assertion). C'est pour tenir entre les deux
   que `boss_haut` est passé de 12 à 9.
 - **La seule découpe restante tombe là où le renflement est éteint.** Elle suit la
@@ -370,18 +377,13 @@ Ce qu'il faut savoir avant d'y toucher :
 - **La surface part 0,02 mm SOUS la plaque** (`boss_deb`). Partie pile dessus, elle
   y coucherait des sommets — la famille de coïncidences qui avait coûté 35 arêtes au
   crochet. Elle la traverse à 2,4°.
-- **Le couloir de l'insert est l'empreinte exacte des renflements**, projetée en
-  plan, élargie du jeu et extrudée sur toute la hauteur : tout point de l'insert à
-  l'aplomb d'un renflement buterait en descendant. Le test `descente` regarde la
-  même empreinte — il voit désormais les renflements dans le bac, et plus seulement
-  ce qui dépasse de l'arase.
-- **Le rebord arrière de l'insert est coupé de l'axe de chaque vis jusqu'au bord.**
-  Le renflement s'éteignant avant la paroi latérale, son couloir laissait au coin
-  arrière un tronçon de rebord pris entre lui et l'arrondi d'angle du bac : un
-  morceau **libre**, 11 mm³ de chaque côté, que seul le compte de solides a vu. Un
-  escalier de boîtes, remplacé par l'empreinte exacte, n'y était pour rien — la
-  première hypothèse était fausse. Contre la paroi de la coque, ce bout de rebord ne
-  retenait de toute façon rien.
+- **L'insert a longtemps été entaillé** d'un couloir à l'aplomb de chaque
+  renflement. Deux leçons en restent. Un escalier de boîtes, une par tranche de
+  profondeur, avait été soupçonné d'isoler des éclats de rebord ; c'était faux. La
+  vraie cause : le renflement s'éteignant avant la paroi latérale, le couloir
+  laissait au coin arrière un tronçon de rebord pris entre lui et l'arrondi d'angle
+  du bac — un morceau **libre**, 11 mm³ de chaque côté, que seul le compte de
+  solides a vu. Le petit bac règle la question à la racine : plus de couloir.
 
 Un piège de mesure, au passage : un lancer de rayon qui tombe **pile sur une arête**
 de la triangulation, avec un test d'appartenance strict, rate les deux triangles
@@ -437,25 +439,27 @@ ne doit tomber sur un plan de recoupe.** Le dos du profil déborde exprès de
 à `i = 1`. Avec un point à y = 0 pile, le plan de coupe passait par un sommet du
 maillage : 35 arêtes non-variété au pied du crochet, mesurées.
 
-### La racine du crochet ne se recoupe PAS à plat
+### La racine du crochet : ni recoupée à plat, ni plantée à angle droit
 
 Il y a eu une recoupe « tout ce qui dépasse au-dessus de `marche` et hors de la
-silhouette ». L'idée était juste — le dessous de la coque remonte près du coin
-arrondi, la racine ne doit pas pendre dans le vide — mais elle coupait **à plat**,
-alors que ce dessous suit l'arc de `r_ext`. Le coin bas-droit est arrondi de 20 mm :
-son arc part de x = 67,5 à z = 46 et monte jusqu'à x = 87,5 à z = 66. Le crochet va
-de x = 49 à 83 : il **traverse cet arc**. La recoupe lui taillait donc un croissant,
-mesuré au lancer de rayon — 0,25 mm de jour à x = 70, 1,2 à x = 74, 3,4 à x = 78 et
-**5,5 à x = 81**. La racine ne tenait plus que par sa moitié gauche.
+silhouette ». Elle coupait **à plat**, alors que le dessous suit l'arc de `r_ext` : le
+coin bas-droit est arrondi de 20 mm, et le crochet (x = 49 → 83) traverse cet arc. La
+recoupe lui taillait un croissant — jusqu'à **5,5 mm de jour à x = 81**, mesuré. Sans
+recoupe, la colonne monte à `croc_haut` et rencontre le dessous réel de la coque.
 
-Sans recoupe, la colonne monte à `croc_haut` et rencontre le dessous réel de la
-coque. Le prix est visible et assumé : la racine comble le bas de l'arc du coin, sur
-7,4 mm au plus — sur un arc qui en monte 20, et le crochet est de toute façon là.
+Restait l'angle droit entre la colonne et le dessous : le seul angle vif entre deux
+pièces dont tout le reste est galbé. Il est remplacé par un **congé concave**, en
+quart de cercle, tangent à la colonne et au dessous. C'est un champ de hauteur en z :
+à une distance `d` de la colonne, en plan, il descend du dessous du panier de
+`R − √(R² − (R − d)²)`. Il épouse le dessous tel qu'il est, plat puis remontant le
+long de l'arc, et la colonne avec ses coins avant arrondis.
 
-Deux façons d'éviter le croissant sans combler, toutes deux écartées : **déplacer le
-crochet** ne marche pas (le dessous n'est plat que de x = 44,9 à 67,5, soit 22,6 mm,
-alors que le crochet en fait 34), et **réduire `r_ext`** au coin bas-droit rendrait
-la silhouette plus boîteuse exactement là où elle doit être dynamique.
+- `R` vaut 8, comme l'arrondi avant du bac, et tombe à 4,5 côté flanc : il ne reste
+  là que 4,5 mm jusqu'au bord de la pièce, et le congé doit s'y éteindre tangent
+  plutôt que d'y être recoupé.
+- Mesuré sur le maillage devant la colonne, il suit le quart de cercle théorique à
+  0,02 mm près.
+- Il s'imprime sans support : à chaque couche il ne fait que rétrécir.
 
 ### Les deux tests permanents
 
@@ -472,8 +476,10 @@ non vide. Les deux sont muets si on ne les lance pas.
 
 ## 8. Points de vérification
 
-- [ ] **La pièce pend 37 mm plus haut** qu'avant par rapport aux vis : le haut de
-      la casquette est à 50 mm au-dessus d'elles. Vérifier qu'il n'y a rien au-dessus.
+- [ ] **La pièce pend 37 mm plus haut** qu'à l'origine par rapport aux vis, mais son
+      haut n'est plus qu'à 17 mm au-dessus d'elles depuis que la casquette est partie.
+- [ ] **La fente de 6 mm derrière l'insert** se voit d'en haut, sur toute la largeur.
+      Si elle gêne, l'insert peut recevoir un rabat qui la couvre.
 - [ ] **La cheville reste-t-elle en saillie du bois ?** Si oui, sa hauteur hors bois
       doit revenir dans `col_h`, aujourd'hui à 0 — et toute la fixation se décale.
 - [ ] **Mesurer la sangle du XM5 au réglet**, dans le sens avant-arrière. C'est la
