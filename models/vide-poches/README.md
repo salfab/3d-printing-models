@@ -49,7 +49,7 @@ compte de ce que le cône porte sur les bords de la fourche, pas sur la tige.
 ### Un vrai trou de serrure, et ce qu'il change
 
 La tête entre par un **trou percé dans la plaque porteuse**, au bas de la course.
-On présente, on pousse contre le bois, on descend de 14 mm : la tige monte dans la
+On présente, on pousse contre le bois, on descend de 8 mm : la tige monte dans la
 fente étroite et la tête se retrouve captive derrière.
 
 Une version antérieure faisait remonter la tête depuis le **bord inférieur** de la
@@ -166,8 +166,10 @@ dixième de cm³.
 | Épaisseur au droit des vis | 5,3 mm | `col_h + porteur + loge_e + dos_av` — 7,6 avec l'ancienne vis |
 | Plaque porteuse | 2,0 mm | `vis_l − 0,5 + enfonce` — 1,5 de tige libre, le cône s'y enfonce de 1,0 |
 | Chanfrein du siège | 0,6 mm à 45° | `chanfrein` — le cône porte sur Ø 3,8 → 5,0 |
-| Course d'enfilage | 14 mm | `course` |
-| Axe des vis | z = 79, **16 mm sous l'arase** | déduit de l'arase : renflement + `arase_marge` |
+| Course d'enfilage | 8 mm | `course`, déduite : rayon du trou d'entrée + rayon de la tête + 1 mm d'appui |
+| Axe des vis | z = 66,8, **28 mm sous l'arase** | au plus bas : le renflement droit se pose à 2 mm du fond peu profond |
+| Renflements | z = 50,8 → 74,8, noyau Ø 12 | minimaux : 1,5 mm autour du logement, raccord sur 2 mm |
+| Paroi arrière de l'insert | S de 5,6 à 2,3 mm du mur, sur 20,2 mm (z = 74,8 → 95) | `y_arr`, 17° au plus fort |
 | Entraxe des chevilles | 124 mm | 17,1 mm entre noyau et flanc, pour que le renflement s'y éteigne |
 | Fente de tige | 3,8 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 7,5 mm | `tete_d + jeu_entree` |
@@ -177,11 +179,9 @@ dixième de cm³.
 | Marche entre les deux niveaux | 46 mm sur 45 de galbe | `marche`, `galbe` |
 | Galbe de la jointure avant | 8 mm | `r_av_bac` — borné par l'arase, voir §7 |
 | Angles hauts du bac | 8 mm | `r_coin_bac` = `r_av_bac` : à 6, l'angle devenait vif sur la face avant |
-| Arase, paroi pleine jusqu'à | z = 88 | puis extinction sur 4 mm |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
 | Jeu insert / coque | 0,3 mm par côté | `insert_jeu` — c'est aussi le filet entre les deux couleurs ; à valider sur `essai` |
 | Paroi d'insert | 1,2 mm, pleine hauteur | `insert_paroi` — 3 périmètres ; elle porte le liseré |
-| Bandeau arrière | de 2,3 à 6,8 mm du mur, 2 mm d'épaisseur au bord | `cadre_h`, encorbellement à 45° |
 | Largeur hors tout | 181 mm | `larg` passé de 175 à 181 : 4 × 1,5 de parois d'insert, les compartiments gardent leur largeur |
 | Portée du crochet | 84 mm | `croc_l` — pointe à 0,9 de la face avant |
 | Raccord crochet / panier | congé 8 mm, 6,1 côté flanc | `croc_raccord`, `croc_raccord_ext` |
@@ -238,13 +238,13 @@ Contrôles topologiques sur le maillage, tous à zéro :
    **Régler la profondeur des deux vis à la cale** du gabarit : on la glisse sous
    la tête contre le bois et on visse jusqu'à ce que le cône la pince.
 2. **Présenter la coque**, les deux têtes en face des trous de passage de 7,5.
-3. **Pousser contre le bois**, puis **descendre de 14 mm** (`course`). Elle vient
+3. **Pousser contre le bois**, puis **descendre de 8 mm** (`course`). Elle vient
    en butée toute seule.
 4. **Poser les deux inserts**, chacun dans sa zone. Ils descendent à la verticale ;
-   le bandeau arrière passe au-dessus des renflements de fixation et vient se
-   poser au ras de la plaque.
+   le haut de leur paroi arrière, qui recule vers le mur, passe au-dessus des
+   renflements de fixation.
 
-Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
+Pour décrocher : remonter de 8 mm, tirer vers soi. Rien à dévisser.
 
 ## 6. Impression
 
@@ -252,9 +252,9 @@ Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
   galbe : debout sur son point bas, la partie plate est un plafond à 46 mm du
   plateau. Supports sous le fond uniquement — c'est la face cachée, posée dans la
   coque. Environ 40 g de support. Tout le reste s'imprime sans.
-- Coque sur son dos ; inserts à plat, fond contre le plateau. Le bandeau arrière
-  des inserts est en porte-à-faux vers l'arrière : son encorbellement ne dépasse
-  jamais 45°, y compris là où il contourne les renflements (voir §7).
+- Coque sur son dos ; inserts à plat, fond contre le plateau. Le haut de la paroi
+  arrière des inserts recule vers le mur en S : 17° de la verticale au plus fort,
+  sans support.
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
   250 g de casque à 60 mm de porte-à-faux donnent **0,26 MPa** sur sa section la
   plus faible, 34 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 77.
@@ -373,29 +373,24 @@ dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
    le cachent. La casquette, devenue inutile, a été retirée. L'axe des vis descend de
    z = 115 à z = 78.
 7. **Tête fraisée.** La SPAX 3 × 12 fait tomber `dos_e` de 7,6 à 5,3 : le
-   renflement n'a plus que 3,3 mm de surépaisseur, et 18 mm de noyau.
+   renflement n'a plus que 3,3 mm de surépaisseur.
+8. **Minimal, et au plus bas.** Caché derrière l'insert, il n'a plus à être
+   élégant ; c'est sa hauteur qui compte, parce que tout ce qu'il ne prend pas
+   au-dessus des vis revient au S de la paroi arrière de l'insert. Noyau
+   concentrique au logement de tête avec 1,5 mm de matière autour (Ø 12), raccord
+   à la plaque sur 2 mm, course ramenée de 14 à 8. Il passe de 38 à 24 mm de haut,
+   et se pose à 2 mm du fond du côté peu profond. Ses raccords sont raides —
+   jusqu'à 70° — et ça n'a aucune importance : couchée sur le dos, la coque les
+   trace comme des toits.
 
-Il reste construit pour ne rencontrer aucune limite en étant encore épais : il
-s'éteint, tangent, avant la paroi latérale du bac, avant l'arase et avant le bas.
+Il reste un champ de hauteur qui s'éteint avant chaque limite :
 
 ```
 face avant = plaque + surépaisseur × S(ρ) × W(paroi) × W(arase) × W(bas)
 ```
 
-Profils, pente nulle aux deux bouts à chaque fois. Mesurés sur le maillage avec
-l'ancienne vis (surépaisseur 5,6) ; les distances d'extinction n'ayant pas changé,
-les pentes actuelles s'en déduisent au prorata, × 3,3 / 5,6 :
-
-| vers | de → à | pente max, ancienne vis | pente max, SPAX |
-|---|---|---|---|
-| l'intérieur | 7,60 → 2,00 mm | 0,87 | ≈ 0,51 |
-| la paroi latérale du bac | 7,60 → 2,00 mm | 1,11 | ≈ 0,65 |
-| l'arase, au-dessus | 7,60 → 2,00 mm | 1,87 | ≈ 1,10 |
-| le bas | 7,60 → 2,00 mm | 2,09 | ≈ 1,23 |
-
-Les pentes sont plus raides qu'au-dessus de l'arase, et c'est voulu : dans le bac,
-tout ce que le renflement étale est pris sur les compartiments. `boss_etale` est
-revenu à 12.
+Les profils mesurés et les pentes des générations précédentes ne valent plus :
+avec des raccords de 2 mm, la pente atteint 1,875 × 3,3 / 2 ≈ 3, soit 72°.
 
 Ce qu'il faut savoir avant d'y toucher :
 
@@ -404,8 +399,8 @@ Ce qu'il faut savoir avant d'y toucher :
   le volume des compartiments.
 - **L'insert les cache : c'est un petit bac.** Son corps passe DEVANT les
   renflements, à `dos_e` + jeu = 5,6 mm du mur, et ses compartiments arrière
-  commencent une paroi plus loin (`yi0_ins` = 6,8). La fente de 6 mm qui restait
-  entre la plaque et l'insert est fermée par le **bandeau arrière** (ci-dessous).
+  commencent une paroi plus loin (`yi0_ins` = 6,8). Au-dessus des renflements, sa
+  paroi arrière recule en S jusqu'à la plaque (ci-dessous).
 - **Ça coûte 6,8 mm au fond de chaque compartiment arrière** (9,3 avec l'ancienne
   vis).
 - **Sa hauteur est bornée des deux côtés.** Par l'arase au-dessus — sinon il
@@ -456,21 +451,26 @@ galbe, en deux couleurs, coupé par le jeu.
   `larg` qui a grandi : garder la poche à tabac à 85 coûte 1,5 mm
   à chaque paroi que l'insert double.
 
-### Les coins arrière : concentriques, en coque comme en insert
+### Les coins : concentriques, en coque comme en insert, aux quatre angles
 
-La cavité avait des coins arrière vifs : son prisme passait 5 mm derrière la plaque.
-Ils sont arrondis de `r_arr` = 5,6 mm, le rayon qu'ont déjà ses coins avant (8 mm
-d'arrondi extérieur moins la paroi), et l'insert les suit à 5,1, rentré du jeu. Les
-deux se calculent depuis le même profil, `zone_2d`. Un insert arrondi en face d'un
-coin vif y aurait laissé un vide visible d'en haut.
+Les quatre coins de chaque zone sont dessinés dans son profil en plan, `zone_2d`,
+avec `r_arr` = 5,7 mm : l'arrondi extérieur de 8 moins la paroi de 2,4, plus 0,1.
+La paroi de la coque garde donc ses 2,4 jusque dans le coin, l'insert suit à 5,4,
+rentré du jeu, et les compartiments d'angle sont bornés par le même profil rentré
+d'une paroi d'insert : le liseré garde sa largeur dans les coins aussi.
 
+- **Les coins avant étaient laissés au balayage, et c'était une erreur.** L'arrondi
+  avant rétrécit le contour intérieur EN BLOC, il ne l'arrondit pas en plan : le
+  flanc intérieur y suit un arc de rayon 8 que la face avant coupe à 44° au lieu de
+  s'y raccorder. L'insert en héritait. C'étaient les deux angles « mal dessinés ».
+- **Les coins arrière étaient vifs** — le prisme passait 5 mm derrière la plaque —,
+  et un insert arrondi en face d'un coin vif y aurait laissé un vide.
+- **Les 0,1 mm de plus ne sont pas du goût.** À 5,6 pile, le congé démarrait dans
+  le plan exact où démarre l'arrondi avant du balayage (y = prof − 8), et les
+  sommets de l'un tombaient sur les arêtes de l'autre : 6 arêtes non-variété au
+  bout de la cloison.
 - **Le prisme ne dépasse la paroi que de `zone_deb` = 0,05 mm** : assez pour ne pas
-  coïncider avec elle, assez peu pour que le congé tombe dans le coin. À 5 mm, il
-  tombait dehors.
-- **Le corps de l'insert commence à 5,6**, en deçà de la fin de l'arrondi (7,6) :
-  il en prend le début, et le bandeau le reste. Corps et bandeau sont unis PUIS
-  bornés par le même contour : bornés chacun de son côté par le même arc, ils s'y
-  touchaient au lieu de se fondre.
+  coïncider avec elle, assez peu pour que le congé tombe dans le coin.
 
 ### Le fond suit le galbe : `plancher`
 
@@ -493,41 +493,43 @@ insert_fond)`). Les niveaux de fond par zone et par compartiment ont disparu.
   existé sous le socle, lui, était une cavité scellée impossible à imprimer.
 - **Il coûte un support à l'insert peu profond**, et à lui seul (voir §5).
 
-### Le bandeau arrière : au-dessus des renflements, jamais plus plat que 45°
+### La paroi arrière de l'insert : un S au-dessus des renflements
 
-Il couvre la fente derrière le corps de l'insert, de 5,6 à 2,3 mm du mur, sur
-`cadre_h` = 2 mm au bord. L'insert s'imprimant debout, c'est un porte-à-faux vers
-l'arrière, porté par un encorbellement à 45° — qui passerait là où sont les
-sommets des renflements. La coque ne bouge pas : c'est l'encorbellement qui les
-contourne. Sa face arrière est un champ de hauteur,
+Le corps de l'insert passe devant les renflements, à 5,6 mm du mur. Au-dessus
+d'eux, sa paroi arrière recule en S jusqu'à 2,3 mm du mur au bord, avec son
+épaisseur de 1,2 : **le liseré a la même largeur sur les quatre côtés**. Le S est un
+`liss5` sur toute la hauteur libre au-dessus des renflements, 20,2 mm : tangent à
+la verticale en bas ET en haut, sans arête que la lumière soulignerait, 17° au plus
+fort de sa pente.
 
-    y(x, z) = max( droite à 45°,  ombre des renflements )
-    ombre(x, z) = max sur z' ≤ z de  T(x, z') + jeu − (z − z')
+Trois versions l'ont précédé :
 
-L'ombre étale le renflement, gonflé du jeu, à 45° vers le haut. Deux garanties d'un
-coup : aucun surplomb plus plat que 45°, même là où il épouse un renflement plus
-pentu ; et la descente, parce qu'au-dessus de leur noyau (z > 77) les renflements
-ne font que s'amincir en montant — un point qui les surplombe à sa hauteur les
-surplombe pendant toute la descente. Au droit d'une vis, la coupe montre
-l'encorbellement à un jeu du renflement sur toute sa pente.
+1. un bandeau horizontal épais de toute la fente, porté par un encorbellement à
+   45° qui contournait les renflements — le liseré arrière faisait trois fois les
+   autres ;
+2. un plan incliné sur les 7 derniers millimètres, deux arêtes nettes ;
+3. le S, une fois les renflements rendus minimaux et descendus au plus bas.
 
-- **Le pied de l'encorbellement est noyé dans la paroi** : le champ commence 0,3 mm
-  sous la droite à 45°. Parti pile à son pied, il se couchait sur la face arrière du
-  corps — Manifold y voyait 8 arêtes non-variété, CGAL les fusionnait.
-- **Le test `descente` ne peut plus être une simple projection** : le bandeau
-  surplombe les renflements, légitimement. Il est testé par niveaux — ce qui est
-  sous `zk` contre ce qui est au-dessus.
-- **Si les renflements montent** (`arase_marge` réduit, `boss_Dhaut` allongé), le
-  bandeau s'amincit à leur aplomb ; au-delà de z ≈ 93 il ne reste plus rien.
+- **Deux assertions le gardent** : la pente reste sous 45°, et la paroi passe devant
+  le renflement réel, jeu compris, à chaque hauteur.
+- **La descente passe** : le S ne commence qu'au-dessus des renflements. Le test
+  `descente` n'est plus une simple projection — le haut de la paroi surplombe les
+  renflements, légitimement — mais un test par niveaux.
+- **Les compartiments arrière suivent le S** en une seule peau (`skin`), sections à
+  coins arrondis dont le bord arrière recule avec la paroi. Construits en tranches
+  collées, ils laissaient des micro-arêtes à chaque raccord.
+- **Si les renflements remontent**, le S se raccourcit et se raidit. L'assertion
+  exige au moins 10 mm de hauteur libre.
 
-### Bornes des paramètres### Bornes des paramètres
+### Bornes des paramètres
 
 - **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
   la tête ; plus épaisse que la tige libre, elle ne passe pas, et la fente de tige ne
   traverse même plus. C'est ce qu'a cassé le passage aux vis courtes.
-- **`z_vis` est déduit de l'arase, par le haut** :
-  `z_haut − arase_marge − boss_Dhaut − boss_haut`. Ce n'est plus la casquette qui
-  porte la fixation ; elle est libre de sa forme.
+- **`z_vis` est déduit du fond, par le bas** :
+  `fond_haut + bas_marge + boss_Dbas + boss_bas + course`. Plus haut, le S de la
+  paroi arrière de l'insert se raccourcit ; une assertion exige 10 mm libres
+  au-dessus des renflements.
 - **Le S du galbe est quintique (`liss5`), pas cubique.** Un décrochement de course
   `galbe` et de hauteur `marche` a un rayon concave minimal de `galbe²/(6·marche)` :
   7,3 mm en cubique, 17,2 en quintique. `r_av_bac` a valu 15 — il ne passait pas
@@ -598,7 +600,7 @@ Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pi
 | `PIECE=` | Ce qu'il vérifie | Résultat attendu |
 |---|---|---|
 | `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de ce qui dépasse de l'arase OU de la paroi arrière | **vide** (`Current top level object is empty`) |
-| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 346 mm³ |
+| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 230 mm³ (12 × 0,8 × (course + 4), deux fois) |
 | `jointure` | qu'il ne reste aucun jour entre la racine du crochet et le dessous de la coque | **vide** |
 
 Un renflement mal placé rend `peau` creux ; un renflement trop gros rend `descente`
@@ -608,9 +610,10 @@ non vide. Les deux sont muets si on ne les lance pas.
 
 - [ ] **La pièce pend 37 mm plus haut** qu'à l'origine par rapport aux vis, mais son
       haut n'est plus qu'à 17 mm au-dessus d'elles depuis que la casquette est partie.
-- [ ] **Le bandeau arrière** est en porte-à-faux sur 5,6 mm : l'encorbellement à 45°
-      doit sortir propre. Regarder sa face cachée, et que l'insert descende sans
-      frotter sur les renflements.
+- [ ] **La paroi arrière en S** : que l'insert descende sans frotter sur les
+      renflements, et que le S ne marque pas à la lumière.
+- [ ] **La course de 8 mm** : la tête doit passer le trou d'entrée franchement, et
+      rester captive en haut sans pouvoir ressortir.
 - [ ] **Le jeu de 0,3 mm**, sur la pièce d'essai, avant toute chose : l'anneau
       d'insert entre sans forcer et sans ballotter ? C'est aussi le filet entre les
       deux couleurs.

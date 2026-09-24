@@ -119,23 +119,30 @@ dos_ep   = 2.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Tou
                   //      la course d'enfilage ; ailleurs une simple plaque suffit,
                   //      et les 23 mm libérés derrière le bac deviennent du
                   //      rangement.
-course   = 14;    // mm — descente nécessaire pour verrouiller. Courte parce que la
-                  //      tête entre par un TROU, au lieu de remonter depuis le bas
-                  //      de la pièce. C'est ce trou qui permet de ne pas épaissir
-                  //      tout le dos.
-boss_larg = 18;   // mm — diamètre du noyau plein autour de chaque vis. Le
-                  //      renflement s'étale au-delà, mais pas trop : c'est son
-                  //      emprise qui décide du couloir à tailler dans l'insert.
-boss_bas  = 5;    // mm — de combien il descend sous le trou d'entrée (Ø 7,5)
-boss_haut = 8;    // mm — et de combien il monte au-dessus du siège. 8 suffit :
-                  //      le haut du logement de tête est à 4,5 au-dessus de l'axe.
-                  //      Chaque millimètre gagné ici fait redescendre la pièce.
-boss_Dhaut = 5;   // mm — extinction du renflement au-dessus du noyau, vers l'arase
-boss_Dbas  = 5;   // mm — et au-dessous, vers le fond
+// LES RENFLEMENTS SONT MINIMAUX. Cachés derrière l'insert, ils n'ont plus à être
+// élégants — cinq générations de galbes ont servi tant qu'ils se voyaient. Ce qui
+// compte désormais est leur HAUTEUR : tout ce qu'ils ne prennent pas au-dessus
+// des vis est rendu à l'inclinaison douce de la paroi arrière de l'insert.
+//
+// Le noyau est donc concentrique au logement de tête, avec `boss_marge` de
+// matière autour, et le raccord à la plaque se fait sur 2 mm.
+boss_marge = 1.5; // mm — matière autour du logement de tête, sur tout son tour
+boss_larg = tete_d + jeu_tete + 2 * boss_marge;  // 12 — diamètre du noyau
+boss_bas  = boss_larg / 2;   // 6 — sous le trou d'entrée : le noyau est un
+boss_haut = boss_larg / 2;   // 6 — stade centré sur la course, comme le logement
+boss_Dhaut = 2;   // mm — raccord à la plaque au-dessus du noyau
+boss_Dbas  = 2;   // mm — et au-dessous
 jeu_entree = 1.5; // mm — jeu diamétral du trou de passage de la tête
-boss_etale = 12;  // mm — sur quelle distance le renflement de fixation s'éteint.
-                  //      Court : dans le bac, tout ce qu'il étale est pris sur les
-                  //      compartiments arrière, et sur la largeur de l'insert.
+course_appui = 1.0; // mm — appui de la plaque au-delà du bord de la tête, en siège
+
+// La COURSE, déduite et non plus fixée. La tête entre par un trou, au bas de la
+// course ; en haut, elle doit être entièrement sortie de l'aplomb de ce trou,
+// plus `course_appui` de plaque tout autour pour porter : rayon du trou + rayon
+// de la tête + appui. Elle valait 14, héritage de l'ancienne vis (tête de Ø 8,
+// trou de 9,5) : 6 mm de fente, de renflement et de plaque percée en trop, pris
+// sur la hauteur libre au-dessus des vis.
+course   = ceil((tete_d + jeu_entree) / 2 + tete_d / 2 + course_appui);   // 8
+boss_etale = 2;   // mm — raccord à la plaque sur les côtés
 n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'enveloppe
 
 // La plaque du dos doit tenir ENTIÈREMENT dans la longueur de tige libre :
@@ -297,9 +304,7 @@ insert_paroi  = 1.2; // mm — paroi de l'insert, PLEINE HAUTEUR, 3 périmètres
                      //      rogné par l'enveloppe extérieure de la coque,
                      //      prolonge les arrondis du bord. Elle remplace le
                      //      rebord bas de 8 mm, qui ne retenait que le fond.
-cadre_h = 2.0;       // mm — épaisseur du bandeau arrière à son bord, contre la
-                     //      plaque. Au-dessous, un encorbellement à 45° le porte.
-cadre_pas = 0.25;    // mm — pas vertical du champ de hauteur de l'encorbellement
+n_incl = 28;         // tranches de la paroi arrière en S (voir `y_arr`)
 insert_jeu = 0.3;    // mm — jeu entre l'insert et la coque, par côté. 0,5 donnait
                      //      1 mm de ballant et un filet trop large entre les deux
                      //      couleurs ; 0,3 couvre encore la patte d'éléphant et
@@ -377,35 +382,37 @@ n_croc     = 16;   // échantillons par portion de courbe
 // --- Niveaux ------------------------------------------------------------------
 // z = 0 au point le plus bas de la coque, sous la partie profonde.
 
-// LA FIXATION EST DANS LE BAC, sous l'arase. Les renflements qui l'entourent
-// sont cachés derrière la paroi arrière des compartiments, et la casquette
-// au-dessus n'est plus qu'une plaque nette, purement décorative.
+// LA FIXATION EST DANS LE BAC, sous l'arase, et cachée derrière la paroi arrière
+// de l'insert.
 //
-// L'axe des vis se déduit donc de l'arase, PAR LE HAUT : le renflement — noyau
-// ET extinction — doit s'arrêter sous elle, avec `arase_marge` de garde. Plus
-// haut, il reparaîtrait sur la casquette, et c'est tout ce qu'on voulait éviter.
+// Les vis sont placées AU PLUS BAS : le renflement droit se pose sur le fond du
+// côté peu profond, à `bas_marge` près. Elles ont été déduites de l'arase, par le
+// haut, tant que le renflement devait se fondre sous le bord ; caché, il n'a plus
+// qu'à laisser la place — tout ce qui est gagné en bas l'est sous le bord, pour le
+// S de la paroi arrière de l'insert.
 //
-// PRIX ACCEPTÉ, par choix explicite : la règle des 35 mm est abandonnée. Les vis
-// sont fixes sur le meuble ; descendre les trous de serrure dans la pièce fait
-// donc monter toute la pièce d'autant, 37 mm. Les lunettes debout dépassent
-// désormais l'axe des vis de 71 mm, au lieu de 34.
-arase_marge = 3;                 // mm — garde entre le haut du renflement et l'arase
+// PRIX ACCEPTÉ, par choix explicite : la règle des 35 mm (lunettes à moins de 35
+// mm au-dessus des vis) est abandonnée. Les vis sont fixes sur le meuble : plus
+// elles sont bas dans la pièce, plus la pièce monte par rapport à elles.
+bas_marge = 2;                   // mm — garde entre le bas du renflement droit et le
+                                 //      fond du côté peu profond, qu'il surplombe
 z_haut    = bac_h;               //  95 — arase du bac
-z_vis     = z_haut - arase_marge - boss_Dhaut - boss_haut;  // 78 — axe des chevilles
-garde_vis = z_vis - z_haut;      // −17 : les vis sont SOUS l'arase
-z_top     = z_haut;               // 128 — le sommet de la casquette
+fond_haut_ = marche + fond;      // 48,8 — `fond_haut`, qui n'est défini que plus bas
+z_vis     = fond_haut_ + bas_marge + boss_Dbas + boss_bas + course;  // 66,8
+garde_vis = z_vis - z_haut;      // −28,2 : les vis sont SOUS l'arase
+z_top     = z_haut;               // le sommet de la pièce (plus de casquette)
 
 fond_bas  = fond;                //  2,8 — fond côté profond  → 92,2 mm utiles
 fond_haut = marche + fond;       // 48,8 — fond côté peu profond → 46,2 mm utiles
 
-z_entree  = z_vis - course;      //  64 — hauteur du trou de passage de la tête
-boss_z0   = z_entree - boss_bas; //  58 — bas du noyau
-boss_z1   = z_vis + boss_haut;   //  87 — haut du noyau
+z_entree  = z_vis - course;      //  58,8 — hauteur du trou de passage de la tête
+boss_z0   = z_entree - boss_bas; //  52,8 — bas du noyau
+boss_z1   = z_vis + boss_haut;   //  72,8 — haut du noyau
 
-assert(boss_z1 + boss_Dhaut <= z_haut - arase_marge + 0.001,
-       "le renflement dépasse l'arase : il reparaîtrait sur la casquette");
-assert(boss_z0 - boss_Dbas >= fond_haut + 2,
+assert(boss_z0 - boss_Dbas >= fond_haut + bas_marge - 0.001,
        "le renflement droit descend jusqu'au fond du côté peu profond");
+assert(z_haut - (boss_z1 + boss_Dhaut) >= 10,
+       "le renflement monte trop haut : la paroi arriere de l'insert n'a plus la place de s'incliner");
 
 // --- Compartiments ------------------------------------------------------------
 // Dictés par les objets, pas par une grille régulière.
@@ -700,15 +707,16 @@ module canaux(xc) {
         }
         // 2 bis. son chanfrein à 45°, côté tête, sur toute la course : le cône de
         //    la tête fraisée y porte en siège, et y glisse pendant la descente
-        //    Il part 0,1 mm plus bas et plus étroit que la fente, toujours à 45° :
-        //    parti pile à sa largeur, il en longeait les flancs au lieu de les
-        //    couper.
+        //    Son petit bout est 0,1 PLUS LARGE que la fente, et 0,05 plus haut :
+        //    une marche de 0,05. Pile à sa largeur, il était coaxial au bout rond
+        //    de la fente et tombait exactement sur lui ; plus étroit, il en longeait
+        //    les flancs. Dans les deux cas, des arêtes non-variété.
         hull() for (zz = [z_entree, z_vis])
-            translate([0, col_h + porteur - chanfrein - 0.1, zz])
+            translate([0, col_h + porteur - chanfrein + 0.05, zz])
                 rotate([-90, 0, 0])
-                    cylinder(d1 = fente_vis - 0.2,
+                    cylinder(d1 = fente_vis + 0.1,
                              d2 = fente_vis + 2 * (chanfrein + EPS),
-                             h = chanfrein + 0.1 + EPS);
+                             h = chanfrein - 0.05 + EPS);
 
         // 3. le logement de la tête, devant la plaque
         en_travers(col_h + porteur, loge_e)
@@ -788,10 +796,10 @@ function boss_T(x, z, cx) =
 // Emprise de la grille. Elle déborde de 0,5 mm au-delà de la silhouette rentrée
 // de `boss_bord` qui la découpe : le bord de la grille et la découpe ne doivent
 // pas coïncider. Là, la surface est à 1,98 — sous la face de la plaque, cachée.
-boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 40
-boss_x_out = larg / 2 - boss_bord + 0.5;                     // 90
-boss_z_lo  = boss_z0 - boss_Dbas - 0.5;                      // 52,5
-boss_z_hi  = boss_z1 + boss_Dhaut + 0.5;                     // 92,5
+boss_x_in  = entraxe / 2 - boss_larg / 2 - boss_etale;       // 54
+boss_x_out = larg / 2 - boss_bord + 0.5;                     // 89,5
+boss_z_lo  = boss_z0 - boss_Dbas - 0.5;                      // 50,3
+boss_z_hi  = boss_z1 + boss_Dhaut + 0.5;                     // 75,3
 
 function boss_vnf(s) =
     let (nx = round((boss_x_out - boss_x_in) / boss_pas),
@@ -885,25 +893,36 @@ module cavites() {
 // L'emprise d'une zone en plan, commune à la cavité et, rentrée du jeu, à
 // l'insert : leurs coins sont donc concentriques.
 //
-// Coins ARRIÈRE arrondis de `r_arr` = 5,6 : c'est le rayon qu'ont déjà les coins
-// avant de la cavité, où l'arrondi extérieur de 8 moins la paroi de 2,4 laisse
-// un quart de cercle de 5,6 à l'intérieur. Ils étaient vifs — le prisme passait
-// 5 mm derrière la plaque —, et l'insert, arrondi en face d'un coin vif, y aurait
-// laissé un vide. Coins avant : `r_coin`, là où c'est le prisme qui les fait (à
-// la cloison) ; aux flancs, c'est l'arrondi du balayage, plus ample, qui l'emporte.
+// LES QUATRE COINS arrondis de `r_arr` = 5,6 : l'arrondi extérieur de 8 moins la
+// paroi de 2,4, donc CONCENTRIQUE aux coins extérieurs — la paroi garde ses 2,4
+// jusque dans le coin.
+//
+// Les coins avant étaient laissés au balayage, et c'était une erreur de lecture.
+// L'arrondi avant rétrécit le contour intérieur EN BLOC, il ne l'arrondit pas en
+// plan : le flanc intérieur y suit un arc de rayon 8 décalé de la paroi, que la
+// face avant coupe net à 44° au lieu de s'y raccorder. L'insert, qui suit la
+// coque, en héritait. Dessiné ici, le coin est un vrai quart de cercle, tangent
+// au flanc et à la face avant ; le balayage ne l'emporte plus que sur ses tout
+// premiers millimètres, où il se confond presque avec lui.
+//
+// Coins arrière : ils étaient vifs — le prisme passait 5 mm derrière la plaque —,
+// et l'insert, arrondi en face d'un coin vif, y aurait laissé un vide.
 //
 // Le prisme ne dépasse la paroi que de `zone_deb` : assez pour ne pas coïncider
 // avec elle, assez peu pour que le congé tombe bien dans le coin.
-r_arr    = r_av_bac - paroi;   // 5,6
+// 0,1 de PLUS que le rayon concentrique, et pas par goût : à 5,6 pile, le congé
+// démarrait exactement dans le plan où démarre l'arrondi avant du balayage
+// (y = prof − r_av_bac), et les sommets de l'un tombaient sur les arêtes de
+// l'autre — 6 arêtes non-variété au bout de la cloison.
+r_arr    = r_av_bac - paroi + 0.1;   // 5,7
 zone_deb = 0.05;               // mm
 module zone_2d(z) {
     x0 = z[0] <= xi0 ? xi0 - zone_deb : z[0];
     x1 = z[1] >= xi1 ? xi1 + zone_deb : z[1];
     y0 = yi0 - zone_deb;
-    hull() {
-        for (x = [x0 + r_arr, x1 - r_arr])   translate([x, y0 + r_arr])    circle(r = r_arr);
-        for (x = [x0 + r_coin, x1 - r_coin]) translate([x, yi1 - r_coin]) circle(r = r_coin);
-    }
+    hull()
+        for (x = [x0 + r_arr, x1 - r_arr], y = [y0 + r_arr, yi1 - r_arr])
+            translate([x, y]) circle(r = r_arr);
 }
 
 // Sous le côté peu profond, plus de socle plein : le fond suit le galbe.
@@ -920,9 +939,51 @@ module bac() {
 
 // --- Insert -------------------------------------------------------------------
 
-// L'insert d'une zone, en bloc : son contour sur toute la hauteur, plus le
-// bandeau arrière. Les compartiments y sont creusés ensuite, d'un seul coup pour
-// les deux zones (voir insert()).
+// LA PAROI ARRIÈRE EN S — pour un liseré de même largeur tout autour.
+//
+// Le corps de l'insert commence à `y_ins`, devant le plus épais des renflements.
+// Au-dessus d'eux, la paroi arrière n'a plus rien à contourner : elle recule vers
+// le mur et arrive au bord à `y_bnd`, contre la plaque, avec la même épaisseur
+// que partout ailleurs. Vu d'en haut, le liseré a la même largeur sur les quatre
+// côtés.
+//
+// Elle a d'abord été un bandeau horizontal épais de toute la fente — un liseré
+// arrière trois fois plus large que les autres —, puis un plan incliné sur les
+// 7 derniers millimètres, avec deux arêtes que la lumière soulignait. C'est
+// maintenant un S (`liss5`) sur toute la hauteur libérée au-dessus des
+// renflements : tangent à la verticale en bas ET en haut, sans arête. Les
+// renflements, minimaux et descendus au plus bas, lui laissent 20 mm : 17° au
+// plus fort de la pente.
+//
+// La DESCENTE passe : le S ne commence qu'au-dessus des renflements.
+y_ins = dos_e + insert_jeu;                     // 5,6 — paroi arrière, en bas
+y_bnd = dos_ep + insert_jeu;                    // 2,3 — paroi arrière, au bord
+incl_z0 = boss_z1 + boss_Dhaut;                 // 74,8 — haut des renflements
+function y_arr(z) = y_ins - (y_ins - y_bnd) * liss5((z - incl_z0) / (z_haut - incl_z0));
+// (liss5 est bornée à 0 et 1 : y_ins sous le pied du S, y_bnd au-dessus du bord)
+incl_pente_max = 1.875 * (y_ins - y_bnd) / (z_haut - incl_z0);   // au milieu du S
+assert(incl_pente_max < 1, "paroi arriere plus inclinee que 45 degres : elle ne s'imprime plus");
+
+// Contrôle, sur le renflement réel au droit de son noyau, que la paroi passe
+// devant lui à chaque hauteur, jeu compris.
+function boss_crete(z) = boss_T(entraxe / 2, z, entraxe / 2);
+assert(min([for (z = [boss_z0 - boss_Dbas : 0.25 : z_haut])
+                y_arr(z) - (boss_crete(z) + insert_jeu)]) >= -0.001,
+       "la paroi arriere de l'insert mord sur un renflement");
+
+// Le demi-espace qui est devant la face arrière de la paroi (décalé de dy).
+function z_incl(i) = incl_z0 + (z_haut - incl_z0) * i / n_incl;
+module devant_paroi_arr(dy = 0) {
+    rotate([90, 0, 90])
+        linear_extrude(BIG, center = true)
+            polygon(concat([[y_ins + dy, fond_bas - 2]],
+                           [for (i = [0 : n_incl]) [y_arr(z_incl(i)) + dy, z_incl(i)]],
+                           [[y_bnd + dy, z_haut + 2], [prof + 5, z_haut + 2],
+                            [prof + 5, fond_bas - 2]]));
+}
+
+// L'insert d'une zone, en bloc : son contour, devant la paroi arrière. Les
+// compartiments y sont creusés ensuite, d'un seul coup pour les deux zones.
 //
 // Il porte son propre fond. Une version antérieure n'était qu'un peigne de
 // cloisons sans fond, pour ne pas empiler deux fonds : elle économisait 29 g et
@@ -930,84 +991,57 @@ module bac() {
 // pièce. Fragile à l'impression comme à la main.
 //
 // Le contour est celui de `zone_2d` rétréci du jeu : coins concentriques à ceux de
-// la cavité. Le corps commence à `y_ins`, devant les renflements ; le bandeau le
-// prolonge jusqu'à la plaque. On les UNIT d'abord, on les borne ensuite, une seule
-// fois : bornés chacun de son côté par le même arc, ils se touchaient le long de
-// cet arc au lieu de se fondre (arête non-variété au coin, côté cloison).
+// la cavité.
 module bloc_zone(z) {
     intersection() {
         translate([0, 0, fond_bas - 1])
             linear_extrude(z_haut - fond_bas + 2)
                 offset(r = -insert_jeu) zone_2d(z);
-        union() {
-            translate([-BIG / 2, y_ins, fond_bas - 1])
-                cube([BIG, BIG, z_haut - fond_bas + 2]);
-            bandeau();
-        }
+        devant_paroi_arr();
     }
 }
 
-// LE BANDEAU ARRIÈRE — ce qui ferme la fente derrière l'insert.
+// Un compartiment en volume. Ceux du rang arrière suivent le S de la paroi : une
+// SEULE peau (`skin`), de son fond à son sommet, par des sections rectangulaires à
+// coins arrondis dont le bord arrière recule avec la paroi — les coins restent
+// arrondis tout du long, la face avant reste verticale. Mêmes tranches que la
+// paroi. Construits en tranches collées bout à bout, ils laissaient des
+// micro-arêtes à chaque raccord.
 //
-// Le corps de l'insert commence à `y_ins` = 8,1, devant le plus épais des
-// renflements. Entre lui et la plaque, il restait une fente de 6 mm sur toute la
-// largeur, visible d'en haut. Le bandeau la couvre : il part du corps et vient
-// jusqu'à la plaque, jeu compris, au niveau du bord.
-//
-// Il est en porte-à-faux vers l'arrière, l'insert s'imprimant debout sur son
-// fond. Un encorbellement à 45° le porte. Mais à 45° il passerait là où sont les
-// sommets des renflements — la coque ne bouge pas, c'est donc lui qui les
-// contourne. Sa face arrière est un champ de hauteur en y :
-//
-//     y(x, z) = max( droite à 45°,  ombre des renflements )
-//
-// où l'OMBRE est le renflement gonflé du jeu et étalé à 45° vers le haut :
-//     ombre(x, z) = max sur z' ≤ z de  T(x, z') + jeu − (z − z')
-// Elle garantit deux choses à la fois. Aucun surplomb plus plat que 45°, même
-// là où il épouse un renflement plus pentu. Et la DESCENTE : au-dessus de leur
-// noyau (z > 77) les renflements ne font que s'amincir en montant, donc un point
-// qui les surplombe à sa hauteur les surplombe aussi pendant toute la descente.
-y_ins = dos_e + insert_jeu;                     // 8,1 — face arrière du corps
-y_bnd = dos_ep + insert_jeu;                    // 2,5 — face arrière du bandeau
-z_b45 = z_haut - cadre_h - (y_ins - y_bnd);     // 87,4 — pied de l'encorbellement
-
-function boss_Tmax(x, z) = max(boss_T(x, z, -entraxe / 2), boss_T(x, z, entraxe / 2));
-function ombre(x, z) =
-    max([for (k = [0 : round((y_ins - y_bnd) / cadre_pas)])
-            boss_Tmax(x, z - k * cadre_pas) + insert_jeu - k * cadre_pas]);
-// Le champ commence 0,3 mm SOUS le pied de la droite à 45°, et il est borné à
-// 0,1 mm dans la paroi : sa première rangée est noyée dans la paroi, et la face à
-// 45° coupe franchement le plan arrière du corps. Partie pile à `z_b45`, elle s'y
-// couchait sur la face arrière du corps — 8 arêtes non-variété aux coins.
-function bandeau_y(x, z) =
-    min(y_ins + 0.1, max(y_ins - (z - z_b45), y_bnd, ombre(x, z)));
-
-function bandeau_vnf() =
-    let (xa = xi0 - 1, xb = xi1 + 1,
-         nx = round((xb - xa) / boss_pas),
-         za = z_b45 - 0.3, zb = z_haut + 1,   // pied noyé dans la paroi
-         nz = round((zb - za) / cadre_pas),
-         yf = y_ins + insert_paroi / 2,        // face avant, noyée dans la paroi
-         xs = [for (i = [0 : nx]) xa + (xb - xa) * i / nx])
-    vnf_vertex_array(
-        [for (j = [0 : nz]) let (z = za + (zb - za) * j / nz)
-            // même sens de parcours que boss_vnf : face avant, puis arrière
-            concat([for (x = xs) [x, yf, z]],
-                   [for (i = [nx : -1 : 0]) [xs[i], bandeau_y(xs[i], z), z]])],
-        col_wrap = true, caps = true);
-
-module bandeau() { vnf_polyhedron(bandeau_vnf()); }
+// Tous sont bornés par le contour de leur zone rentré d'une paroi d'insert : aux
+// angles extérieurs, leur coin devient concentrique à celui de l'insert, et le
+// liseré garde sa largeur dans les coins aussi.
+function zone_de(c) = zones[c[0] < x_tab ? 0 : 1];
+function section_cuve(c, z) =
+    let (y0 = c[2] - (y_ins - y_arr(z)))
+    path3d(move([(c[0] + c[1]) / 2, (y0 + c[3]) / 2],
+                rect([c[1] - c[0], c[3] - y0], rounding = r_coin)), z);
+module cuve_3d(c) {
+    haut = z_haut + 1;
+    intersection() {
+        translate([0, 0, fond_bas - 1])
+            linear_extrude(haut - fond_bas + 1)
+                offset(r = -(ins_ep - 0.05)) zone_2d(zone_de(c));
+        if (c[2] > yi0_ins + EPS)
+            translate([0, 0, fond_bas - 1])
+                linear_extrude(haut - fond_bas + 1) rect_2d(c[0], c[1], c[2], c[3]);
+        else
+            skin(concat([section_cuve(c, fond_bas - 1)],
+                        [for (i = [0 : n_incl]) section_cuve(c, z_incl(i))],
+                        [section_cuve(c, haut)]),
+                 slices = 0);
+    }
+}
 
 // L'insert : deux petits bacs, un par zone, que la cloison centrale de la coque
-// sépare. Trois bornages :
+// sépare. Quatre bornages :
 //
 // 1. l'enveloppe intérieure de la coque moins le jeu — sinon il dépasse là où la
 //    coque se resserre (coins arrondis, galbe, arrondi avant) ;
 // 2. l'enveloppe EXTÉRIEURE de la coque, `bac_plein` — c'est elle qui fait le
-//    liseré. Le bord de la coque est arrondi de 6 mm sur les flancs et de 8 à
-//    l'avant ; ses parois de 2,4 n'en portent que la naissance. Rogné par la même
-//    surface, le dessus des parois d'insert en prend la suite : un seul galbe,
-//    en deux couleurs, coupé par le jeu ;
+//    liseré. Le bord de la coque est arrondi de 8 mm ; ses parois de 2,4 n'en
+//    portent que la naissance. Rogné par la même surface, le dessus des parois
+//    d'insert en prend la suite : un seul galbe, en deux couleurs, coupé par le jeu ;
 // 3. le fond de la coque, relevé du jeu : l'insert l'épouse, galbe compris ;
 // 4. les compartiments, creusés dans l'enveloppe rentrée de jeu + paroi, pour que
 //    la paroi d'insert garde son épaisseur là où la coque se resserre, et au-dessus
@@ -1033,10 +1067,7 @@ module insert() {
                 extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac, n_galbe)
                     enveloppe_int_2d(ins_ep - 0.05);
                 plancher(insert_jeu + insert_fond);
-                union() for (c = cuves)
-                    translate([0, 0, fond_bas - 1])
-                        linear_extrude(z_haut - fond_bas + 2)
-                            rect_2d(c[0], c[1], c[2], c[3]);
+                union() for (c = cuves) cuve_3d(c);
             }
         }
     }
@@ -1273,10 +1304,11 @@ module descente() {
                 }
             }
         }
-        // le bandeau, qui passe AU-DESSUS des renflements : il ne bute que si un
-        // renflement a de la matière plus haut que lui à son aplomb. Test par
-        // niveaux : ce qui est sous zk contre ce qui est au-dessus.
-        for (zk = [z_b45 : 0.5 : z_haut])
+        // le haut incliné de la paroi arrière, qui passe AU-DESSUS des
+        // renflements : il ne bute que si un renflement a de la matière plus haut
+        // que lui à son aplomb. Test par niveaux : ce qui est sous zk contre ce
+        // qui est au-dessus.
+        for (zk = [incl_z0 - 1 : 0.5 : z_haut])
             intersection() {
                 projection() intersection() {
                     insert();
@@ -1290,7 +1322,8 @@ module descente() {
     }
 }
 
-// TEST DE PEAU — le pavé doit sortir PLEIN, soit 346 mm³ (12 × 0,8 × 18, deux fois).
+// TEST DE PEAU — le pavé doit sortir PLEIN : 12 × 0,8 × (course + 4), deux fois, soit
+// 230 mm³ avec la course de 8.
 //
 // Il prélève l'épaisseur de la peau avant, au droit de chaque vis, sur toute la
 // course du trou de serrure. S'il ressort creux, le logement de tête débouche et
