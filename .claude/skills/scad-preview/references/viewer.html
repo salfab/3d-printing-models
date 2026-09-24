@@ -16,6 +16,8 @@
     --scene-top: #e7e6e1;
     --scene-bot: #cfcdc6;
     --mesh: #b9bcc0;
+    --mesh-2: #c9a36b;
+    --mesh-3: #8fb3a6;
     --grid: #a8a59d;
   }
   @media (prefers-color-scheme: dark) {
@@ -33,6 +35,8 @@
       --scene-top: #23282b;
       --scene-bot: #14171a;
       --mesh: #8f969c;
+      --mesh-2: #b38a52;
+      --mesh-3: #6f9486;
       --grid: #3a4145;
     }
   }
@@ -50,6 +54,8 @@
     --scene-top: #23282b;
     --scene-bot: #14171a;
     --mesh: #8f969c;
+    --mesh-2: #b38a52;
+    --mesh-3: #6f9486;
     --grid: #3a4145;
   }
 
@@ -138,7 +144,11 @@
     pointer-events: none;   /* on doit pouvoir tourner la piece entre les deux */
   }
   .hud > * { pointer-events: auto; }
-  .boutons { display: flex; gap: 6px; flex-wrap: wrap; }
+  .boutons, .pieces { display: flex; gap: 6px; flex-wrap: wrap; }
+  .commandes { display: flex; flex-direction: column; gap: 6px; }
+  .pieces button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .pastille { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+             margin-inline-end: 6px; vertical-align: -1px; }
   .hud button {
     font: 500 12px/1 "IBM Plex Sans", system-ui, sans-serif;
     color: var(--ink);
@@ -214,11 +224,15 @@
   <div class="pane" id="pane-3d" role="tabpanel" aria-labelledby="tab-3d">
     <div id="scene">
       <div class="hud">
-        <div class="boutons">
-          <button type="button" data-vue="iso">Isométrique</button>
-          <button type="button" data-vue="face">Face</button>
-          <button type="button" data-vue="droite">Droite</button>
-          <button type="button" data-vue="dessus">Dessus</button>
+        <div class="commandes">
+          <div class="pieces" id="pieces" hidden></div>
+          <div class="boutons">
+            <button type="button" data-vue="iso">Isométrique</button>
+            <button type="button" data-vue="face">Face</button>
+            <button type="button" data-vue="droite">Droite</button>
+            <button type="button" data-vue="dessus">Dessus</button>
+            <button type="button" data-vue="dessous">Dessous</button>
+          </div>
         </div>
         <p class="hint" id="hint">Glisser pour tourner · molette pour zoomer · grille au pas de 10 mm</p>
       </div>
@@ -313,7 +327,9 @@
   }
 
   // --- Scène --------------------------------------------------------------
-  if (!M || !M.stl) { echec("Aucune géométrie jointe (model-data.js manquant)."); return; }
+  var PIECES = M && M.pieces && M.pieces.length ? M.pieces
+             : (M && M.stl ? [{ nom: M.source || "Pièce", stl: M.stl }] : []);
+  if (!PIECES.length) { echec("Aucune géométrie jointe (model-data.js manquant)."); return; }
   if (typeof THREE === "undefined") { echec("La bibliothèque 3D n'a pas pu être chargée. L'onglet Rendus reste disponible."); return; }
 
   var lire = function (nom) { return getComputedStyle(document.documentElement).getPropertyValue(nom).trim(); };
@@ -329,26 +345,57 @@
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(38, 1, 1, 20000);
 
-  var geo;
-  try { geo = parserSTL(base64ArrayBuffer(M.stl)); }
+  // Toutes les pièces partagent le repère OpenSCAD : modélisées en place, elles se
+  // montrent assemblées. Le cadrage se fait sur leur encombrement commun, et ne
+  // change pas quand on en isole une — elle reste là où elle se monte.
+  var geos = [];
+  try { PIECES.forEach(function (pc) { geos.push(parserSTL(base64ArrayBuffer(pc.stl))); }); }
   catch (e) { echec("STL illisible : " + e.message); return; }
-  geo.computeBoundingBox();
 
-  var bb = geo.boundingBox;
+  var bb = new THREE.Box3();
+  geos.forEach(function (g) { g.computeBoundingBox(); bb.union(g.boundingBox); });
   var centre = new THREE.Vector3(); bb.getCenter(centre);
   var taille = new THREE.Vector3(); bb.getSize(taille);
   var rayon = Math.max(taille.x, taille.y, taille.z) * 0.5 || 1;
 
-  var maille = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-    color: new THREE.Color(lire("--mesh") || "#b9bcc0"),
-    metalness: 0.05, roughness: 0.62, flatShading: false
-  }));
+  var TEINTES = ["--mesh", "--mesh-2", "--mesh-3"];
+  var DEFAUTS = ["#b9bcc0", "#c9a36b", "#8fb3a6"];
   // OpenSCAD travaille en Z vers le haut, three.js en Y vers le haut.
   var socle = new THREE.Group();
-  maille.position.sub(centre);
-  socle.add(maille);
+  var mailles = geos.map(function (g, k) {
+    var m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+      color: new THREE.Color(lire(TEINTES[k % 3]) || DEFAUTS[k % 3]),
+      metalness: 0.05, roughness: 0.62, flatShading: false
+    }));
+    m.position.sub(centre);
+    socle.add(m);
+    return m;
+  });
   socle.rotation.x = -Math.PI / 2;
   scene.add(socle);
+
+  // Un bouton par pièce, plus « Tout », dès qu'il y en a plusieurs.
+  if (PIECES.length > 1) {
+    var zone = document.getElementById("pieces");
+    var choix = [{ nom: "Tout", k: -1 }].concat(PIECES.map(function (pc, k) { return { nom: pc.nom, k: k }; }));
+    zone.innerHTML = choix.map(function (c) {
+      var pastille = c.k < 0 ? "" : '<span class="pastille" style="background:' +
+        (lire(TEINTES[c.k % 3]) || DEFAUTS[c.k % 3]) + '"></span>';
+      return '<button type="button" data-piece="' + c.k + '" aria-pressed="' + (c.k < 0) + '">' +
+             pastille + c.nom + "</button>";
+    }).join("");
+    zone.hidden = false;
+    zone.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = Number(b.dataset.piece);
+        mailles.forEach(function (m, i) { m.visible = k < 0 || i === k; });
+        zone.querySelectorAll("button").forEach(function (x) {
+          x.setAttribute("aria-pressed", String(x === b));
+        });
+        renderer.render(scene, camera);
+      });
+    });
+  }
 
   var pas = 10, etendue = Math.ceil(rayon * 3 / pas) * pas;
   var grille = new THREE.GridHelper(etendue * 2, (etendue * 2) / pas,
@@ -427,7 +474,8 @@
     iso:    [Math.PI * 0.28, Math.PI * 0.36],
     face:   [0, Math.PI / 2],
     droite: [Math.PI / 2, Math.PI / 2],
-    dessus: [0, 0.06]
+    dessus: [0, 0.06],
+    dessous: [0, Math.PI - 0.06]
   };
   document.querySelectorAll(".boutons button").forEach(function (b) {
     b.addEventListener("click", function () {

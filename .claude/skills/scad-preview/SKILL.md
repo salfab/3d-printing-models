@@ -44,6 +44,11 @@ plus de 8 Mo et indique alors de le régénérer avec `--fast`.
 Pour une pièce précise d'un modèle multi-variantes, passe le STL voulu :
 `--stl models/<slug>/out/<slug>-avant.stl`.
 
+Un modèle en plusieurs pièces (coque et insert, par exemple) : répète `--stl`, une fois
+par pièce. Le viewer les montre ensemble, chacune dans sa couleur, avec un bouton par
+pièce pour l'isoler. Elles doivent être modélisées **en place**, dans le même repère,
+pour que la vue d'ensemble les montre assemblées. Le seuil de taille porte sur le total.
+
 ## Étape 4 — construire la page
 
 1. Charge d'abord la skill `artifact-design` — obligatoire avant toute écriture de page.

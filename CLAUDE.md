@@ -184,7 +184,7 @@ L'enchaînement, à faire en entier :
 python scripts/scad.py all     <slug> -D PIECE=<principale>
 python scripts/scad.py stl     <slug> -D PIECE=<chaque pièce>
 python scripts/scad.py check   <slug>        # doit sortir en code 0
-python .claude/skills/scad-preview/scripts/preview_pack.py <slug> --titre "<Nom>" --stl <...>
+python .claude/skills/scad-preview/scripts/preview_pack.py <slug> --titre "<Nom>" --stl <pièce 1> --stl <pièce 2> ...
 ```
 
 puis outil `Artifact`, action `publish`, avec l'`url` existante.
