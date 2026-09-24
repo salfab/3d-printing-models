@@ -108,7 +108,7 @@ cru : c'est un volume dont seule la face cachée est plane.
 | Pièce | `PIECE=` | Qté | Rôle |
 |---|---|---|---|
 | Coque | `coque` | 1 | dos, bac à deux niveaux, crochet |
-| Inserts | `insert` | 1 jeu | les séparations — **deux corps**, un par zone |
+| Inserts | `insert` | 1 jeu | deux petits bacs à séparations, un par zone — **deux corps**, et le liseré du bord |
 | Gabarit | `gabarit` | 1 | réglet de perçage de la seconde cheville — consommable |
 
 ```bash
@@ -125,6 +125,10 @@ la coque.
 Coque et inserts se déduisent tous de la **même liste `cuves`** : un compartiment
 ajouté ou déplacé met tout à jour, rien ne peut diverger.
 
+**Deux couleurs de PLA.** Les inserts portent le liseré qui borde l'ouverture : les
+imprimer dans une autre couleur que la coque dessine un filet tout autour du bord,
+plus les séparations. C'est prévu pour.
+
 **Le dos est plein, sans grille d'allègement** — c'est le remplissage du trancheur
 qui s'en charge, mieux et sans les pièges qui allaient avec.
 
@@ -134,9 +138,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 276,7 cm³ | 175,0 × 84,9 × 95,0 mm |
-| Inserts (2 corps) | 83,0 cm³ | 169,2 × 73,9 × 92,1 mm |
-| **Total** | **359,7 cm³** | |
+| Coque | 282,2 cm³ | 182,0 × 85,8 × 95,0 mm |
+| Inserts (2 corps) | 116,3 cm³ (75,0 + 41,3) | 176,2 × 80,4 × 92,1 mm |
+| **Total** | **398,5 cm³** | |
 
 > Volume **géométrique**, pas le fil consommé. Les parois font 2,4 mm et sortent
 > pleines ; le socle du côté peu profond, lui, est un bloc massif que le trancheur
@@ -149,7 +153,7 @@ Mesurées sur les maillages exportés.
 | Plaque porteuse | 2,0 mm | `vis_l − 0,5` — la tige ne dépasse que de 2,5 |
 | Course d'enfilage | 14 mm | `course` |
 | Axe des vis | z = 78, **17 mm sous l'arase** | déduit de l'arase : renflement + `arase_marge` |
-| Entraxe des chevilles | 124 mm | 15,5 mm entre noyau et flanc, pour que le renflement s'y éteigne |
+| Entraxe des chevilles | 124 mm | 16,6 mm entre noyau et flanc, pour que le renflement s'y éteigne |
 | Fente de tige | 4,2 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 9,5 mm | `tete_d + jeu_entree` |
 | Logement de tête | 11,0 mm | `tete_d + jeu_tete` |
@@ -160,10 +164,13 @@ Mesurées sur les maillages exportés.
 | Angles hauts du bac | 6 mm | `r_coin_bac`, découplé de `r_ext` |
 | Arase, paroi pleine jusqu'à | z = 88 | puis extinction sur 4 mm |
 | Paroi / cloison / fond | 2,4 / 2,4 / **2,8** mm | `fond` ≠ `paroi` : voir §7 |
-| Jeu insert / coque | 0,5 mm par côté | `insert_jeu` |
+| Jeu insert / coque | 0,5 mm par côté | `insert_jeu` — c'est aussi le filet qui sépare les deux couleurs |
+| Paroi d'insert | 1,2 mm, pleine hauteur | `insert_paroi` — 3 périmètres ; elle porte le liseré |
+| Bandeau arrière | de 2,5 à 9,3 mm du mur, 2 mm d'épaisseur au bord | `cadre_h`, encorbellement à 45° |
+| Largeur hors tout | 182 mm | `larg` passé de 175 à 182 : 4 × 1,7 de parois d'insert, les compartiments gardent leur largeur |
 | Portée du crochet | 84 mm | `croc_l` — pointe à 0,9 de la face avant |
-| Raccord crochet / panier | congé 8 mm, 4,5 côté flanc | `croc_raccord`, `croc_raccord_ext` |
-| Profondeur hors tout | 84,9 mm | `bac_int` passé de 78 à 80,5 pour la paroi arrière de l'insert |
+| Raccord crochet / panier | congé 8 mm, 6,1 côté flanc | `croc_raccord`, `croc_raccord_ext` |
+| Profondeur hors tout | 85,8 mm | `bac_int` = 81,4 : l'insert prend 9,3 au fond et 1,7 devant |
 | Largeur du crochet | 34 mm | `croc_larg`, mesurée le long de l'ARC du casque |
 | **Vallée de l'arceau** | **42 mm** | `croc_vallee` — la cote qui compte, voir ci-dessous |
 | Passage libre sous la coque | 28 mm | `marche − croc_creux` |
@@ -213,21 +220,25 @@ Contrôles topologiques sur le maillage, tous à zéro :
 2. **Présenter la coque**, les deux têtes en face des trous de passage de 9,5.
 3. **Pousser contre le bois**, puis **descendre de 14 mm** (`course`). Elle vient
    en butée toute seule.
-4. **Poser les deux inserts**, chacun dans sa zone.
+4. **Poser les deux inserts**, chacun dans sa zone. Ils descendent à la verticale ;
+   le bandeau arrière passe au-dessus des renflements de fixation et vient se
+   poser au ras de la plaque.
 
 Pour décrocher : remonter de 14 mm, tirer vers soi. Rien à dévisser.
 
 ## 6. Impression
 
 - **Aucun support, sur aucune pièce.**
-- Coque sur son dos ; inserts à plat, fond contre le plateau.
+- Coque sur son dos ; inserts à plat, fond contre le plateau. Le bandeau arrière
+  des inserts est en porte-à-faux vers l'arrière : son encorbellement ne dépasse
+  jamais 45°, y compris là où il contourne les renflements (voir §7).
 - PLA. Le bras du crochet travaille en traction entre couches, la direction faible :
   250 g de casque à 60 mm de porte-à-faux donnent **0,26 MPa** sur sa section la
   plus faible, 34 × 10 mm, contre ~20 MPa de cohésion inter-couches. Facteur 77.
 - Le crochet n'a **aucun porte-à-faux au-delà de 45°** : la butée est le seul
   élément qui s'écarte de la verticale à l'impression, et son S atteint au plus
   1,875·`croc_r_z`/`croc_gorge` = 0,78, soit 38°. Assertion dans le modèle.
-- Emprise plateau : 175 × 128 mm pour la coque.
+- Emprise plateau : 182 × 95 mm pour la coque.
 - Remplissage libre : aucun volume fermé dans la pièce, donc rien que le trancheur
   doive ponter à l'aveugle.
 
@@ -357,14 +368,12 @@ Ce qu'il faut savoir avant d'y toucher :
 - **Il n'est pas retranché par la cavité** : `coque()` l'ajoute APRÈS le
   creusement. Retranché avec le reste, il disparaîtrait — il est tout entier dans
   le volume des compartiments.
-- **L'insert les cache : c'est un petit bac.** Sa paroi arrière passe DEVANT les
+- **L'insert les cache : c'est un petit bac.** Son corps passe DEVANT les
   renflements, à `dos_e` + jeu = 8,1 mm du mur, et ses compartiments arrière
-  commencent une paroi plus loin (`yi0_ins` = 10,1). Il reste entre le fond du bac et
-  l'insert une fente de 6 mm sur toute la largeur : c'est là que vivent les
-  renflements. L'insert n'est plus entaillé nulle part, et `descente` le vérifie.
-- **Ça coûte 8,1 mm au fond de chaque compartiment arrière.** `bac_int` est passé de
-  78 à 80,5 : la pièce gagne 2,5 mm de profondeur, et la fente à lunettes retrouve
-  40 mm pour 37,6.
+  commencent une paroi plus loin (`yi0_ins` = 9,3). La fente de 6 mm qui restait
+  entre la plaque et l'insert est fermée par le **bandeau arrière** (ci-dessous).
+- **Ça coûte 9,3 mm au fond de chaque compartiment arrière**, rendus par
+  `bac_int` = 81,4 : la fente à lunettes garde 40 mm pour des lunettes de 37,6.
 - **Sa hauteur est bornée des deux côtés.** Par l'arase au-dessus — sinon il
   dépasse du bord (assertion) — et par le fond du côté peu profond
   au-dessous, pour le renflement droit (assertion). C'est pour tenir entre les deux
@@ -390,7 +399,54 @@ de la triangulation, avec un test d'appartenance strict, rate les deux triangles
 voisins. Plusieurs sondes à « ,3 » annonçaient 0 mm en plein noyau. Test inclusif
 et coordonnées décalées : la face était bien là.
 
-### Bornes des paramètres
+### Le liseré : l'insert finit le bord de la coque
+
+La coque n'a pas bougé pour lui. Son bord est arrondi de 6 mm sur les flancs et de
+8 mm à l'avant, mais ses parois ne font que 2,4 : elles n'en portent que la
+naissance, et l'arrondi s'arrête net sur leur face intérieure, à 1,2 mm sous le
+bord sur les flancs et à 2,3 mm à l'avant.
+
+L'insert en prend la suite. Ses parois de 1,2 mm montent sur toute la hauteur, et
+leur dessus est rogné par **la même surface** que l'extérieur de la coque,
+`bac_plein`. Mesuré sur les maillages : sur le flanc, la coque s'arrête à z = 93,8,
+l'insert reprend à 94,1 et monte à 95 ; à l'avant, 92,7 puis 93,1 → 94,0. Un seul
+galbe, en deux couleurs, coupé par le jeu de 0,5 mm.
+
+- **Ne pas redonner à l'insert un dessus plat** : il dépasserait de l'arrondi de
+  la coque au lieu de le prolonger.
+- **Les compartiments sont creusés dans l'enveloppe rentrée de jeu + paroi**, pas
+  seulement bornés par `cuves`. Là où la coque se resserre — près de l'avant, son
+  intérieur suit l'arrondi de 8 mm —, une paroi d'insert simplement tracée par
+  les cuves s'amincissait jusqu'à disparaître au coin.
+- **Les cotes de `cuves` sont des cotes UTILES**, entre parois d'insert. D'où
+  `larg` et `bac_int` qui ont grandi : garder la poche à tabac à 85 coûte 1,7 mm
+  à chaque paroi que l'insert double.
+
+### Le bandeau arrière : au-dessus des renflements, jamais plus plat que 45°
+
+Il couvre la fente derrière le corps de l'insert, de 8,1 à 2,5 mm du mur, sur
+`cadre_h` = 2 mm au bord. L'insert s'imprimant debout, c'est un porte-à-faux vers
+l'arrière, porté par un encorbellement à 45° — qui passerait là où sont les
+sommets des renflements. La coque ne bouge pas : c'est l'encorbellement qui les
+contourne. Sa face arrière est un champ de hauteur,
+
+    y(x, z) = max( droite à 45°,  ombre des renflements )
+    ombre(x, z) = max sur z' ≤ z de  T(x, z') + jeu − (z − z')
+
+L'ombre étale le renflement, gonflé du jeu, à 45° vers le haut. Deux garanties d'un
+coup : aucun surplomb plus plat que 45°, même là où il épouse un renflement plus
+pentu ; et la descente, parce qu'au-dessus de leur noyau (z > 77) les renflements
+ne font que s'amincir en montant — un point qui les surplombe à sa hauteur les
+surplombe pendant toute la descente. Au droit d'une vis, la coupe montre
+l'encorbellement à 0,5 mm du renflement sur toute sa pente.
+
+- **Le test `descente` ne peut plus être une simple projection** : le bandeau
+  surplombe les renflements, légitimement. Il est testé par niveaux — ce qui est
+  sous `zk` contre ce qui est au-dessus.
+- **Si les renflements montent** (`arase_marge` réduit, `boss_Dhaut` allongé), le
+  bandeau s'amincit à leur aplomb ; au-delà de z ≈ 93 il ne reste plus rien.
+
+### Bornes des paramètres### Bornes des paramètres
 
 - **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
   la tête ; plus épaisse que la tige libre, elle ne passe pas, et la fente de tige ne
@@ -454,8 +510,8 @@ quart de cercle, tangent à la colonne et au dessous. C'est un champ de hauteur 
 `R − √(R² − (R − d)²)`. Il épouse le dessous tel qu'il est, plat puis remontant le
 long de l'arc, et la colonne avec ses coins avant arrondis.
 
-- `R` vaut 8, comme l'arrondi avant du bac, et tombe à 4,5 côté flanc : il ne reste
-  là que 4,5 mm jusqu'au bord de la pièce, et le congé doit s'y éteindre tangent
+- `R` vaut 8, comme l'arrondi avant du bac, et tombe à 6,1 côté flanc : il ne reste
+  là que 6,1 mm jusqu'au bord de la pièce, et le congé doit s'y éteindre tangent
   plutôt que d'y être recoupé.
 - Mesuré sur le maillage devant la colonne, il suit le quart de cercle théorique à
   0,02 mm près.
@@ -478,8 +534,12 @@ non vide. Les deux sont muets si on ne les lance pas.
 
 - [ ] **La pièce pend 37 mm plus haut** qu'à l'origine par rapport aux vis, mais son
       haut n'est plus qu'à 17 mm au-dessus d'elles depuis que la casquette est partie.
-- [ ] **La fente de 6 mm derrière l'insert** se voit d'en haut, sur toute la largeur.
-      Si elle gêne, l'insert peut recevoir un rabat qui la couvre.
+- [ ] **Le bandeau arrière** est en porte-à-faux sur 5,6 mm : l'encorbellement à 45°
+      doit sortir propre. Regarder sa face cachée, et que l'insert descende sans
+      frotter sur les renflements.
+- [ ] **Le filet de 0,5 mm entre les deux couleurs** : régulier sur tout le
+      pourtour ? S'il paraît trop large, `insert_jeu` le commande — mais c'est
+      aussi le jeu de montage.
 - [ ] **La cheville reste-t-elle en saillie du bois ?** Si oui, sa hauteur hors bois
       doit revenir dans `col_h`, aujourd'hui à 0 — et toute la fixation se décale.
 - [ ] **Mesurer la sangle du XM5 au réglet**, dans le sens avant-arrière. C'est la

@@ -193,6 +193,19 @@ apparaît deux fois dans un fichier a produit une tranche vide, puis un
 million. Corollaire : **commiter un modèle dès qu'il compile**, avant toute
 retouche — c'est ce qui rend l'incident réparable au lieu d'être une perte sèche.
 
+**Retoucher un commentaire périme toutes les sorties.** Le manifeste hache le `.scad`
+entier : corriger une cote dans un commentaire après les exports les rend tous
+périmés, et `check` a raison de le dire — rien ne prouve que seul un commentaire a
+changé. Finir les commentaires AVANT de lancer la régénération, surtout quand elle
+dure une demi-heure.
+
+**Un test de descente par projection ne vaut que si rien ne surplombe légitimement
+l'obstacle.** « Projection de l'insert ∩ projection de l'obstacle = vide » suppose
+que l'insert descend jusqu'en bas partout où il a de la matière. Un bandeau qui passe
+AU-DESSUS d'un renflement fait échouer ce test à tort. Le bon critère est par
+niveaux : pour chaque hauteur zk, ce qui est sous zk dans l'insert contre ce qui est
+au-dessus de zk dans l'obstacle.
+
 **Les têtes fraisées annulent le jeu des trous de passage.** Un cône à 90° se centre
 dans son fraisage en se serrant. Ce sont donc les avant-trous qui imposent la position
 d'une pièce vissée, pas l'ajustement des trous — d'où l'obligation de marquer les
