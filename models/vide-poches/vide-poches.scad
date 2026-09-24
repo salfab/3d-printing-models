@@ -1134,20 +1134,49 @@ function croc_haut_brut(x, y) =
         ? croc_creux + (croc_dessous(x) + 0.3 - croc_creux) * (1 - liss5(y / croc_racine))
         : y <= croc_ys1 ? croc_creux + croc_spat(y)
                         : croc_zc + sqrt(max(0, croc_bout * croc_bout - (y - croc_ys1) * (y - croc_ys1)));
-function croc_bas_y(y) =
+function croc_bas_brut(y) =
     y <= croc_ys1 ? croc_bas + croc_relev * liss5(max(y, 0) / croc_ys0) + croc_spat(y)
                   : croc_zc - sqrt(max(0, croc_bout * croc_bout - (y - croc_ys1) * (y - croc_ys1)));
 
-// Le dessus, ARRONDI de `croc_rb` le long des deux flancs de la vague — sauf là où
-// il est encore collé au dessous du panier : l'arrondi s'y éteindrait en creusant
-// une rainure entre les deux.
-function croc_arr(d) = d >= croc_rb ? 0 : d <= 0 ? croc_rb
-                     : croc_rb - sqrt(croc_rb * croc_rb - (croc_rb - d) * (croc_rb - d));
+// LES ARÊTES, arrondies de `croc_rb` le long des deux flancs de la vague — DESSUS
+// ET DESSOUS. Le dessous ne l'était pas : la coupe du bras montrait un dessus
+// galbé posé sur deux angles vifs à 90°, et c'est ce qui faisait lire le crochet
+// comme plus dur que la coque.
+//
+// LA DISTANCE AU FLANC SE MESURE À LA HAUTEUR OÙ LA SURFACE ARRIVE, pas à celle
+// d'où elle part. Les flancs de la vague sont très inclinés dans la hauteur du
+// bras — l'arc de `r_ext` y rentre de 0,8 mm par millimètre —, si bien qu'un
+// arrondi mesuré à plat remontait de 4 mm au-dessus d'un flanc qui, 4 mm plus
+// haut, s'était écarté de 3 : il laissait une MARCHE de 3 mm au lieu d'un congé.
+// Mesuré à la bonne hauteur, le congé est tangent au flanc quelle que soit sa
+// pente. C'est une équation implicite — la hauteur dépend de la distance, qui
+// dépend de la hauteur —, résolue par six itérations AMORTIES : sans
+// l'amortissement elles oscillent là où le flanc est presque horizontal.
+function croc_arr(d, r) = r <= 0 || d >= r ? 0 : d <= 0 ? r
+                        : r - sqrt(r * r - (r - d) * (r - d));
+function croc_d(x, z) = min(x - croc_xg(z), croc_xd(z) - x);
+function croc_it(x, z0, r, s, z) = (z + z0 + s * croc_arr(croc_d(x, z), r)) / 2;
+function croc_pf(x, z0, r, s) =
+    let (z1 = croc_it(x, z0, r, s, z0), z2 = croc_it(x, z0, r, s, z1),
+         z3 = croc_it(x, z0, r, s, z2), z4 = croc_it(x, z0, r, s, z3),
+         z5 = croc_it(x, z0, r, s, z4))
+    croc_it(x, z0, r, s, z5);
+
+// Le rayon est borné par la DEMI-ÉPAISSEUR locale : au bout de la spatule la
+// section s'annule, et deux arrondis de 4 s'y traverseraient. Ainsi borné, chacun
+// ne rentre au plus que jusqu'à 0,1 mm du milieu — ils ne se rencontrent jamais.
+function croc_rloc(x, y) = min(croc_rb, (croc_haut_brut(x, y) - croc_bas_brut(y)) / 2 - 0.1);
+
+// Le dessus s'arrondit PARTOUT SAUF là où il est encore collé au dessous du
+// panier : l'arrondi y creuserait une rainure entre les deux. L'extinction porte
+// sur le RAYON, et non sur le déplacement : un rayon qui décroît reste un congé,
+// un déplacement rogné ne l'est plus.
 function croc_haut(x, y) =
-    let (z = croc_haut_brut(x, y),
-         d = min(x - croc_xg(z), croc_xd(z) - x),
-         f = liss5((croc_dessous(x) - z) / croc_rb))
-    max(z - croc_arr(d) * f, croc_bas_y(y) + 0.2);
+    let (z0 = croc_haut_brut(x, y),
+         f = liss5((croc_dessous(x) - z0) / croc_rb))
+    croc_pf(x, z0, croc_rloc(x, y) * f, -1);
+
+function croc_bas_y(x, y) = croc_pf(x, croc_bas_brut(y), croc_rloc(x, y), 1);
 
 // Le crochet est l'INTERSECTION de deux formes : ce champ de hauteur, qui porte le
 // profil de côté, et le prisme de la vague, qui porte la vue de face.
@@ -1160,7 +1189,7 @@ function croc_vnf() =
     vnf_vertex_array(
         [for (j = [0 : ny]) let (y = ya + (yb - ya) * j / ny)
             // même sens de parcours que les renflements : dessous, puis dessus
-            concat([for (x = xs) [x, y, croc_bas_y(y)]],
+            concat([for (x = xs) [x, y, croc_bas_y(x, y)]],
                    [for (i = [nx : -1 : 0]) [xs[i], y, croc_haut(xs[i], y)]])],
         col_wrap = true, caps = true);
 

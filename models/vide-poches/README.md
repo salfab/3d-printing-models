@@ -200,7 +200,7 @@ dixième de cm³.
 | Bras au plus fin | 10 mm | `croc_mince` |
 | Butée | 10 mm, spatule relevée sur 20 | `croc_r_z`, `croc_gorge` |
 | Bout du crochet | arrondi R5 | `croc_bout` |
-| Arrondi des arêtes du dessus | 4 mm | `croc_rb` |
+| Arrondi des arêtes du crochet | 4 mm, **dessus ET dessous** | `croc_rb` — 40 % de l'épaisseur du bras, contre 9 % pour l'arête avant de la coque |
 
 ### Le crochet et le Sony WH-1000XM5
 
@@ -237,8 +237,22 @@ et du prisme de la vague, qui porte la vue de face.
   crochet continue celui de la coque. `jointure` le vérifie.
 - **Il en part 0,3 mm plus haut**, dans la coque : parti pile sur le dessous, le S
   lui serait tangent sur toute une bande — la famille de coïncidences de ce modèle.
-- **L'arrondi des arêtes s'éteint là où le dessus est encore collé au panier** : il
-  y creuserait une rainure entre les deux.
+- **Les arêtes du DESSOUS sont arrondies comme celles du dessus.** Elles ne
+  l'étaient pas : la coupe du bras montrait un dessus galbé posé sur deux angles
+  vifs à 90°, et c'est ce qui faisait lire le crochet comme plus dur que la coque.
+- **Le rayon est borné par la demi-épaisseur locale.** Au bout de la spatule la
+  section s'annule, et deux arrondis de 4 s'y traverseraient.
+- **La distance au flanc se mesure à la hauteur où la surface arrive**, pas à celle
+  d'où elle part. Les flancs de la vague sont très inclinés dans la hauteur du bras
+  — l'arc de 20 y rentre de 0,8 mm par millimètre —, si bien qu'un arrondi mesuré à
+  plat remontait de 4 mm au-dessus d'un flanc qui, 4 mm plus haut, s'était écarté
+  de 3 : il laissait une **marche de 3 mm** au lieu d'un congé, mesurée sur la
+  coupe. C'est une équation implicite, résolue par six itérations amorties —
+  sans l'amortissement elles oscillent là où le flanc est presque horizontal.
+- **L'extinction porte sur le RAYON, pas sur le déplacement** : un rayon qui décroît
+  reste un congé, un déplacement rogné ne l'est plus.
+- **L'arrondi du dessus s'éteint là où il est encore collé au panier** : il y
+  creuserait une rainure entre les deux.
 - **Aucun porte-à-faux au-delà de 45°** à l'impression : la racine et le dessous ne
   font que rétrécir à chaque couche, et la spatule monte à 43° au plus
   (1,875 × 10 / 20). Assertion dans le modèle.
