@@ -39,7 +39,10 @@ include <BOSL2/std.scad>
 // "coque"   : dos + bac nu + crochet          — pièce à imprimer n°1
 // "insert"  : le bac à séparations            — pièce à imprimer n°2
 // "panier"  : les deux en place, pour regarder
-// "gabarit" : réglet de perçage de la deuxième cheville (consommable)
+// "gabarit" : réglet de perçage de la deuxième vis, et cale de réglage de sa
+//             profondeur (consommable)
+// "essai"   : les 10 derniers mm de la coque et de l'insert, côte à côte, pour
+//             valider le jeu avant la vraie impression
 // "montage" : le panier, le bois et les vis, pour vérifier la cinématique
 PIECE = "panier";
 
@@ -60,11 +63,21 @@ PIECE = "panier";
 col_d    = 7.3;   // mm — Ø du fût, si une douille dépasse encore
 col_h    = 0;     // mm — de combien elle dépasse du bois. Zéro : vis directement
                   //      dans le bois, ou douille arasée.
-vis_d    = 3.4;   // mm — Ø de la tige lisse
-vis_l    = 2.5;   // mm — longueur de tige libre entre le bois et la tête
-tete_h   = 3.0;   // mm — hauteur de la tête
-tete_d   = 8.0;   // mm — Ø de la tête, MAJORÉ volontairement : son logement ne
-                  //      guide rien, il ne fait que dégager.
+// SPAX 3 × 12 à tête fraisée, relevée au pied à coulisse : tête Ø 6, tige Ø 3.
+// Elle remplace une vis à tête cylindrique de Ø 8 × 3, et c'est la hauteur de
+// tête qui compte : le cône s'enfonce dans la plaque au lieu de se poser devant.
+vis_d    = 3.0;   // mm — Ø de la tige (filet compris)
+vis_l    = 1.5;   // mm — tige LIBRE entre le bois et le départ du cône. C'est la
+                  //      profondeur de vissage à respecter : la cale du gabarit
+                  //      la donne.
+tete_d   = 6.0;   // mm — Ø de la tête
+tete_cone = (tete_d - vis_d) / 2;   // 1,5 — hauteur du cône, fraisure à 90°
+tete_bord = 0.2;  // mm — petit bord cylindrique au-dessus du cône (estimé)
+tete_h   = tete_cone + tete_bord;   // 1,7
+chanfrein = 0.6;  // mm — la fente de tige est chanfreinée à 45° côté tête : le
+                  //      cône y porte sur un anneau de Ø 3,8 à 5,0 au lieu de
+                  //      deux arêtes, et se centre de lui-même. Sans lui, le PLA
+                  //      se tasserait sous deux lignes de contact.
 
 entraxe  = 124;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
@@ -82,20 +95,24 @@ jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
 
 // --- Dos ----------------------------------------------------------------------
 
-porteur  = vis_l - 0.5;                        // plaque porteuse : toute la tige
-                                               // libre. À 2,0 mm elle ne travaille
-                                               // qu'en cisaillement sous le poids :
-                                               // ~8,5 N sur 50 mm² de section utile,
-                                               // soit 0,17 MPa. Sans commune mesure
-                                               // avec ce que tient le PLA.
-loge_e   = tete_h + 1.0;                       // logement de la tête : 1 mm de jeu
-                                               // devant elle suffit, elle ne fait que
-                                               // glisser. Il en avait 2.
+fente_vis = vis_d + jeu_vis;                   // 3,8 — la fente qui porte
+enfonce  = (fente_vis + 2 * chanfrein - vis_d) / 2;   // 1,0 — de combien le
+                                               // départ du cône est SOUS la face
+                                               // avant de la plaque, tête en siège
+porteur  = vis_l - 0.5 + enfonce;              // 2,0 — plaque porteuse : la tige
+                                               // libre moins 0,5 de jeu axial, plus
+                                               // ce que le cône y enfonce. Elle ne
+                                               // travaille qu'en cisaillement sous
+                                               // le poids : ~8,5 N sur 50 mm², soit
+                                               // 0,17 MPa.
+loge_e   = tete_h - enfonce + 1.0;             // 1,7 — la tête ne dépasse plus que
+                                               // de 0,7 devant la plaque ; 1 mm de
+                                               // jeu devant elle suffit.
 dos_av   = 1.6;                                // peau avant, celle qui cache tout :
                                                // quatre passes de buse de 0,4. À 2,4
                                                // elle rendait le renflement plus haut
                                                // d'autant, sans rien cacher de plus.
-dos_e    = col_h + porteur + loge_e + dos_av;  // 7,6 : la surépaisseur tombe de 7,4 à 5,6
+dos_e    = col_h + porteur + loge_e + dos_av;  // 5,3 — 7,6 avec l'ancienne vis
 
 dos_ep   = 2.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
                   //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
@@ -106,12 +123,12 @@ course   = 14;    // mm — descente nécessaire pour verrouiller. Courte parce 
                   //      tête entre par un TROU, au lieu de remonter depuis le bas
                   //      de la pièce. C'est ce trou qui permet de ne pas épaissir
                   //      tout le dos.
-boss_larg = 20;   // mm — diamètre du noyau plein autour de chaque vis. Le
+boss_larg = 18;   // mm — diamètre du noyau plein autour de chaque vis. Le
                   //      renflement s'étale au-delà, mais pas trop : c'est son
                   //      emprise qui décide du couloir à tailler dans l'insert.
-boss_bas  = 6;    // mm — de combien il descend sous le trou d'entrée
-boss_haut = 9;    // mm — et de combien il monte au-dessus du siège. 9 suffit :
-                  //      le haut du logement de tête est à 5,5 au-dessus de l'axe.
+boss_bas  = 5;    // mm — de combien il descend sous le trou d'entrée (Ø 7,5)
+boss_haut = 8;    // mm — et de combien il monte au-dessus du siège. 8 suffit :
+                  //      le haut du logement de tête est à 4,5 au-dessus de l'axe.
                   //      Chaque millimètre gagné ici fait redescendre la pièce.
 boss_Dhaut = 5;   // mm — extinction du renflement au-dessus du noyau, vers l'arase
 boss_Dbas  = 5;   // mm — et au-dessous, vers le fond
@@ -131,27 +148,33 @@ n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'envelop
 // signalé.
 assert(dos_ep <= col_h + porteur,
        "dos_ep depasse la longueur de tige libre : la plaque ne peut pas se glisser sous la tete");
+// Le chanfrein doit laisser la tête porter : ouvert au Ø de la tête, elle
+// traverserait la fente.
+assert(fente_vis + 2 * chanfrein < tete_d - 0.5,
+       "chanfrein trop large : la tete fraisee passerait a travers la fente");
+assert(chanfrein < porteur - 0.8, "chanfrein trop profond pour la plaque porteuse");
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
 // même travail, mieux, et sans piège.
 
 // --- Bac ----------------------------------------------------------------------
 
-larg     = 182;   // mm — largeur hors tout. La zone profonde vaut 85 UTILES,
+larg     = 181;   // mm — largeur hors tout. La zone profonde vaut 85 UTILES,
                   //      imposée par la poche à tabac debout ; le reste va à la
                   //      zone peu profonde. À 135 elle ne faisait que 47 mm, le
                   //      crochet en prenait 30 et frôlait le galbe.
-                  //      175 → 182 quand les inserts ont reçu des parois pleine
-                  //      hauteur : quatre fois `ins_ep` (1,7) en travers, rendus
+                  //      175 → 181 quand les inserts ont reçu des parois pleine
+                  //      hauteur : quatre fois `ins_ep` (1,5) en travers, rendus
                   //      pour que chaque compartiment garde sa largeur.
 bac_h    = 95;    // mm — hauteur hors tout du côté PROFOND. Fixée d'abord par la
                   //      règle « lunettes à moins de 35 mm au-dessus des vis »,
                   //      gardée depuis pour les proportions. Cette règle est
                   //      abandonnée : voir `z_vis`.
-bac_int  = 81.4;  // mm — profondeur intérieure de la coque. L'insert en prend
-                  //      9,3 au fond (il passe devant les renflements) et 1,7 à
-                  //      l'avant (sa paroi) : il reste 40 mm à la fente à
-                  //      lunettes, pour des lunettes de 37,6.
+bac_int  = 80.5;  // mm — profondeur intérieure de la coque. C'est le CROCHET qui
+                  //      la fixe désormais : sa portée de 84 doit tenir dans la
+                  //      profondeur hors tout (assertion). L'insert prend 6,8 au
+                  //      fond (il passe devant les renflements) et 1,5 à l'avant :
+                  //      la fente à lunettes a 41,8 mm, pour des lunettes de 37,6.
                   //      Historique : Gagne 8 mm sur la version
                   //      à dos plein, alors que la pièce en perd 15 hors tout :
                   //      c'est l'épaisseur de fixation qu'on ne traîne plus
@@ -277,7 +300,11 @@ insert_paroi  = 1.2; // mm — paroi de l'insert, PLEINE HAUTEUR, 3 périmètres
 cadre_h = 2.0;       // mm — épaisseur du bandeau arrière à son bord, contre la
                      //      plaque. Au-dessous, un encorbellement à 45° le porte.
 cadre_pas = 0.25;    // mm — pas vertical du champ de hauteur de l'encorbellement
-insert_jeu = 0.5;    // mm — jeu entre l'insert et la coque, par côté. C'est le
+insert_jeu = 0.3;    // mm — jeu entre l'insert et la coque, par côté. 0,5 donnait
+                     //      1 mm de ballant et un filet trop large entre les deux
+                     //      couleurs ; 0,3 couvre encore la patte d'éléphant et
+                     //      l'écart de cote courant. À valider sur PIECE=essai.
+                     //      C'est le
                      //      retrait DIFFÉRENTIEL des deux pièces qui compte, pas
                      //      le retrait absolu : même matière, même machine.
 
@@ -403,11 +430,10 @@ y_tab = yi0_ins + 30;  // épaisseur d'une poche à tabac debout, depuis la paro
                       // arrière de l'insert
 y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
 
-// [x0, x1, y0, y1, z du fond]
+// [x0, x1, y0, y1]
 //
-// Le dernier champ place le fond du compartiment, et c'est lui qui répartit les
-// objets entre la zone profonde et la zone peu profonde. Les deux niveaux se
-// retrouvent dans la coque ET dans l'insert, puisque les deux se calculent d'ici.
+// Plus de niveau de fond par compartiment : le fond suit partout le dessous de la
+// coque, galbe compris (voir `plancher`). C'est la zone qui décide du niveau.
 //
 // TOUS les compartiments au même congé r_coin, et ce n'est pas un choix
 // esthétique : l'insert se calcule comme « l'intérieur moins les compartiments ».
@@ -419,12 +445,12 @@ cxt = x_tab - ins_ep;              // contre la cloison centrale, côté profond
 cxc = x_tab + cloison + ins_ep;    // et côté peu profond
 cy1 = yi1 - ins_ep;                // contre la paroi avant
 cuves = [
-    [cx0,             cxt,   yi0_ins,         y_tab, fond_bas ],  // tabac, DEBOUT
-    [cx0,             x_lun, y_tab + cloison, cy1,   fond_bas ],  // lunettes, DEBOUT
-    [x_lun + cloison, cxt,   y_tab + cloison, cy1,   fond_bas ],  // stylos, grands objets
-    [cxc,             x_cab, yi0_ins,         y_cab, fond_haut],  // câbles USB
-    [x_cab + cloison, cx1,   yi0_ins,         y_cab, fond_haut],  // briquets
-    [cxc,             cx1,   y_cab + cloison, cy1,   fond_haut],  // petites bricoles
+    [cx0,             cxt,   yi0_ins,         y_tab],  // tabac, DEBOUT
+    [cx0,             x_lun, y_tab + cloison, cy1  ],  // lunettes, DEBOUT
+    [x_lun + cloison, cxt,   y_tab + cloison, cy1  ],  // stylos, grands objets
+    [cxc,             x_cab, yi0_ins,         y_cab],  // câbles USB
+    [x_cab + cloison, cx1,   yi0_ins,         y_cab],  // briquets
+    [cxc,             cx1,   y_cab + cloison, cy1  ],  // petites bricoles
 ];
 
 // Les deux niveaux du bac. La cloison qui les sépare appartient à la COQUE et
@@ -434,11 +460,40 @@ cuves = [
 // Chaque zone reçoit donc son propre insert. Deux petites pièces plutôt qu'une,
 // et un agencement se change zone par zone.
 //
-// [x0, x1, z du fond]
+// [x0, x1]
 zones = [
-    [xi0,             x_tab, fond_bas ],   // profonde     — 91 mm
-    [x_tab + cloison, xi1,   fond_haut],   // peu profonde — 45 mm
+    [xi0,             x_tab],   // profonde     — 92 mm
+    [x_tab + cloison, xi1  ],   // peu profonde — 46 mm sur le plat, 92 au pied du galbe
 ];
+
+// LE FOND, pour la coque comme pour l'insert : le dessous de la coque, rentré de
+// `fond` + `retrait`, perpendiculairement à la surface.
+//
+// Il était à deux niveaux plats, 2,8 et 48,8. Sous le côté peu profond, le galbe
+// laissait donc un socle PLEIN de 45 mm de large et jusqu'à 46 de haut — de la
+// place perdue. Le fond suit maintenant le S : au pied de la cloison, les
+// compartiments câbles et bricoles descendent aussi bas que la zone profonde.
+//
+// Le contour est prolongé de 20 mm au-delà des flancs, et sans ses arrondis
+// d'angle : ce sont les flancs de l'enveloppe intérieure qui bornent sur les
+// côtés, et ses arrondis qui bornent aux coins. Lui ne règle que le fond.
+function pts_fond() =
+    let (b = pts_bas())
+    concat([[-larg / 2 - 20, 0]],
+           [for (i = [1 : len(b) - 2]) b[i]],
+           [[larg / 2 + 20, marche], [larg / 2 + 20, z_haut + 60],
+            [-larg / 2 - 20, z_haut + 60]]);
+//
+// BALAYÉ avec le même arrondi avant que l'enveloppe intérieure, et non extrudé
+// droit. L'enveloppe remonte de d(y) en approchant de la face avant ; un fond
+// droit, lui, restait à 2,8. À la profondeur où d valait 0,4, les deux —
+// décalages du MÊME S, de 2,4 + d et de 2,8 — se confondaient sur tout le galbe :
+// 18 arêtes non-variété. Balayés ensemble, ils restent à 0,4 l'un de l'autre.
+function chemin_fond(retrait) =
+    offset(pts_fond(), r = -(fond + retrait), closed = true);
+module plancher(retrait = 0) {
+    sweep_y(dos_ep, prof - dos_ep, r_av_bac, chemin_fond(retrait));
+}
 
 // --- Outils de construction ---------------------------------------------------
 
@@ -637,12 +692,23 @@ module canaux(xc) {
         en_travers(-EPS, col_h + EPS)
             fente_2d(col_d + jeu_col, z_entree, z_vis);
 
-        // 2. la tige lisse — c'est cette fente qui porte — et le trou par lequel
-        //    la tête traverse la plaque au moment de la pose
+        // 2. la tige — c'est cette fente qui porte — et le trou par lequel la
+        //    tête traverse la plaque au moment de la pose
         en_travers(col_h, porteur) {
-            fente_2d(vis_d + jeu_vis, z_entree, z_vis);
+            fente_2d(fente_vis, z_entree, z_vis);
             translate([0, z_entree]) circle(d = tete_d + jeu_entree);
         }
+        // 2 bis. son chanfrein à 45°, côté tête, sur toute la course : le cône de
+        //    la tête fraisée y porte en siège, et y glisse pendant la descente
+        //    Il part 0,1 mm plus bas et plus étroit que la fente, toujours à 45° :
+        //    parti pile à sa largeur, il en longeait les flancs au lieu de les
+        //    couper.
+        hull() for (zz = [z_entree, z_vis])
+            translate([0, col_h + porteur - chanfrein - 0.1, zz])
+                rotate([-90, 0, 0])
+                    cylinder(d1 = fente_vis - 0.2,
+                             d2 = fente_vis + 2 * (chanfrein + EPS),
+                             h = chanfrein + 0.1 + EPS);
 
         // 3. le logement de la tête, devant la plaque
         en_travers(col_h + porteur, loge_e)
@@ -807,9 +873,11 @@ module cavites() {
         // tranchaient le renflement de fixation, qui vit précisément là et
         // s'avance dans l'emprise du bac. Dix millimètres de commodité
         // détruisaient la fixation, sans un mot.
+        // le fond : c'est lui qui le fait, pas le prisme, parti 1 mm dessous
+        plancher();
         union() for (z = zones)
-            translate([0, 0, z[2]])
-                linear_extrude(z_haut - z[2] + EPS)
+            translate([0, 0, fond_bas - 1])
+                linear_extrude(z_haut - fond_bas + 1 + EPS)
                     zone_2d(z);
     }
 }
@@ -838,36 +906,19 @@ module zone_2d(z) {
     }
 }
 
-// Pas d'évidement sous le socle du côté peu profond : il est PLEIN.
+// Sous le côté peu profond, plus de socle plein : le fond suit le galbe.
 //
-// Il a été creux, et c'est ce creux qui perçait la coque — il débouchait par la
-// lèvre avant, là où la profondeur change. Refermé proprement, il devenait une
-// cavité scellée de 60 cm³ dont le plafond est la face avant : en orientation
-// d'impression — dos sur le plateau, donc la profondeur en hauteur — c'est un
-// pontage de 80 × 40 mm à 80 mm de haut, et aucun trancheur ne sait poser de
-// support à l'intérieur d'un volume fermé. Il s'affaisserait.
-//
-// Un socle plein coûte 60 cm³ de volume modèle, mais le trancheur les remplit au
-// taux qu'on lui donne : une dizaine de grammes de plastique en plus, contre un
-// pontage impossible — et la pièce est plus rigide juste au-dessus du crochet.
+// Il ne faut pas pour autant le CREUSER par-dessous. Un évidement sous le socle
+// a existé : il perçait la coque par la lèvre avant, et refermé proprement il
+// devenait une cavité scellée de 60 cm³ dont le plafond est la face avant — un
+// pontage de 80 × 40 mm à 80 mm de haut en orientation d'impression, sans aucun
+// support possible dans un volume fermé. Le fond galbé, lui, est ouvert par le
+// haut : couchée sur le dos, la coque le trace comme un simple contour.
 module bac() {
     difference() { bac_plein(); cavites(); }
 }
 
 // --- Insert -------------------------------------------------------------------
-
-// Le contour d'un insert : l'intérieur de sa zone, rétréci du jeu de montage.
-//
-// Coins arrière : ceux de `zone_2d`, concentriques à la cavité. Le corps commence
-// à `y_ins`, au-delà de leur arrondi ; c'est le bandeau, au-dessus, qui les
-// épouse. Des coins de corps arrondis pour leur compte laissaient contre le flanc,
-// juste sous le bandeau, une encoche que l'on voyait d'en haut.
-module contour_2d(z) {
-    intersection() {
-        offset(r = -insert_jeu) zone_2d(z);
-        translate([-BIG / 2, y_ins]) square(BIG);
-    }
-}
 
 // L'insert d'une zone, en bloc : son contour sur toute la hauteur, plus le
 // bandeau arrière. Les compartiments y sont creusés ensuite, d'un seul coup pour
@@ -877,15 +928,22 @@ module contour_2d(z) {
 // cloisons sans fond, pour ne pas empiler deux fonds : elle économisait 29 g et
 // ne touchait le plateau que par la tranche de ses parois — 7 cm² pour toute la
 // pièce. Fragile à l'impression comme à la main.
+//
+// Le contour est celui de `zone_2d` rétréci du jeu : coins concentriques à ceux de
+// la cavité. Le corps commence à `y_ins`, devant les renflements ; le bandeau le
+// prolonge jusqu'à la plaque. On les UNIT d'abord, on les borne ensuite, une seule
+// fois : bornés chacun de son côté par le même arc, ils se touchaient le long de
+// cet arc au lieu de se fondre (arête non-variété au coin, côté cloison).
 module bloc_zone(z) {
-    translate([0, 0, z[2]])
-        linear_extrude(z_haut - z[2] + 1) contour_2d(z);
     intersection() {
-        bandeau();
-        // limité à la zone ; ses coins arrière épousent ceux de la cavité
-        translate([0, 0, z_b45 - 1])
-            linear_extrude(z_haut - z_b45 + 3)
+        translate([0, 0, fond_bas - 1])
+            linear_extrude(z_haut - fond_bas + 2)
                 offset(r = -insert_jeu) zone_2d(z);
+        union() {
+            translate([-BIG / 2, y_ins, fond_bas - 1])
+                cube([BIG, BIG, z_haut - fond_bas + 2]);
+            bandeau();
+        }
     }
 }
 
@@ -950,8 +1008,14 @@ module bandeau() { vnf_polyhedron(bandeau_vnf()); }
 //    l'avant ; ses parois de 2,4 n'en portent que la naissance. Rogné par la même
 //    surface, le dessus des parois d'insert en prend la suite : un seul galbe,
 //    en deux couleurs, coupé par le jeu ;
-// 3. les compartiments, creusés dans l'enveloppe rentrée de jeu + paroi, pour que
-//    la paroi d'insert garde son épaisseur là où la coque se resserre.
+// 3. le fond de la coque, relevé du jeu : l'insert l'épouse, galbe compris ;
+// 4. les compartiments, creusés dans l'enveloppe rentrée de jeu + paroi, pour que
+//    la paroi d'insert garde son épaisseur là où la coque se resserre, et au-dessus
+//    du fond relevé de jeu + `insert_fond`.
+//
+// L'insert peu profond, à fond galbé, NE S'IMPRIME PAS SANS SUPPORT : debout sur
+// son point bas, la partie plate de son fond est un plafond à 46 mm du plateau.
+// Supports sous le fond seulement — la face cachée, posée dans la coque.
 //
 // Séparations et parois viennent toutes de la liste `cuves` : l'insert est « son
 // contour moins ses compartiments ». Une seule description, pas de divergence.
@@ -960,6 +1024,7 @@ module insert() {
         extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac, n_galbe)
             enveloppe_int_2d(insert_jeu);
         bac_plein();
+        plancher(insert_jeu);
         difference() {
             union() for (z = zones) bloc_zone(z);
             intersection() {
@@ -967,9 +1032,10 @@ module insert() {
                 // cuve qui fait la paroi, et les deux faces ne coïncident pas
                 extrude_arrondi(dos_ep, prof - dos_ep, r_av_bac, n_galbe)
                     enveloppe_int_2d(ins_ep - 0.05);
+                plancher(insert_jeu + insert_fond);
                 union() for (c = cuves)
-                    translate([0, 0, c[4] + insert_fond])
-                        linear_extrude(z_haut - c[4])
+                    translate([0, 0, fond_bas - 1])
+                        linear_extrude(z_haut - fond_bas + 2)
                             rect_2d(c[0], c[1], c[2], c[3]);
             }
         }
@@ -1271,16 +1337,32 @@ module panier() {
 
 // Réglet de perçage de la seconde cheville : se pose sur la première, se met de
 // niveau, et donne le point à pointer. Consommable, imprimé à plat.
+// Le gabarit : un réglet qui se coiffe sur la tête de la première vis et marque
+// l'avant-trou de la seconde, plus une CALE qui règle leur profondeur.
+//
+// La profondeur de vissage n'est plus libre : la plaque se glisse entre le bois
+// et le cône avec 0,5 mm de jeu axial seulement. La cale est une fourche
+// d'épaisseur `cale_e` : glissée sous la tête contre le bois, on visse jusqu'à ce
+// que le cône vienne la pincer. Son épaisseur tient compte de ce que le cône
+// porte sur les bords de la fourche, pas sur la tige.
+cale_fente = vis_d + 0.4;                           // 3,4
+cale_e     = vis_l + (cale_fente - vis_d) / 2;      // 1,7
 module gabarit() {
     ep = 4;
     h  = 24;
     difference() {
-        translate([-entraxe / 2 - 15, 0, 0])
-            cube([entraxe + 30, h, ep]);
+        union() {
+            translate([-entraxe / 2 - 15, 0, 0])
+                cube([entraxe + 30, h, ep]);
+            translate([entraxe / 2 + 15 - EPS, h / 2 - 6, 0])
+                cube([24, 12, cale_e]);
+        }
         translate([-entraxe / 2, h / 2, -EPS])
-            cylinder(d = col_d + jeu_col, h = ep + 2 * EPS);
+            cylinder(d = tete_d + jeu_col, h = ep + 2 * EPS);   // sur la tête
         translate([entraxe / 2, h / 2, -EPS])
-            cylinder(d = 3, h = ep + 2 * EPS);
+            cylinder(d = 2, h = ep + 2 * EPS);                  // avant-trou Ø 2
+        translate([entraxe / 2 + 25, h / 2 - cale_fente / 2, -EPS])
+            cube([20, cale_fente, ep]);                         // la fourche
     }
 }
 
@@ -1289,7 +1371,8 @@ module vis_reelle() {
     rotate([-90, 0, 0]) {
         cylinder(d = col_d,  h = col_h);
         translate([0, 0, col_h])          cylinder(d = vis_d,  h = vis_l);
-        translate([0, 0, col_h + vis_l])  cylinder(d = tete_d, h = tete_h);
+        translate([0, 0, col_h + vis_l])  cylinder(d1 = vis_d, d2 = tete_d, h = tete_cone);
+        translate([0, 0, col_h + vis_l + tete_cone]) cylinder(d = tete_d, h = tete_bord);
     }
 }
 
@@ -1299,6 +1382,26 @@ module montage() {
         translate([s * entraxe / 2, 0, z_vis]) vis_reelle();
     translate([-larg / 2 - 20, -18, -20])
         cube([larg + 40, 18, z_top + 40]);
+}
+
+// PIÈCE D'ESSAI — les `essai_h` derniers millimètres de la coque et de l'insert,
+// côte à côte, posés sur leur coupe. Un quart d'heure d'impression pour valider
+// `insert_jeu` avant d'engager 400 cm³ : l'anneau d'insert doit entrer dans
+// l'anneau de coque sans forcer et sans ballotter. Imprimer les deux dans la
+// matière et sur la machine de la vraie pièce.
+essai_h = 10;   // mm
+module essai() {
+    translate([0, 0, -(z_haut - essai_h)]) {
+        intersection() {
+            coque();
+            translate([-BIG / 2, -BIG / 2, z_haut - essai_h]) cube(BIG);
+        }
+        translate([0, -(prof + 8), 0])
+            intersection() {
+                insert();
+                translate([-BIG / 2, -BIG / 2, z_haut - essai_h]) cube(BIG);
+            }
+    }
 }
 
 module main() {
@@ -1315,6 +1418,7 @@ module main() {
     else if (PIECE == "descente") descente();
     else if (PIECE == "peau")     peau();
     else if (PIECE == "jointure") jointure();
+    else if (PIECE == "essai")    essai();
     else                         panier();
 }
 
