@@ -483,18 +483,31 @@ x_brq  = cxc + briq_l;              // frontière briquets / câbles
 x_cab  = (x_brq + cx1) / 2;         // frontière câbles / petits objets : le reste
                                     // du rang arrière, en deux cases égales
 
-z_brq = z_haut - briq_prof;         // 23 — le replat ; le fond de la case est le
-                                    //      plus haut du replat et du galbe (~13 mm
-                                    //      de replat, puis le galbe)
+z_brq = z_haut - briq_prof;         // 19 — le replat ; le fond de la case est le
+                                    //      plus haut du replat et du galbe : 11 mm
+                                    //      de plat, puis le galbe
+
+// DEUX AUTRES REPLATS, pour la même raison : un fond qui suit le galbe arrive
+// contre la paroi en formant un angle d'autant plus fermé que le galbe est raide,
+// et tout ce qui est menu s'y coince.
+//
+// Le galbe monte à 60° au bord gauche du compartiment à câbles : l'angle avec la
+// paroi n'y fait que 30°. Il ne monte qu'à 19° au bord des bricoles, mais le fond
+// y descend à 90 mm — un puits où tout finit par glisser.
+cab_prof  = 47;                     // mm — câbles : 11 mm de plat des 30,5, le reste
+                                    //      suit le galbe
+bric_prof = 70;                     // mm — bricoles : 14 mm de plat des 82,8
+z_cab  = z_haut - cab_prof;         // 48
+z_bric = z_haut - bric_prof;        // 25
 
 cuves = [
     [cx0,             cxt,   yi0_ins,         y_tab],  // tabac, DEBOUT
     [cx0,             x_lun, y_tab + cloison, cy1  ],  // lunettes, DEBOUT
     [x_lun + cloison, cxt,   y_tab + cloison, cy1  ],  // stylos, grands objets
     [cxc,             x_brq, yi0_ins,         y_cab, z_brq],  // briquets, DEBOUT
-    [x_brq + cloison, x_cab, yi0_ins,         y_cab],  // câbles USB
+    [x_brq + cloison, x_cab, yi0_ins,         y_cab, z_cab],  // câbles USB
     [x_cab + cloison, cx1,   yi0_ins,         y_cab],  // petits objets
-    [cxc,             cx1,   y_cab + cloison, cy1  ],  // petites bricoles
+    [cxc,             cx1,   y_cab + cloison, cy1,   z_bric], // petites bricoles
 ];
 
 // Les deux niveaux du bac. La cloison qui les sépare appartient à la COQUE et

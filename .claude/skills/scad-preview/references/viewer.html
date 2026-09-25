@@ -147,6 +147,8 @@
   .boutons, .pieces { display: flex; gap: 6px; flex-wrap: wrap; }
   .commandes { display: flex; flex-direction: column; gap: 6px; }
   .pieces button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .pieces button[aria-pressed="false"] { opacity: .45; }
+  .pieces button[aria-pressed="false"] .pastille { filter: grayscale(1); }
   .pastille { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
              margin-inline-end: 6px; vertical-align: -1px; }
   .hud button {
@@ -374,24 +376,30 @@
   socle.rotation.x = -Math.PI / 2;
   scene.add(socle);
 
-  // Un bouton par pièce, plus « Tout », dès qu'il y en a plusieurs.
+  // UN INTERRUPTEUR PAR PIÈCE, dès qu'il y en a plusieurs. Chacun allume ou éteint
+  // la sienne, indépendamment des autres : on compare deux pièces sur trois, on
+  // regarde une pièce seule, on remet tout. Ils ont d'abord été des boutons
+  // exclusifs — « Tout », puis une pièce à la fois —, ce qui interdisait justement
+  // les combinaisons intéressantes.
+  //
+  // La dernière pièce allumée ne peut pas s'éteindre : une scène vide n'apprend
+  // rien et laisse le lecteur devant une grille nue sans comprendre pourquoi.
   if (PIECES.length > 1) {
     var zone = document.getElementById("pieces");
-    var choix = [{ nom: "Tout", k: -1 }].concat(PIECES.map(function (pc, k) { return { nom: pc.nom, k: k }; }));
-    zone.innerHTML = choix.map(function (c) {
-      var pastille = c.k < 0 ? "" : '<span class="pastille" style="background:' +
-        (lire(TEINTES[c.k % 3]) || DEFAUTS[c.k % 3]) + '"></span>';
-      return '<button type="button" data-piece="' + c.k + '" aria-pressed="' + (c.k < 0) + '">' +
-             pastille + c.nom + "</button>";
+    zone.innerHTML = PIECES.map(function (pc, k) {
+      return '<button type="button" data-piece="' + k + '" aria-pressed="true">' +
+             '<span class="pastille" style="background:' +
+             (lire(TEINTES[k % 3]) || DEFAUTS[k % 3]) + '"></span>' + pc.nom + "</button>";
     }).join("");
     zone.hidden = false;
     zone.querySelectorAll("button").forEach(function (b) {
       b.addEventListener("click", function () {
         var k = Number(b.dataset.piece);
-        mailles.forEach(function (m, i) { m.visible = k < 0 || i === k; });
-        zone.querySelectorAll("button").forEach(function (x) {
-          x.setAttribute("aria-pressed", String(x === b));
-        });
+        var on = b.getAttribute("aria-pressed") !== "true";
+        var allumees = mailles.filter(function (m) { return m.visible; }).length;
+        if (!on && allumees <= 1) return;
+        mailles[k].visible = on;
+        b.setAttribute("aria-pressed", String(on));
         renderer.render(scene, camera);
       });
     });
