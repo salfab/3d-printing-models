@@ -27,18 +27,28 @@ coulisse : **tête Ø 6, tige Ø 3**. Fraisure à 90°, donc un cône de 1,5 mm 
 bord cylindrique au-dessus est **estimé** à 0,2 (`tete_bord`).
 
 Elle remplace une vis à tête cylindrique de Ø 8 × 3, et c'est la hauteur de tête
-qui compte. Le cône ne se pose pas devant la plaque porteuse : il s'enfonce dans la
-fente, chanfreinée à 45° côté tête (`chanfrein` = 0,6). Il y porte sur un anneau
-de Ø 3,8 à 5,0 au lieu de deux arêtes, et se centre de lui-même. Il ne dépasse plus
-que de 0,7 mm devant la plaque.
+qui compte. La plaque porteuse est **fraisée au même cône**, avec `jeu_cone` = 0,3 mm :
+elle mord donc 1,0 mm DANS le cône, comme un fraisage de menuiserie. La tête y porte
+sur toute la surface conique et s'y centre.
 
 ```
-bois | 1,5 de tige libre | cône : 1,0 dans la plaque, 0,7 devant | 1,0 de jeu | peau 1,6
-     └────────── plaque porteuse 2,0 ──────────┘
+bois | 1,5 de tige libre | fraisage : 1,0 dans la plaque | 0,4 de cone + 0,2 de bord | 0,4 de jeu | peau 1,2
+     └───────────── plaque porteuse 2,6 ─────────────┘└────────── logement 1,0 ──────────┘
 ```
 
-L'épaisseur au droit des vis tombe de **7,6 à 5,3 mm**, les bosses de 20 à 18 mm de
-large, et l'insert se rapproche du mur d'autant.
+**Il y a eu un faux fraisage**, et c'est le genre d'erreur qui ne se voit pas sur un
+rendu : un « chanfrein » de 0,6 mm, bien à 45° comme le cône, mais décalé de 0,5 mm
+au rayon. Deux surfaces parallèles qui ne se rencontraient **jamais** : la tête
+n'appuyait qu'après que le panier ait avancé de 0,5 mm, et sur un anneau de 0,55 mm
+de large. Mesuré en plaçant la vis dans le canal — le calcul qui l'avait produit
+supposait un point de contact qui n'existait pas sur le cône.
+
+L'épaisseur au droit des vis vaut **4,8 mm**, contre 7,6 avec l'ancienne vis. Elle
+serait passée à 5,8 avec le vrai fraisage si deux vides n'avaient pas été repris en
+même temps : le logement de tête était calibré pour une tête de Ø 8 (1,5 mm de vide
+au rayon, `jeu_tete` de 3 à 2) et la peau avant faisait quatre passes de buse là où
+trois suffisent (`dos_av` de 1,6 à 1,2). Bilan : **0,5 mm de gagné**, et un siège
+qui porte. Les bosses tombent de 20 mm de large à 11.
 
 **La profondeur de vissage n'est plus libre.** La plaque se glisse entre le bois et
 le cône avec 0,5 mm de jeu axial : vissée trop profond, la vis ne laisse plus
@@ -167,9 +177,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 185,1 cm³ | 181,0 × 84,9 × 95,0 mm |
-| Inserts (2 corps) | 134,4 cm³ (73,9 + 60,5) | 175,6 × 79,9 × 91,9 mm |
-| **Total** | **319,5 cm³** | |
+| Coque | 184,8 cm³ | 181,0 × 84,9 × 95,0 mm |
+| Inserts (2 corps) | 135,0 cm³ (74,2 + 60,8) | 175,6 × 79,9 × 91,9 mm |
+| **Total** | **319,8 cm³** | |
 
 La coque a perdu 75 cm³ quand le fond s'est mis à suivre le galbe : le socle plein
 sous le côté peu profond a disparu.
@@ -184,17 +194,18 @@ dixième de cm³.
 | Cote | Valeur | Origine |
 |---|---|---|
 | Épaisseur du dos, hors fixation | 2,0 mm | `dos_ep` |
-| Épaisseur au droit des vis | 5,3 mm | `col_h + porteur + loge_e + dos_av` — 7,6 avec l'ancienne vis |
-| Plaque porteuse | 2,0 mm | `vis_l − 0,5 + enfonce` — 1,5 de tige libre, le cône s'y enfonce de 1,0 |
-| Chanfrein du siège | 0,6 mm à 45° | `chanfrein` — le cône porte sur Ø 3,8 → 5,0 |
+| Épaisseur au droit des vis | **4,8 mm** | `col_h + porteur + loge_e + dos_av` — 7,6 avec l'ancienne vis |
+| Plaque porteuse | 2,6 mm | `tete_bout − fraise_reste` — elle mord 1,0 mm dans le cône |
+| Fraisage du siège | cône à 45°, Ø 3,8 → 5,8 | `jeu_cone` = 0,3 — 19 mm² de portée |
+| Peau avant | 1,2 mm | `dos_av` — trois passes de buse ; elle ne porte rien |
 | Course d'enfilage | 8 mm | `course`, déduite : rayon du trou d'entrée + rayon de la tête + 1 mm d'appui |
-| Axe des vis | z = 66,8, **28 mm sous l'arase** | au plus bas : le renflement droit se pose à 2 mm du fond peu profond |
-| Renflements | z = 50,8 → 74,8, noyau Ø 12 | minimaux : 1,5 mm autour du logement, raccord sur 2 mm |
+| Axe des vis | z = 66,3, **29 mm sous l'arase** | au plus bas : le renflement droit se pose à 2 mm du fond peu profond |
+| Renflements | noyau Ø 11 | minimaux : 1,5 mm autour du logement, raccord sur 2 mm |
 | Paroi arrière de l'insert | S de 5,6 à 2,3 mm du mur, sur 20,2 mm (z = 74,8 → 95) | `y_arr`, 17° au plus fort |
 | Entraxe des chevilles | 124 mm | 17,1 mm entre noyau et flanc, pour que le renflement s'y éteigne |
 | Fente de tige | 3,8 mm | `vis_d + jeu_vis` |
 | Trou de passage de la tête | 7,5 mm | `tete_d + jeu_entree` |
-| Logement de tête | Ø 9,0 × 1,7 mm | `tete_d + jeu_tete`, `loge_e` |
+| Logement de tête | Ø 8,0 × 1,0 mm | `tete_d + jeu_tete`, `loge_e` — la tête n'en dépasse que de 0,6 |
 | Profondeur, zone profonde | 92,2 mm | `bac_h − fond_bas` |
 | Profondeur, zone peu profonde | 46,2 mm sur le plat, 92 au pied du galbe | le fond suit le dessous : `plancher` |
 | Marche entre les deux niveaux | 46 mm sur 45 de galbe | `marche`, `galbe` |
@@ -420,7 +431,7 @@ Chacun s'est manifesté en arêtes non-variété, et se voyait à l'écran comme
 
 ### Les renflements de fixation : la plaque qui gonfle
 
-Autour de chaque vis, le dos passe de `dos_ep` = 2,0 mm à `dos_e` = 5,3 mm. La façon
+Autour de chaque vis, le dos passe de `dos_ep` = 2,0 mm à `dos_e` = 4,8 mm. La façon
 dont il y passe a changé cinq fois ; chaque étape a levé un défaut précis.
 
 1. **Deux plaques posées sur l'arche** — des mottes, arête franche tout autour.
@@ -472,10 +483,10 @@ Ce qu'il faut savoir avant d'y toucher :
   creusement. Retranché avec le reste, il disparaîtrait — il est tout entier dans
   le volume des compartiments.
 - **L'insert les cache : c'est un petit bac.** Son corps passe DEVANT les
-  renflements, à `dos_e` + jeu = 5,6 mm du mur, et ses compartiments arrière
-  commencent une paroi plus loin (`yi0_ins` = 6,8). Au-dessus des renflements, sa
+  renflements, à `dos_e` + jeu = 5,1 mm du mur, et ses compartiments arrière
+  commencent une paroi plus loin (`yi0_ins` = 6,3). Au-dessus des renflements, sa
   paroi arrière recule en S jusqu'à la plaque (ci-dessous).
-- **Ça coûte 6,8 mm au fond de chaque compartiment arrière** (9,3 avec l'ancienne
+- **Ça coûte 6,3 mm au fond de chaque compartiment arrière** (9,3 avec l'ancienne
   vis).
 - **Sa hauteur est bornée des deux côtés.** Par l'arase au-dessus — sinon il
   dépasse du bord (assertion) — et par le fond du côté peu profond
@@ -602,6 +613,14 @@ Trois versions l'ont précédé :
 
 ### Bornes des paramètres
 
+- **La plaque porteuse ne doit pas dépasser le cône** (`porteur < tete_bout`) :
+  au-delà elle buterait sur le petit bord cylindrique de la tête, et le fraisage ne
+  porterait plus.
+- **Le logement de tête doit rester STRICTEMENT plus large que le trou d'entrée**,
+  qu'il prolonge en y. À égalité, leurs deux contours coïncident dans le plan qui
+  les sépare : 116 arêtes non-variété, mesurées. Assertion.
+- **Le fraisage se prolonge de 0,3 mm dans le logement.** Fini pile au plan de la
+  face avant, il y coïncidait avec le début du logement.
 - **`dos_ep` ≤ `col_h + porteur`** — assertion. La plaque se glisse entre le bois et
   la tête ; plus épaisse que la tige libre, elle ne passe pas, et la fente de tige ne
   traverse même plus. C'est ce qu'a cassé le passage aux vis courtes.
@@ -644,7 +663,7 @@ Ils sont dans le modèle, pas dans un script à part, et se lancent comme une pi
 | `PIECE=` | Ce qu'il vérifie | Résultat attendu |
 |---|---|---|
 | `descente` | que les inserts descendent malgré les renflements — projection de l'insert ∩ projection de ce qui dépasse de l'arase OU de la paroi arrière | **vide** (`Current top level object is empty`) |
-| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 230 mm³ (12 × 0,8 × (course + 4), deux fois) |
+| `peau` | qu'il reste de la matière devant chaque logement de tête | **plein**, 115 mm³ (12 × 0,4 × (course + 4), deux fois) |
 | `jointure` | qu'il ne reste aucun jour entre la racine du crochet et le dessous de la coque | **vide** |
 
 Un renflement mal placé rend `peau` creux ; un renflement trop gros rend `descente`
@@ -661,9 +680,14 @@ non vide. Les deux sont muets si on ne les lance pas.
 - [ ] **Le jeu de 0,3 mm**, sur la pièce d'essai, avant toute chose : l'anneau
       d'insert entre sans forcer et sans ballotter ? C'est aussi le filet entre les
       deux couleurs.
-- [ ] **Hauteur réelle de la tête SPAX** : `tete_bord` = 0,2 est estimé. Si le bord
-      cylindrique est plus haut, le logement (1 mm de jeu devant la tête) l'absorbe
-      jusqu'à 1 mm de plus.
+- [ ] **Hauteur réelle de la tête SPAX** : `tete_bord` = 0,2 est estimé, et le
+      logement ne laisse plus que 0,4 mm de jeu devant la tête. Un bord plus haut
+      s'absorbe en remontant `loge_e`.
+- [ ] **Le fraisage est exigeant sur la profondeur de vissage** : 0,3 mm de jeu
+      seulement. Vissée trop profond, la plaque ne se glisse plus. C'est la cale du
+      gabarit qui le règle — et c'est elle qu'il faut vérifier en premier.
+- [ ] **La peau avant à 1,2 mm** est un pontage de 8 mm à l'impression. Regarder
+      qu'elle sorte propre, et que la vis ne se devine pas au travers.
 - [ ] **La cale du gabarit** : la vis réglée avec elle laisse-t-elle passer la plaque
       avec un peu de jeu, sans flotter ?
 - [ ] **Le fond galbé de l'insert peu profond** : supports faciles à retirer, et

@@ -74,10 +74,17 @@ tete_d   = 6.0;   // mm — Ø de la tête
 tete_cone = (tete_d - vis_d) / 2;   // 1,5 — hauteur du cône, fraisure à 90°
 tete_bord = 0.2;  // mm — petit bord cylindrique au-dessus du cône (estimé)
 tete_h   = tete_cone + tete_bord;   // 1,7
-chanfrein = 0.6;  // mm — la fente de tige est chanfreinée à 45° côté tête : le
-                  //      cône y porte sur un anneau de Ø 3,8 à 5,0 au lieu de
-                  //      deux arêtes, et se centre de lui-même. Sans lui, le PLA
-                  //      se tasserait sous deux lignes de contact.
+jeu_cone = 0.3;   // mm — jeu entre le cône de la tête et le FRAISAGE de la plaque,
+                  //      mesuré au rayon. Les deux surfaces étant à 45°, c'est
+                  //      aussi le jeu axial : le panier avance de 0,3 mm, puis la
+                  //      tête porte sur toute la surface conique.
+                  //
+                  //      Il a existé ici un simple « chanfrein » de 0,6 mm, censé
+                  //      recevoir le cône. Il était bien à 45°, mais décalé de
+                  //      0,5 mm au rayon : deux surfaces parallèles qui ne se
+                  //      rencontraient JAMAIS. La tête n'appuyait qu'après avoir
+                  //      avancé d'autant, et sur un anneau de 0,55 mm de large.
+                  //      Mesuré en plaçant la vis dans le canal.
 
 entraxe  = 124;   // mm — écartement des deux chevilles. La seconde est à poser,
                   //      donc cette valeur est libre : assez large pour empêcher
@@ -91,28 +98,41 @@ entraxe  = 124;   // mm — écartement des deux chevilles. La seconde est à po
 
 jeu_col  = 0.8;   // mm — jeu diamétral dans le canal du fût
 jeu_vis  = 0.8;   // mm — jeu diamétral dans la fente de tige
-jeu_tete = 3.0;   // mm — le logement de tête ne guide rien, il dégage
+jeu_tete = 2.0;   // mm — le logement de tête ne guide rien, il dégage. Il valait
+                  //      3, calibré pour une tête de Ø 8 : sur une tête de Ø 6
+                  //      c'était 1,5 mm de vide au rayon, qui gonflait le
+                  //      renflement pour rien.
+                  //
+                  //      Il doit rester STRICTEMENT plus large que le trou
+                  //      d'entrée (`jeu_entree`), qu'il prolonge en y. À égalité
+                  //      leurs deux contours coïncident dans le plan qui les
+                  //      sépare : 116 arêtes non-variété, mesurées.
 
 // --- Dos ----------------------------------------------------------------------
 
 fente_vis = vis_d + jeu_vis;                   // 3,8 — la fente qui porte
-enfonce  = (fente_vis + 2 * chanfrein - vis_d) / 2;   // 1,0 — de combien le
-                                               // départ du cône est SOUS la face
-                                               // avant de la plaque, tête en siège
-porteur  = vis_l - 0.5 + enfonce;              // 2,0 — plaque porteuse : la tige
-                                               // libre moins 0,5 de jeu axial, plus
-                                               // ce que le cône y enfonce. Elle ne
-                                               // travaille qu'en cisaillement sous
-                                               // le poids : ~8,5 N sur 50 mm², soit
-                                               // 0,17 MPa.
-loge_e   = tete_h - enfonce + 1.0;             // 1,7 — la tête ne dépasse plus que
-                                               // de 0,7 devant la plaque ; 1 mm de
-                                               // jeu devant elle suffit.
-dos_av   = 1.6;                                // peau avant, celle qui cache tout :
-                                               // quatre passes de buse de 0,4. À 2,4
-                                               // elle rendait le renflement plus haut
-                                               // d'autant, sans rien cacher de plus.
-dos_e    = col_h + porteur + loge_e + dos_av;  // 5,3 — 7,6 avec l'ancienne vis
+tete_bout = col_h + vis_l + tete_cone;         // 3,0 — fin du cône, Ø max de la tête
+
+// LA PLAQUE PORTEUSE EST FRAISÉE, et mord donc DANS le cône : c'est ce qui la fait
+// tenir sans jeu. Elle s'arrête `fraise_reste` avant la fin du cône, pour ne jamais
+// buter sur le petit bord cylindrique qui le suit.
+fraise_reste = 0.4;                            // mm
+porteur  = tete_bout - fraise_reste;           // 2,6 — elle ne travaille qu'en
+                                               // cisaillement sous le poids :
+                                               // ~8,5 N sur 65 mm², soit 0,13 MPa.
+// Départ du fraisage : là où le cône décalé du jeu atteint le rayon de la fente.
+fraise_y0 = col_h + vis_l - vis_d / 2 + fente_vis / 2 - jeu_cone;   // 1,6
+
+loge_e   = (tete_bout + tete_bord) - porteur + 0.4;   // 1,0 — la tête ne dépasse
+                                               // plus que de 0,6 devant la plaque,
+                                               // et 0,4 de jeu suffit. Il en avait
+                                               // 1,7 pour 1,2 de tête : 0,5 de vide.
+dos_av   = 1.2;                                // peau avant, celle qui cache tout :
+                                               // trois passes de buse de 0,4. Elle ne
+                                               // porte rien, elle ferme le logement —
+                                               // un pontage de 7,5 mm à l'impression.
+dos_e    = col_h + porteur + loge_e + dos_av;  // 4,8 — 5,3 avant le fraisage, 7,6
+                                               // avec l'ancienne vis à tête cylindrique
 
 dos_ep   = 2.0;   // mm — épaisseur du dos PARTOUT SAUF au droit des vis. Toute
                   //      l'épaisseur de fixation (26 mm) n'est nécessaire que sur
@@ -155,11 +175,14 @@ n_galbe    = 34;  // marches du galbe avant, partagées par la peau et l'envelop
 // signalé.
 assert(dos_ep <= col_h + porteur,
        "dos_ep depasse la longueur de tige libre : la plaque ne peut pas se glisser sous la tete");
-// Le chanfrein doit laisser la tête porter : ouvert au Ø de la tête, elle
-// traverserait la fente.
-assert(fente_vis + 2 * chanfrein < tete_d - 0.5,
-       "chanfrein trop large : la tete fraisee passerait a travers la fente");
-assert(chanfrein < porteur - 0.8, "chanfrein trop profond pour la plaque porteuse");
+// La plaque ne doit pas dépasser le cône : au-delà, elle buterait sur le bord
+// cylindrique de la tête et le fraisage ne servirait plus à rien.
+assert(porteur < tete_bout, "la plaque porteuse depasse le cone : le fraisage ne porte plus");
+assert(fraise_y0 > col_h + 0.6,
+       "le fraisage demarre trop pres du bois : il ne reste plus de fente cylindrique");
+assert(porteur > fraise_y0 + 0.4, "le fraisage est trop court pour porter la tete");
+assert(jeu_tete > jeu_entree + 0.1,
+       "le logement de tete doit rester plus large que le trou d'entree, qu'il prolonge");
 
 // La grille d'allègement a été retirée : le remplissage du trancheur fait le
 // même travail, mieux, et sans piège.
@@ -719,18 +742,22 @@ module canaux(xc) {
             fente_2d(fente_vis, z_entree, z_vis);
             translate([0, z_entree]) circle(d = tete_d + jeu_entree);
         }
-        // 2 bis. son chanfrein à 45°, côté tête, sur toute la course : le cône de
-        //    la tête fraisée y porte en siège, et y glisse pendant la descente
-        //    Son petit bout est 0,1 PLUS LARGE que la fente, et 0,05 plus haut :
-        //    une marche de 0,05. Pile à sa largeur, il était coaxial au bout rond
-        //    de la fente et tombait exactement sur lui ; plus étroit, il en longeait
-        //    les flancs. Dans les deux cas, des arêtes non-variété.
+        // 2 bis. LE FRAISAGE : le cône de la tête lui-même, décalé de `jeu_cone`,
+        //    sur toute la course. C'est lui qui reçoit la tête en siège et la
+        //    centre, et il glisse le long du cône pendant la descente.
+        //    Il démarre 0,05 mm plus loin que le point théorique, donc 0,1 PLUS
+        //    LARGE que la fente : une marche de 0,05. Parti pile à sa largeur, il
+        //    était coaxial au bout rond de la fente et tombait exactement dessus ;
+        //    plus étroit, il en longeait les flancs. Dans les deux cas, des arêtes
+        //    non-variété.
+        //    Il se PROLONGE de 0,3 mm dans le logement de tête : fini pile au plan
+        //    de la face avant, il y coïncidait avec le début du logement — 116
+        //    arêtes non-variété, mesurées. Prolongé, il y est noyé et invisible.
         hull() for (zz = [z_entree, z_vis])
-            translate([0, col_h + porteur - chanfrein + 0.05, zz])
+            let (h = porteur - fraise_y0 - 0.05 + 0.3)
+            translate([0, fraise_y0 + 0.05, zz])
                 rotate([-90, 0, 0])
-                    cylinder(d1 = fente_vis + 0.1,
-                             d2 = fente_vis + 2 * (chanfrein + EPS),
-                             h = chanfrein - 0.05 + EPS);
+                    cylinder(d1 = fente_vis + 0.1, d2 = fente_vis + 0.1 + 2 * h, h = h);
 
         // 3. le logement de la tête, devant la plaque
         en_travers(col_h + porteur, loge_e)
