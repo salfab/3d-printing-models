@@ -82,20 +82,33 @@ besoin que de 45. Entre les deux, un galbe et non une marche.
 
 | Objet | Rangé | Zone | Empreinte |
 |---|---|---|---|
-| Lunettes pliées | debout | profonde, 91 mm | 50 × 41,8 |
-| Poche à tabac | debout | profonde, 91 mm | 85 × 30 |
-| Stylos, grands objets | debout | profonde, 91 mm | 32,6 × 41,8 |
-| **Briquets** (Bic J26, Clipper) | debout | au creux du galbe, replat à 72 mm | 17 × 37,2 |
-| Câbles USB | en vrac | peu profonde, 45 mm, galbe côté cloison | 30,5 × 37,2 |
-| Petits objets | en vrac | peu profonde, 45 mm | 30,5 × 37,2 |
-| Petites bricoles | en vrac | peu profonde, jusqu'à 90 mm au pied du galbe | 82,8 × 34,6 |
+Cotes **utiles**, entre parois d'insert. La profondeur varie dans les
+compartiments que le galbe traverse : le fond le suit.
+
+| Objet | Rangé | Largeur × profondeur | Profondeur utile |
+|---|---|---|---|
+| Poche à tabac | debout | 85,0 × 30,0 | 90 |
+| Lunettes pliées | debout | 55,0 × 41,8 | 90 |
+| Stylos, grands objets | debout | 27,6 × 41,8 | 90 |
+| **Briquets** (Bic J26, Clipper) | debout | 17,0 × 37,2 | 65 à 76 |
+| Câbles USB | en vrac | 30,5 × 37,2 | 44 à 61 |
+| Petits objets | en vrac | 30,5 × 37,2 | 44 |
+| Petites bricoles | en vrac | 82,8 × 34,6 | 44 à 90 |
+
+**La fente à lunettes fait 55 et non 50** : à 50, les branches d'une monture large
+forçaient. Les 5 mm sont pris sur la case à stylos, qui tombe de 32,6 à 27,6.
 
 **La case à briquets** occupe le creux du galbe, contre la cloison : une case
 rectangulaire comme les autres, pour garder à la grille son dessin orthogonal vue
-d'en haut. Son fond suit le galbe mais s'arrête sur un replat à `briq_prof` = 72 mm
-sous le bord, pour ne pas finir en pointe. Bic J26 : 82 × 25 × 15 mm ; Clipper
-Large : 74 mm de haut, 16 d'épaisseur — d'où 17 de large. Le Bic dépasse du bord de
-10 mm, le Clipper de 2.
+d'en haut. Son fond suit le galbe mais s'arrête sur un replat à `briq_prof` = 76 mm
+sous le bord, pour ne pas finir en pointe — 11 mm de plat contre la cloison, puis
+le fond remonte avec le galbe. **Sous le replat, l'insert est plein** : la case
+repose sur la coque.
+
+Bic J26 : 82 × 25 × 15 mm ; Clipper Large : 74 mm de haut, 16 d'épaisseur — d'où
+17 de large. Le Bic dépasse du bord de 6 mm ; le Clipper passe 2 mm dessous, et
+s'attrape par le côté (37 mm de profondeur de case pour 22 d'épaisseur de briquet).
+Plus bas, il faudrait retourner l'insert pour le sortir.
 
 Le XM5 **ne se plie pas**, contrairement au XM4 : il faut une portée large sous
 l'arceau, pas une patte fine.
@@ -154,9 +167,9 @@ Mesurées sur les maillages exportés.
 
 | | Volume | Encombrement |
 |---|---|---|
-| Coque | 208,8 cm³ | 181,0 × 84,9 × 95,0 mm |
-| Inserts (2 corps) | 127,3 cm³ (75,4 + 51,9) | 175,6 × 79,9 × 91,9 mm |
-| **Total** | **336,1 cm³** | |
+| Coque | 185,1 cm³ | 181,0 × 84,9 × 95,0 mm |
+| Inserts (2 corps) | 134,4 cm³ (73,9 + 60,5) | 175,6 × 79,9 × 91,9 mm |
+| **Total** | **319,5 cm³** | |
 
 La coque a perdu 75 cm³ quand le fond s'est mis à suivre le galbe : le socle plein
 sous le côté peu profond a disparu.
@@ -553,6 +566,11 @@ insert_fond)`). Les niveaux de fond par zone et par compartiment ont disparu.
   couchée sur le dos, le trace comme un simple contour. L'évidement fermé qui avait
   existé sous le socle, lui, était une cavité scellée impossible à imprimer.
 - **Il coûte un support à l'insert peu profond**, et à lui seul (voir §5).
+- **Sous la case à briquets, l'insert est PLEIN.** Il a été creux, et c'était un
+  défaut : le fond de 1,6 mm se retrouvait en porte-à-faux sur 14 × 37 mm au-dessus
+  de 18 mm de vide, tenu par deux de ses quatre côtés seulement. Le plein coûte
+  2,3 cm³ de volume modèle — deux grammes au remplissage courant — contre un fond
+  qui ploie et un plafond de plus à soutenir à l'impression.
 
 ### La paroi arrière de l'insert : un S au-dessus des renflements
 

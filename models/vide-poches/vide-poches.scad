@@ -403,7 +403,9 @@ yi0_ins = dos_e + insert_jeu + insert_paroi;   // 9,3
 // face contre la coque (paroi ou cloison) en perd `ins_ep`.
 x_tab = xi0 + ins_ep + 85 + ins_ep;   // cloison centrale — la fente à tabac, le
                                       // plus large des objets, fait 85 utiles
-x_lun = xi0 + ins_ep + 50;            // fente à lunettes : 50 utiles
+x_lun = xi0 + ins_ep + 55;            // fente à lunettes : 55 utiles. À 50 les
+                                      // branches d'une monture large forçaient ;
+                                      // les 5 mm sont pris sur la case à stylos.
 y_tab = yi0_ins + 30;  // épaisseur d'une poche à tabac debout, depuis la paroi
                       // arrière de l'insert
 y_cab = yi0 + 42;     // profondeur de la rangée arrière, côté peu profond
@@ -431,6 +433,14 @@ cy1 = yi1 - ins_ep;                // contre la paroi avant
 // Sous le replat, l'insert ne suit plus le galbe : il reste un vide entre lui et
 // la coque.
 //
+// SOUS LE REPLAT, L'INSERT EST PLEIN : il redescend jusqu'au galbe comme partout
+// ailleurs, et la case repose dessus. Il a été creux, et c'était un défaut : le
+// fond de 1,6 mm se retrouvait en porte-à-faux sur 14 × 37 mm au-dessus de 18 mm
+// de vide, tenu par deux de ses quatre côtés seulement — il aurait fléchi sous
+// quelques briquets, et c'était un plafond de plus à soutenir à l'impression. Le
+// plein coûte 2,3 cm³ de volume modèle, que le trancheur remplit au taux qu'on lui
+// donne : deux grammes, contre un fond qui ploie.
+//
 // Un fond entièrement plat a été essayé : il fallait le monter au niveau du galbe
 // au bord de la case, soit 65 mm de profondeur seulement.
 //
@@ -440,9 +450,12 @@ cy1 = yi1 - ins_ep;                // contre la paroi avant
 // Bic J26 (Maxi) : 82 × 25 × 15 mm. Clipper Large (CP11) : 74 mm de haut, 16
 // d'épaisseur. La largeur tient le plus épais.
 briq_l = 17;                        // mm — largeur utile de la case
-briq_prof = 72;                     // mm — profondeur du replat sous le bord : le
-                                    //      Bic dépasse de 10, le Clipper de 2. À 78,
-                                    //      le Clipper disparaît sous le bord.
+briq_prof = 76;                     // mm — profondeur du replat sous le bord. Le Bic
+                                    //      dépasse alors de 6 mm et le Clipper passe
+                                    //      2 mm dessous — on l'attrape par le côté,
+                                    //      la case a 37 mm de profondeur pour une
+                                    //      épaisseur de briquet de 22. Plus bas, il
+                                    //      faudrait la retourner pour le sortir.
 x_brq  = cxc + briq_l;              // frontière briquets / câbles
 x_cab  = (x_brq + cx1) / 2;         // frontière câbles / petits objets : le reste
                                     // du rang arrière, en deux cases égales
@@ -1071,20 +1084,8 @@ module insert() {
                 plancher(insert_jeu + insert_fond);
                 union() for (c = cuves) cuve_3d(c);
             }
-            sous_briquets();
         }
     }
-}
-
-// Sous le replat de la case à briquets, l'insert ne descend plus vers le galbe :
-// tout ce qui est plus bas est ôté, depuis le milieu de la cloison jusqu'à la
-// face de la case côté galbe, et de l'arrière jusqu'à sa face avant. La paroi qui
-// la sépare des petites bricoles, devant, descend, elle, jusqu'au galbe : c'est le
-// fond de la case voisine.
-module sous_briquets() {
-    translate([x_tab + cloison / 2, -1, fond_bas - 5])
-        cube([x_brq - (x_tab + cloison / 2), y_cab + 1,
-              (z_brq - insert_fond) - (fond_bas - 5)]);
 }
 
 // --- Crochet ------------------------------------------------------------------
