@@ -90,6 +90,12 @@ au dixième de cm³).
 | Petits objets | 30,5 × 37,2 | 44 | sur le plat |
 | Petites bricoles | 82,8 × 34,6 | 44 à 70 | replat à 70 : sans lui, un puits de 90 côté cloison |
 
+![Coupes au droit des câbles et des bricoles](doc/coupe-replats.png)
+
+*Coupes en travers, coque en gris, inserts en ocre. En haut au droit des câbles
+(y = 25), en bas au droit des bricoles (y = 60) : sous chaque replat, l'insert est
+plein jusqu'au galbe, et le compartiment repose sur la coque.*
+
 **Fixation** — de l'arrière vers l'avant, au droit de chaque vis :
 
 ```
