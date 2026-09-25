@@ -258,9 +258,21 @@ et du prisme de la vague, qui porte la vue de face.
   Le congé est maintenant le cercle de rayon `croc_rb` tangent aux deux faces : on
   résout pour son centre. Exact pour un flanc droit, sans itération, et les sauts
   de pente tombent de 6 à moins de 0,11.
-- **Il est plafonné à sa valeur au point de tangence** avec le flanc : au-delà, le
-  cercle repasserait devant le flanc et le champ de hauteur mordrait dans la pièce.
-  Plafonné, il reste en retrait, et c'est le flanc qui prend le relais.
+- **Dessous et dessus ne se traitent pas pareil**, parce que l'angle n'est pas le
+  même. La vague s'élargit vers le haut :
+  - *dessous* — angle **aigu**. Le cercle touche le flanc avant d'atteindre son
+    point le plus à gauche ; on plafonne le creux à cette valeur, et ce plafond
+    tombe pile sur le flanc. Le raccord est tangent, la partie plate est hors pièce.
+  - *dessus* — angle **obtus**. Le cercle passe par son point le plus à gauche
+    AVANT de toucher le flanc, et un champ de hauteur ne sait pas décrire la
+    suite : il plafonnait, donc posait une bande **plate de 1 mm à l'intérieur de
+    la pièce, bordée d'une arête à 90°**. Au bout de la spatule, côté panier, cela
+    se lisait comme une **ligne de moulage**. Le centre est donc placé pour que le
+    cercle arrive vertical exactement là où le flanc passe à la hauteur d'arrivée :
+    plus de partie plate, et le raccord fait l'angle du flanc — au pire 20°, soit
+    une arête à 160° au lieu de 90°.
+- **`croc_pas` reste à 0,5 mm.** À 0,3 le bout de la spatule est plus lisse, mais le
+  STL passe de 14 à 32 Mo — trop lourd pour l'aperçu, et invisible à l'impression.
 - **L'extinction porte sur le RAYON, pas sur le déplacement** : un rayon qui décroît
   reste un congé, un déplacement rogné ne l'est plus.
 - **L'arrondi du dessus s'éteint là où il est encore collé au panier** : il y

@@ -1173,16 +1173,37 @@ function croc_pg(z) = max(-croc_pmax, min(croc_pmax,
     (croc_xg(z + croc_dz) - croc_xg(z - croc_dz)) / (2 * croc_dz)));
 function croc_creu(u, r) = u <= 0 ? 0 : u >= r ? r : r - sqrt(r * r - u * u);
 
-// `v` = +1 pour le dessous (le congé creuse vers le haut), −1 pour le dessus.
-function croc_conge(x, z0, r, v) =
+// DESSOUS : le congé tangent aux deux faces. Le dessous et le flanc forment un
+// angle AIGU (le flanc s'écarte en montant), si bien que le cercle touche le
+// flanc AVANT d'atteindre son point le plus à gauche. Le creux est donc plafonné
+// à sa valeur au point de tangence, et ce plafond tombe pile sur le flanc : la
+// partie plate qui suit est hors de la pièce, et le raccord est tangent.
+function croc_conge_bas(x, z0, r) =
     r <= 0 ? 0 :
     let (p = croc_pd(z0), q = croc_pg(z0),
          sp = sqrt(1 + p * p), sq = sqrt(1 + q * q),
-         cd = croc_xd(z0) + v * r * p - r * sp,   // centres des deux congés
-         cg = croc_xg(z0) + v * r * q + r * sq,
-         td = max(0, min(r, r - v * r * p / sp)),  // creux au point de tangence
-         tg = max(0, min(r, r + v * r * q / sq)))
+         cd = croc_xd(z0) + r * p - r * sp,   // centres des deux congés
+         cg = croc_xg(z0) + r * q + r * sq,
+         td = max(0, min(r, r - r * p / sp)),  // creux au point de tangence
+         tg = max(0, min(r, r + r * q / sq)))
     max(min(croc_creu(x - cd, r), td), min(croc_creu(cg - x, r), tg));
+
+// DESSUS : le congé finit SUR le flanc, et non tangent à lui. Ici l'angle est
+// OBTUS — le dessus regarde en l'air, le flanc s'écarte en montant —, et le
+// cercle tangent aux deux faces passe par son point le plus à gauche AVANT de
+// toucher le flanc. Un champ de hauteur ne sait pas décrire ce qui suit : il
+// plafonnait, donc posait une bande PLATE à l'intérieur de la pièce, bordée
+// d'une arête à 90°. Au bout de la spatule, côté panier, cela se lisait comme
+// une ligne de moulage de 1 mm de large.
+//
+// Le centre est donc placé pour que le cercle arrive vertical exactement là où
+// le flanc passe à la hauteur d'arrivée : plus de partie plate, et le plafond
+// tombe hors de la pièce. Le raccord n'est plus tangent mais fait l'angle du
+// flanc — au pire 20° ici, soit une arête à 160°, contre 90° avant.
+function croc_conge_haut(x, z0, r) =
+    r <= 0 ? 0 :
+    let (cg = croc_xg(z0 - r) + r, cd = croc_xd(z0 - r) - r)
+    max(croc_creu(x - cd, r), croc_creu(cg - x, r));
 
 // Le rayon est borné par la DEMI-ÉPAISSEUR locale : au bout de la spatule la
 // section s'annule, et deux congés de 4 s'y traverseraient. Ainsi borné, chacun
@@ -1196,11 +1217,11 @@ function croc_rloc(x, y) = min(croc_rb, (croc_haut_brut(x, y) - croc_bas_brut(y)
 function croc_haut(x, y) =
     let (z0 = croc_haut_brut(x, y),
          f = liss5((croc_dessous(x) - z0) / croc_rb))
-    z0 - croc_conge(x, z0, croc_rloc(x, y) * f, -1);
+    z0 - croc_conge_haut(x, z0, croc_rloc(x, y) * f);
 
 function croc_bas_y(x, y) =
     let (z0 = croc_bas_brut(y))
-    z0 + croc_conge(x, z0, croc_rloc(x, y), 1);
+    z0 + croc_conge_bas(x, z0, croc_rloc(x, y));
 
 // Le crochet est l'INTERSECTION de deux formes : ce champ de hauteur, qui porte le
 // profil de côté, et le prisme de la vague, qui porte la vue de face.
