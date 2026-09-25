@@ -68,11 +68,25 @@ la peau, exactement comme sur le dos, qui ne fait que 2 mm. Les 3 mm ne servent
 qu'à raidir le réglet sur ses 190 mm. Il a valu 4 sans raison, ce qui coûtait un
 quart de matière de plus sur une pièce qu'on jette.
 
-**La profondeur de vissage n'est plus libre.** La plaque se glisse entre le bois et
-le cône avec 0,5 mm de jeu axial : vissée trop profond, la vis ne laisse plus
-passer la plaque. D'où la **cale** du gabarit, une fourche de 1,7 mm à glisser sous
-la tête : on visse jusqu'à ce que le cône la pince. Ses 1,7 et non 1,5 tiennent
-compte de ce que le cône porte sur les bords de la fourche, pas sur la tige.
+**La profondeur de vissage n'est plus libre.** Le fraisage ne laisse que quelques
+dixièmes de jeu, et **dans un seul sens** : vissée trop profond, la vis ne laisse
+plus passer la plaque ; pas assez, elle donne seulement un peu plus de jeu. D'où la
+**cale** du gabarit, une fourche de **1,8 mm** fendue à 3,4, à glisser sous la tête :
+on visse jusqu'à ce que le cône en pince les bords.
+
+Le cône s'évase à 45° : il touche les bords de la fente là où son rayon vaut 1,7,
+soit à la face avant d'une fourche de 1,7 — ce qui laisserait pile 1,5 de tige
+libre. La fourche fait 0,1 de plus, parce que deux effets poussent la vis trop
+profond, du seul côté qui coince :
+
+- **1,7 n'est pas un multiple de la couche de 0,2** : le trancheur en ferait 1,6 ou
+  1,8. À 1,6, la marge tombait à 0,2 mm.
+- **Le cône écrase le PLA des bords de la fente en pinçant** : une SPAX serrée dans
+  du bois a le couple d'enfoncer un ou deux dixièmes.
+
+À 1,8 — neuf couches, imprimées telles quelles — la tige libre fait 1,6 et le
+fraisage garde **0,4 mm de jeu**. Chaque dixième d'épaisseur de fourche est un
+dixième de profondeur ; chaque 0,2 de largeur de fente, un dixième aussi.
 
 ### Un vrai trou de serrure, et ce qu'il change
 
@@ -342,7 +356,7 @@ reporte la seconde.
    bois tendre, Ø 2,5 dans du dur. C'est elle qui fixe la hauteur de l'ensemble.
 2. **Régler sa profondeur à la cale.** On glisse la fourche sous la tête, à plat
    contre le bois, et on visse jusqu'à ce que le cône vienne la pincer. Elle se
-   retire alors en forçant légèrement : la tige libre fait 1,5 mm.
+   retire alors en forçant légèrement : la tige libre fait 1,6 mm.
 3. **Enfiler le gabarit** sur cette vis par son trou de serrure : présenter,
    pousser contre le bois, descendre de 8 mm. Il doit devenir **captif** —
    impossible à tirer vers soi. S'il force, la vis est trop profonde ; s'il flotte,
@@ -716,9 +730,10 @@ non vide. Les deux sont muets si on ne les lance pas.
 - [ ] **Hauteur réelle de la tête SPAX** : `tete_bord` = 0,2 est estimé, et le
       logement ne laisse plus que 0,4 mm de jeu devant la tête. Un bord plus haut
       s'absorbe en remontant `loge_e`.
-- [ ] **Le fraisage est exigeant sur la profondeur de vissage** : 0,3 mm de jeu
-      seulement. Vissée trop profond, la plaque ne se glisse plus. C'est la cale du
-      gabarit qui le règle — et c'est elle qu'il faut vérifier en premier.
+- [ ] **Le fraisage est exigeant sur la profondeur de vissage** : 0,4 mm de jeu
+      avec la cale de 1,8. Vissée trop profond, la plaque ne se glisse plus. Mesurer
+      la fourche imprimée au pied à coulisse : elle doit faire 1,8, et sa fente 3,4.
+      Chaque dixième d'écart y est un dixième de profondeur de vis.
 - [ ] **La peau avant à 1,2 mm** est un pontage de 8 mm à l'impression. Regarder
       qu'elle sorte propre, et que la vis ne se devine pas au travers.
 - [ ] **La cale du gabarit** : la vis réglée avec elle laisse-t-elle passer la plaque

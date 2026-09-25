@@ -1471,7 +1471,15 @@ gab_cale = 24;    // mm — longueur de la cale, au bout droit
 // que le cône vienne la pincer. Son épaisseur tient compte de ce que le cône porte
 // sur les BORDS de la fourche, pas sur la tige.
 cale_fente = vis_d + 0.4;                           // 3,4
-cale_e     = vis_l + (cale_fente - vis_d) / 2;      // 1,7
+cale_marge = 0.1;   // mm — la cale est épaissie d'autant, pour deux raisons qui
+                    //      poussent toutes deux la vis TROP PROFOND, le seul sens
+                    //      où le fraisage coince : 1,7 n'est pas un multiple de la
+                    //      couche de 0,2 et le trancheur en ferait 1,6 ou 1,8 ; et
+                    //      le cône écrase le PLA des bords de la fente en pinçant.
+                    //      À 1,8 — neuf couches, imprimées telles quelles — la vis
+                    //      finit 0,1 moins enfoncée : 1,6 de tige libre, 0,4 de jeu
+                    //      au fraisage, toute la marge du côté qui coince.
+cale_e     = vis_l + (cale_fente - vis_d) / 2 + cale_marge;   // 1,8
 
 function gab_z() = (boss_z0 - boss_Dbas + boss_z1 + boss_Dhaut) / 2;   // milieu du renflement
 
