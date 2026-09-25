@@ -1417,8 +1417,35 @@ module panier() {
 
 // Réglet de perçage de la seconde cheville : se pose sur la première, se met de
 // niveau, et donne le point à pointer. Consommable, imprimé à plat.
+// L'ÉCHANTILLON DE SERRURE — un morceau du vrai dos, rattaché au gabarit.
+//
+// Il porte le trou de serrure complet : la fente qui porte, le trou d'entrée, le
+// fraisage et le logement de tête, sous le renflement et derrière la peau. Enfilé
+// sur une vis réglée, il répond en cinq secondes aux questions qu'on ne peut pas
+// trancher sur un écran : la tête passe-t-elle par le trou d'entrée, la plaque se
+// glisse-t-elle sous le cône, la course de 8 mm suffit-elle à la rendre captive,
+// et la peau de 1,2 mm sort-elle propre sur son pontage.
+//
+// C'est le VRAI dos qu'on découpe, pas une reconstitution : toute correction de
+// `porteur`, `jeu_cone`, `course` ou `dos_av` s'y retrouve sans rien à retoucher.
+ech_l = 24;       // mm — largeur du morceau prélevé
+ech_h = 30;       // mm — hauteur : le renflement entier, avec un peu de plaque autour
+ech_pont = 1.0;   // mm — épaisseur des deux ponts qui le tiennent au réglet. Assez
+                  //      pour survivre au décollement, assez peu pour casser au pouce.
+ech_ecart = 6;    // mm — entre le réglet et l'échantillon
+
+function ech_z() = (boss_z0 - boss_Dbas + boss_z1 + boss_Dhaut) / 2;
+module echantillon() {
+    intersection() {
+        dos();
+        translate([entraxe / 2 - ech_l / 2, -1, ech_z() - ech_h / 2])
+            cube([ech_l, dos_e + 2, ech_h]);
+    }
+}
+
 // Le gabarit : un réglet qui se coiffe sur la tête de la première vis et marque
-// l'avant-trou de la seconde, plus une CALE qui règle leur profondeur.
+// l'avant-trou de la seconde, plus une CALE qui règle leur profondeur, plus
+// l'échantillon de serrure.
 //
 // La profondeur de vissage n'est plus libre : la plaque se glisse entre le bois
 // et le cône avec 0,5 mm de jeu axial seulement. La cale est une fourche
@@ -1444,6 +1471,15 @@ module gabarit() {
         translate([entraxe / 2 + 25, h / 2 - cale_fente / 2, -EPS])
             cube([20, cale_fente, ep]);                         // la fourche
     }
+    // L'échantillon, couché à plat sous le réglet. Le dos est dessiné dans le plan
+    // de la façade, épaisseur selon Y : on le bascule d'un quart de tour pour qu'il
+    // repose sur le plateau comme le réglet.
+    translate([0, -ech_ecart, 0])
+        rotate([90, 0, 0])
+            translate([-entraxe / 2, 0, -(ech_z() - ech_h / 2)])
+                echantillon();
+    for (sx = [-8, 8])
+        translate([sx - 1.5, -ech_ecart, 0]) cube([3, ech_ecart, ech_pont]);
 }
 
 // Le bois et les deux vis, pour vérifier la cinématique. Jamais imprimé.
