@@ -62,6 +62,12 @@ captive, la peau de 1,2 mm sort-elle propre sur son pontage. **Si le gabarit ne
 s'enfile pas, le panier ne s'enfilera pas non plus.** Le réglet s'imprime à plat,
 donc dans la même orientation que la coque : le pontage y est représentatif.
 
+Il fait **3 mm**, 189 × 28, pour 14 cm³. Le minimum géométrique serait 2,6 — la
+plaque porteuse elle-même ; au-delà, c'est le renflement qui porte le logement et
+la peau, exactement comme sur le dos, qui ne fait que 2 mm. Les 3 mm ne servent
+qu'à raidir le réglet sur ses 190 mm. Il a valu 4 sans raison, ce qui coûtait un
+quart de matière de plus sur une pièce qu'on jette.
+
 **La profondeur de vissage n'est plus libre.** La plaque se glisse entre le bois et
 le cône avec 0,5 mm de jeu axial : vissée trop profond, la vis ne laisse plus
 passer la plaque. D'où la **cale** du gabarit, une fourche de 1,7 mm à glisser sous

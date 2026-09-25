@@ -1455,9 +1455,14 @@ module panier() {
 // pontage. Si le gabarit ne s'enfile pas, le panier ne s'enfilera pas non plus.
 gab_h  = 28;      // mm — hauteur du réglet. Elle couvre le renflement en entier,
                   //      sinon une coupe le traverserait en pleine matière.
-gab_ep = 4;       // mm — épaisseur hors renflement. Plus que les 2 mm du dos : le
-                  //      réglet doit être rigide sur 160 mm, et le logement de
-                  //      tête n'en a besoin que de 3,6.
+gab_ep = 3;       // mm — épaisseur hors renflement. Elle ne sert qu'à raidir le
+                  //      réglet sur ses 190 mm : le MINIMUM géométrique est
+                  //      `porteur` = 2,6, la plaque qui se glisse sous la tête.
+                  //      Au-delà, c'est le renflement qui porte le logement et la
+                  //      peau, comme sur le dos — qui ne fait que 2 mm. Elle a
+                  //      valu 4 sans raison ; à 3 le gabarit reste rigide, la peau
+                  //      fait toujours ses 1,2 mm et on economise un quart de la
+                  //      matiere d'un consommable.
 gab_g  = 26;      // mm — ce qui dépasse à gauche de l'axe de la première vis
 gab_d  = 15;      // mm — et à droite du repère de la seconde
 gab_cale = 24;    // mm — longueur de la cale, au bout droit
