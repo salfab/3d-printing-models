@@ -50,15 +50,17 @@ au rayon, `jeu_tete` de 3 à 2) et la peau avant faisait quatre passes de buse l
 trois suffisent (`dos_av` de 1,6 à 1,2). Bilan : **0,5 mm de gagné**, et un siège
 qui porte. Les bosses tombent de 20 mm de large à 11.
 
-**Le gabarit porte un échantillon de serrure**, rattaché au réglet par deux ponts
-qu'on casse au pouce : un morceau du vrai dos, 24 × 30, avec son renflement, sa
-fente, son trou d'entrée, son fraisage, son logement et sa peau. C'est le dos
-lui-même qu'on y découpe — toute correction s'y retrouve sans rien à retoucher — et
-il s'imprime dans la **même orientation** que la coque, face plate sur le plateau.
-Enfilé sur une vis réglée, il répond en cinq secondes aux quatre questions qu'un
-écran ne tranche pas : la tête passe-t-elle par le trou d'entrée, la plaque se
-glisse-t-elle sous le cône, la course de 8 mm la rend-elle captive, et la peau de
-1,2 mm sort-elle propre sur son pontage.
+**Le gabarit se pose par un VRAI TROU DE SERRURE**, celui du panier, pris dans le
+corps même du réglet. On l'enfile comme le panier — présenter, pousser, descendre
+de 8 mm — et il devient captif, tenu par le siège conique. C'est plus précis qu'un
+trou de passage, qui aurait laissé 0,4 mm de flottement au report de l'entraxe, et
+surtout **l'essai de pose est la mise en place** : un seul geste au lieu de deux.
+
+Il répond ainsi aux quatre questions qu'un écran ne tranche pas — la tête passe-t-elle
+par le trou d'entrée, le fraisage se glisse-t-il sous le cône, la course la rend-elle
+captive, la peau de 1,2 mm sort-elle propre sur son pontage. **Si le gabarit ne
+s'enfile pas, le panier ne s'enfilera pas non plus.** Le réglet s'imprime à plat,
+donc dans la même orientation que la coque : le pontage y est représentatif.
 
 **La profondeur de vissage n'est plus libre.** La plaque se glisse entre le bois et
 le cône avec 0,5 mm de jeu axial : vissée trop profond, la vis ne laisse plus
@@ -156,7 +158,7 @@ cru : c'est un volume dont seule la face cachée est plane.
 |---|---|---|---|
 | Coque | `coque` | 1 | dos, bac à deux niveaux, crochet |
 | Inserts | `insert` | 1 jeu | deux petits bacs à séparations, un par zone — **deux corps**, et le liseré du bord |
-| Gabarit | `gabarit` | 1 | réglet de perçage, cale de profondeur **et échantillon de serrure** — consommable |
+| Gabarit | `gabarit` | 1 | réglet à trou de serrure, repère de perçage et cale de profondeur — consommable |
 | Pièce d'essai | `essai` | 1 | les 10 derniers mm de la coque et des inserts, pour valider le jeu **avant tout** |
 
 ```bash
@@ -324,24 +326,33 @@ Contrôles topologiques sur le maillage, tous à zéro :
 
 ## 5. Montage
 
+L'ordre compte : le gabarit se pose sur la **première** vis, et c'est de là qu'il
+reporte la seconde.
+
 0. **Imprimer d'abord le gabarit et la pièce d'essai.** Sur `PIECE=essai`, l'anneau
    d'insert doit entrer dans l'anneau de coque sans forcer et sans ballotter —
-   sinon, ajuster `insert_jeu`. Sur le gabarit, casser l'échantillon de serrure et
-   le garder pour l'étape 1 bis.
-1. **Percer la seconde vis** au gabarit, à la **même hauteur** que
-   l'existante : c'est ce qui empêche le panier de vriller quand on le charge de
-   travers. Entraxe 124 mm.
-   **Régler la profondeur des deux vis à la cale** du gabarit : on la glisse sous
-   la tête contre le bois et on visse jusqu'à ce que le cône la pince.
-1 bis. **Vérifier avec l'échantillon**, sur chaque vis : il doit s'enfiler par son
-   trou d'entrée, se glisser sous le cône, descendre de 8 mm et se retrouver
-   captif — impossible à tirer vers soi. S'il force, la vis est trop profonde ;
-   s'il flotte, elle ne l'est pas assez. C'est plus rapide à corriger maintenant
-   qu'avec 320 cm³ de panier en main.
-2. **Présenter la coque**, les deux têtes en face des trous de passage de 7,5.
-3. **Pousser contre le bois**, puis **descendre de 8 mm** (`course`). Elle vient
+   sinon, ajuster `insert_jeu`.
+1. **Poser la première vis** où le panier doit venir : avant-trou de Ø 2 dans du
+   bois tendre, Ø 2,5 dans du dur. C'est elle qui fixe la hauteur de l'ensemble.
+2. **Régler sa profondeur à la cale.** On glisse la fourche sous la tête, à plat
+   contre le bois, et on visse jusqu'à ce que le cône vienne la pincer. Elle se
+   retire alors en forçant légèrement : la tige libre fait 1,5 mm.
+3. **Enfiler le gabarit** sur cette vis par son trou de serrure : présenter,
+   pousser contre le bois, descendre de 8 mm. Il doit devenir **captif** —
+   impossible à tirer vers soi. S'il force, la vis est trop profonde ; s'il flotte,
+   elle ne l'est pas assez. C'est le même essai que celui du panier, en 320 cm³ de
+   moins, et le gabarit se trouve du même coup en place.
+4. **Mettre le réglet d'aplomb** et **marquer** à travers le repère de Ø 2. Rien
+   sur la pièce ne garantit l'horizontale : un petit niveau contre sa face, ou une
+   mesure égale depuis le chant avant du meuble aux deux extrémités. Les deux vis
+   doivent être à la **même hauteur**, sinon le panier vrille quand on le charge de
+   travers.
+5. **Retirer le gabarit, percer, visser la seconde vis**, et régler sa profondeur
+   à la même cale. Entraxe 124 mm.
+6. **Présenter la coque**, les deux têtes en face des trous d'entrée de Ø 7,5.
+7. **Pousser contre le bois**, puis **descendre de 8 mm** (`course`). Elle vient
    en butée toute seule.
-4. **Poser les deux inserts**, chacun dans sa zone. Ils descendent à la verticale ;
+8. **Poser les deux inserts**, chacun dans sa zone. Ils descendent à la verticale ;
    le haut de leur paroi arrière, qui recule vers le mur, passe au-dessus des
    renflements de fixation.
 
